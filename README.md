@@ -1,4 +1,4 @@
-# python-samples-private
+# python-samples
 
 This repository contains **Python** code samples for **Zivid**.
 
