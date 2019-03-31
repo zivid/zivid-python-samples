@@ -60,7 +60,7 @@ contrast = data['data']['contrast'][:,:]
 pc = np.dstack([xyz, image, contrast])
 pts = pc.reshape(-1,7)
 
-#Remove NaNs   
+#Remove nans   
 pts = pts[~np.isnan(pts[:,0]),:]
 
 # Save to a .CSV file format

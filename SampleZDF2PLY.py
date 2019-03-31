@@ -92,7 +92,7 @@ if __name__ == '__main__':
     pc = np.dstack([xyz , image])   
     pts = pc.reshape(-1,6)
     
-    #Remove NaNs   
+    #Remove nans   
     pts = pts[~np.isnan(pts[:,0]),:]
         
     # Save to a .PLY file formats
