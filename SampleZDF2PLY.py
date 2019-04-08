@@ -67,8 +67,7 @@ def write_ply_binary(fname, pts):
 
         for i in range(len(pts)):
             
-            s = struct.pack('<fffBBB', pts[i,0], pts[i,1], pts[i,2], 
-                            np.uint8(pts[i,3]), np.uint8(pts[i,4]), np.uint8(pts[i,5]))
+            s = struct.pack('<fffBBB', pts[i,0], pts[i,1], pts[i,2], np.uint8(pts[i,3]), np.uint8(pts[i,4]), np.uint8(pts[i,5]))
     
             f.write(s)
 
@@ -88,7 +87,10 @@ if __name__ == '__main__':
     # Extract the RGB image
     image = data['data']['rgba_image'][:,:,:3]
     
-    # Unorganize the point cloud
+    # Close the ZDF file
+    data.close()
+    
+    # Disorganize the point cloud
     pc = np.dstack([xyz , image])   
     pts = pc.reshape(-1,6)
     
@@ -97,8 +99,3 @@ if __name__ == '__main__':
         
     # Save to a .PLY file formats
     write_ply_binary(FilenamePLY, pts)
-    
-    # Close the ZDF file
-    data.close()
-    
-#%%

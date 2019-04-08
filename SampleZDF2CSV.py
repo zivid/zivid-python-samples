@@ -56,7 +56,10 @@ image = data['data']['rgba_image'][:,:,:3]
 # Extract the contrast image
 contrast = data['data']['contrast'][:,:]
 
-# Unorganize the point cloud
+# Close the ZDF file
+data.close()
+
+# Disorganize the point cloud
 pc = np.dstack([xyz, image, contrast])
 pts = pc.reshape(-1,7)
 
@@ -72,6 +75,3 @@ else:
         index = FilenameCSV.find('.')
         Filename = FilenameCSV[:index] + '_part_' + str(x + 1) + FilenameCSV[index:]
         np.savetxt(Filename, pts[x * 1000000:(x + 1) * 1000000, :], delimiter = ",")
-        
-# Close the ZDF file
-data.close()
