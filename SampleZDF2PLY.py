@@ -91,12 +91,11 @@ if __name__ == '__main__':
     data.close()
     
     # Disorganize the point cloud
-    pc = np.dstack([xyz , image])
+    pc = np.dstack([xyz, image])
 
     # Replace NaNs with Zeros
     pc[np.isnan(pc[:,:,2])] = 0;
-    
     pts = pc.reshape(-1,6)
         
-    # Save to a .PLY file formats
+    # Save to a .PLY file format
     write_ply_binary(FilenamePLY, pts)
