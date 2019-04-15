@@ -13,7 +13,7 @@ This repository contains **Python** code samples for **Zivid**.
 1. Download and install [**Zivid Software**](https://www.zivid.com/downloads)
 Note: The version tested with Zivid cameras is 1.2.0.
 
-2. Launch your Python IDE.
+2. Launch your Python IDE. Read our instructions on [setting up Python](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
 
 3. Open and run one of the samples.
 
