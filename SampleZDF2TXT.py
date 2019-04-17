@@ -45,7 +45,7 @@ from math import ceil
 # Read a .ZDF point cloud. The "Zivid3D.zdf" file has to be in the same folder
 # as the "SampleZDF2CSV" file.
 FilenameZDF = 'Zivid3D.zdf'
-FilenameCSV = 'Zivid3D.csv'
+FilenameTXT = 'Zivid3D.txt'
 data = Dataset(FilenameZDF)
 
 # Extract the point cloud
@@ -70,11 +70,11 @@ pts = pc.reshape(-1,7)
 #Remove nans   
 pts = pts[~np.isnan(pts[:,0]),:]
 
-# Save to a .CSV file format
+# Save to a .TXT file format
 parts = ceil(len(pts) / 1000000)
-np.savetxt(FilenameCSV, pts, delimiter = ",")
+np.savetxt(FilenameTXT, pts, delimiter = " ")
 if parts > 1:
     for x in range (0, parts):
-        index = FilenameCSV.find('.')
-        Filename = FilenameCSV[:index] + '_part_' + str(x + 1) + FilenameCSV[index:]
+        index = FilenameTXT.find('.')
+        Filename = FilenameTXT[:index] + '_part_' + str(x + 1) + FilenameTXT[index:]
         np.savetxt(Filename, pts[x * 1000000:(x + 1) * 1000000, :], delimiter = ",")
