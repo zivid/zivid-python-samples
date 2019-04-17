@@ -72,9 +72,9 @@ pts = pts[~np.isnan(pts[:,0]),:]
 
 # Save to a .CSV file format
 parts = ceil(len(pts) / 1000000)
-np.savetxt(FilenameCSV, pts, delimiter = ",")
+np.savetxt(FilenameCSV, pts, delimiter = ',', fmt = '%.3f')
 if parts > 1:
     for x in range (0, parts):
         index = FilenameCSV.find('.')
         Filename = FilenameCSV[:index] + '_part_' + str(x + 1) + FilenameCSV[index:]
-        np.savetxt(Filename, pts[x * 1000000:(x + 1) * 1000000, :], delimiter = ",")
+        np.savetxt(Filename, pts[x * 1000000:(x + 1) * 1000000, :], delimiter = ',', fmt = '%.3f')
