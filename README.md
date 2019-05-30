@@ -16,6 +16,10 @@ Note: The version tested with Zivid cameras is 1.2.0.
 
 2. Launch your Python IDE. Read our instructions on [setting up Python](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
 
+3. Install the runtime requirements using IDE or command line
+
+       pip install -r requirements.txt
+
 3. Open and run one of the samples.
 
 ## Support
