@@ -1,0 +1,7 @@
+[flake8]
+ignore = 
+    ### Disabled because of conflicts with black
+    E203, # whitespace before ':'
+
+# Covered better by pylint
+max-line-length = 9999

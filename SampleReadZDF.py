@@ -1,4 +1,4 @@
-""" 
+"""
 BSD 3-Clause License
 
 Copyright (c) 2019, Zivid AS
@@ -28,11 +28,8 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-""" 
 
-""" 
 This example shows how to import a Zivid point cloud from a .ZDF file.
-
 """
 
 from netCDF4 import Dataset
@@ -41,17 +38,17 @@ import numpy
 
 # Read a .ZDF point cloud. The "Zivid3D.zdf" file has to be in the same folder
 # as the "SampleReadZDF" file.
-FilenameZDF = 'Zivid3D.zdf'
-data = Dataset(FilenameZDF,'r')
+FilenameZDF = "Zivid3D.zdf"
+data = Dataset(FilenameZDF, "r")
 
 # Extract the point cloud
-pc = data['data']['pointcloud'][:,:,:]
+pc = data["data"]["pointcloud"][:, :, :]
 
 # Extract the RGB image
-image = data['data']['rgba_image'][:,:,:]
+image = data["data"]["rgba_image"][:, :, :]
 
 # Extract the contrast image
-contrast = data['data']['contrast'][:,:]
+contrast = data["data"]["contrast"][:, :]
 
 # Close the ZDF file
 data.close()
@@ -61,7 +58,7 @@ plt.imshow(image)
 plt.show()
 
 # Display the Depth Image
-Z = pc[:,:,2]
-plt.imshow(Z, vmin=numpy.nanmin(Z), vmax=numpy.nanmax(Z), cmap='jet')
+Z = pc[:, :, 2]
+plt.imshow(Z, vmin=numpy.nanmin(Z), vmax=numpy.nanmax(Z), cmap="jet")
 plt.colorbar()
 plt.show()
