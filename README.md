@@ -1,5 +1,7 @@
 # python-samples
 
+[![Build Status](https://travis-ci.com/zivid/python-samples.svg?branch=master)](https://travis-ci.com/zivid/python-samples)
+
 This repository contains **Python** code samples for **Zivid**.
 
 ## Samples list
