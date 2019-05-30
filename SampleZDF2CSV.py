@@ -1,4 +1,4 @@
-""" 
+"""
 Copyright (c) 2019, Zivid AS
 
 All rights reserved.
@@ -30,12 +30,9 @@ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
 
-""" 
 This example shows how to convert a Zivid point cloud from a .ZDF file format
 to a .CSV file format.
-
 """
 
 import numpy as np
