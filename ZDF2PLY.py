@@ -50,27 +50,27 @@ if __name__ == "__main__":
 
     from netCDF4 import Dataset
 
-    # Read a .ZDF point cloud. The "Zivid3D.zdf" file has to be in the same folder
-    # as the "SampleZDF2PLY" file.
+    # Reading a .ZDF point cloud. The "Zivid3D.zdf" file has to be in the same folder
+    # as the "ZDF2PLY" file.
     FilenameZDF = "Zivid3D.zdf"
     FilenamePLY = "Zivid3D.ply"
     data = Dataset(FilenameZDF)
 
-    # Extract the point cloud
+    # Extracting the point cloud
     xyz = data["data"]["pointcloud"][:, :, :]
 
-    # Extract the RGB image
+    # Extracting the RGB image
     image = data["data"]["rgba_image"][:, :, :3]
 
-    # Close the ZDF file
+    # Closing the ZDF file
     data.close()
 
-    # Disorganize the point cloud
+    # Disorganizing the point cloud
     pc = np.dstack([xyz, image])
 
-    # Replace NaNs with Zeros
+    # Replacing nans with zeros
     pc[np.isnan(pc[:, :, 2])] = 0
     pts = pc.reshape(-1, 6)
 
-    # Save to a .PLY file format
+    # Saving to a .PLY file format
     write_ply_binary(FilenamePLY, pts)
