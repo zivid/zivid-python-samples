@@ -1,11 +1,11 @@
 """
 This example shows how to convert a Zivid point cloud from a .ZDF file format
-to a .PLY file format.
+to a .PLY file format without Zivid Software.
 """
 
 import numpy as np
 import struct
-
+from netCDF4 import Dataset
 
 def write_ply_binary(fname, pts):
 
@@ -46,14 +46,13 @@ def write_ply_binary(fname, pts):
             f.write(s)
 
 
-if __name__ == "__main__":
+def _main():
 
-    from netCDF4 import Dataset
-
-    # Reading a .ZDF point cloud. The "Zivid3D.zdf" file has to be in the same folder
-    # as the "ZDF2PLY" file.
+    # The Zivid3D.zdf file has to be in the same folder as this sample script.
     FilenameZDF = "Zivid3D.zdf"
     FilenamePLY = "Zivid3D.ply"
+    
+    print("Reading ", FilenameZDF, " point cloud" )
     data = Dataset(FilenameZDF)
 
     # Extracting the point cloud
@@ -74,3 +73,6 @@ if __name__ == "__main__":
 
     # Saving to a .PLY file format
     write_ply_binary(FilenamePLY, pts)
+    
+if __name__ == "__main__":
+    _main()
