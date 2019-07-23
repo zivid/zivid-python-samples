@@ -13,19 +13,15 @@ def _main():
     filename_txt = "Zivid3D.txt"
 
     print(f"Reading {filename_zdf} point cloud")
-    data = Dataset(filename_zdf)
+    with Dataset(filename_zdf) as data:
+        # Extracting the point cloud
+        xyz = data["data"]["pointcloud"][:, :, :]
 
-    # Extracting the point cloud
-    xyz = data["data"]["pointcloud"][:, :, :]
+        # Extracting the RGB image
+        rgb = data["data"]["rgba_image"][:, :, :3]
 
-    # Extracting the RGB image
-    rgb = data["data"]["rgba_image"][:, :, :3]
-
-    # Extracting the contrast image
-    contrast = data["data"]["contrast"][:, :]
-
-    # Closing the ZDF file
-    data.close()
+        # Extracting the contrast image
+        contrast = data["data"]["contrast"][:, :]
 
     # Getting the point cloud
     pc = np.dstack([xyz, rgb, contrast])

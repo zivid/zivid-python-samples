@@ -13,26 +13,22 @@ def _main():
     filename_zdf = "Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
-    data = Dataset(filename_zdf, "r")
+    with Dataset(filename_zdf) as data:
+        # Extracting the point cloud
+        xyz = data["data"]["pointcloud"][:, :, :]
 
-    # Extracting the point cloud
-    pc = data["data"]["pointcloud"][:, :, :]
+        # Extracting the RGB image
+        rgb = data["data"]["rgba_image"][:, :, :3]
 
-    # Extracting the RGB image
-    rgb = data["data"]["rgba_image"][:, :, :]
-
-    # Extracting the contrast image
-    contrast = data["data"]["contrast"][:, :]
-
-    # Closing the ZDF file
-    data.close()
+        # Extracting the contrast image
+        contrast = data["data"]["contrast"][:, :]
 
     # Displaying the RGB image
     plt.imshow(rgb)
     plt.show()
 
     # Displaying the Depth Image
-    Z = pc[:, :, 2]
+    Z = xyz[:, :, 2]
     plt.imshow(Z, vmin=np.nanmin(Z), vmax=np.nanmax(Z), cmap="jet")
     plt.colorbar()
     plt.show()
