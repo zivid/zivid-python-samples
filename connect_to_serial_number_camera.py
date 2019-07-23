@@ -9,11 +9,11 @@ def _main():
     app = zivid.Application()
 
     print("Connecting to the camera")
-    camera = app.connect_camera("122026014961")
+    serial_number = "12345678"
+    camera = app.connect_camera(serial_number)
 
     print(
-        "Connected to the camera with the following serial number: ",
-        camera.serial_number,
+        f"Connected to the camera with the following serial number: {camera.serial_number}"
     )
 
 
