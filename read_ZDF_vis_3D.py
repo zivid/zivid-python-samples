@@ -7,7 +7,7 @@ Depth map).
 import zivid
 import numpy as np
 import matplotlib.pyplot as plt
-from vtk_visualizer import *
+from vtk_visualizer import plotxyzrgb
 
 
 def _main():
