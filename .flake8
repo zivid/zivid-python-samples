@@ -2,6 +2,7 @@
 ignore = 
     ### Disabled because of conflicts with black
     E203, # whitespace before ':'
-
+	F841, # local variable is assigned but not never used
+	
 # Covered better by pylint
 max-line-length = 9999
