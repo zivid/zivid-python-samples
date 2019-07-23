@@ -32,16 +32,10 @@ def _main():
 
     print("Capturing separate frames")
     frame1 = capture(camera, settings_collection[0])
-    print(camera.settings.iris)
-    print(camera.settings.exposure_time)
     frame2 = capture(camera, settings_collection[1])
-    print(camera.settings.iris)
-    print(camera.settings.exposure_time)
     frame3 = capture(camera, settings_collection[2])
-    print(camera.settings.iris)
-    print(camera.settings.exposure_time)
 
-    print("Combining separate frames into a HDR frame")
+    print("Combining separate frames into an HDR frame")
     hdr = zivid.hdr.combine_frames([frame1, frame2, frame3])
 
     print("Saving the frames")
