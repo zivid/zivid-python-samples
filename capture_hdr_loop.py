@@ -28,7 +28,7 @@ def _main():
     settings_collection[1].filters.reflection.enabled = True
 
     settings_collection[2].brightness = 1.8
-    settings_collection[2].gain = 1.8
+    settings_collection[2].gain = 1
     settings_collection[2].filters.gaussian.enabled = True
     settings_collection[2].filters.gaussian.sigma = 1.5
     settings_collection[2].filters.reflection.enabled = True
