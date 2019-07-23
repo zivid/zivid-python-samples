@@ -4,7 +4,6 @@ Convert ZDF point cloud to CSV format without Zivid Software.
 
 import numpy as np
 from netCDF4 import Dataset
-from math import ceil
 
 
 def _main():

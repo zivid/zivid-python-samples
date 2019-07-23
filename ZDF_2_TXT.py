@@ -4,7 +4,6 @@ Convert ZDF point cloud to TXT format.
 
 import zivid
 import numpy as np
-from math import ceil
 
 
 def _main():
