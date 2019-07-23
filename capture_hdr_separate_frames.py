@@ -1,8 +1,8 @@
 """
-This example shows how to merge several frames captured from the Zivid camera 
+This example shows how to merge several frames captured from the Zivid camera
 into one HDR frame. This is not the recommended way to capture an HDR frame.
 The goal is to demonstrate the possibility to have access to both single frames
- and the resulting HDR frame.  
+and the resulting HDR frame.
 """
 
 import zivid
