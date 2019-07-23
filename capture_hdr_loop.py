@@ -1,6 +1,5 @@
 """
-This example shows how to acquire HDR images from the Zivid camera in a loop
-(while actively changing some HDR settings).
+Capture HDR frames in a loop (while actively changing some HDR settings).
 """
 
 import zivid

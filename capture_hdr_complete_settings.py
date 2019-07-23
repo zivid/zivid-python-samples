@@ -1,8 +1,9 @@
 """
-This example shows how to acquire an HDR image from the Zivid camera with fully
-configured settings for each frame. In general, taking an HDR image is a lot
-simpler than this as the default settings work for most scenes. The purpose of
-this example is to demonstrate how to configure all the settings.
+Capture an HDR frame with fully configured settings for each frame.
+
+In general, taking an HDR image is a lot simpler than this as the default
+settings work for most scenes. The purpose of this example is to demonstrate
+how to configure all the settings.
 """
 
 import zivid

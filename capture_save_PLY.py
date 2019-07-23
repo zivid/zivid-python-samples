@@ -1,6 +1,5 @@
 """
-This example shows how to capture a Zivid point cloud and save it to a .PLY
-file format.
+Capture a ZDF point cloud and save it to PLY file format.
 """
 
 import datetime
@@ -10,7 +9,7 @@ import zivid
 def _main():
     app = zivid.Application()
 
-    FilenamePLY = "Zivid3D.ply"
+    filename_ply = "Zivid3D.ply"
 
     print("Connecting to the camera")
     camera = app.connect_camera()
@@ -23,8 +22,8 @@ def _main():
 
     print("Capturing a frame")
     with camera.capture() as frame:
-        print("Saving the frame to ", FilenamePLY)
-        frame.save(FilenamePLY)
+        print(f"Saving the frame to {filename_ply}")
+        frame.save(filename_ply)
 
 
 if __name__ == "__main__":

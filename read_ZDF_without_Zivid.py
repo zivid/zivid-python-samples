@@ -1,6 +1,5 @@
 """
-This example shows how to import a Zivid point cloud from a .ZDF file without
-Zivid Software.
+Import ZDF point cloud without Zivid Software.
 """
 
 from netCDF4 import Dataset
@@ -11,16 +10,16 @@ import numpy as np
 def _main():
 
     # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    FilenameZDF = "Zivid3D.zdf"
+    filename_zdf = "Zivid3D.zdf"
 
-    print("Reading ", FilenameZDF, " point cloud")
-    data = Dataset(FilenameZDF, "r")
+    print(f"Reading {filename_zdf} point cloud")
+    data = Dataset(filename_zdf, "r")
 
     # Extracting the point cloud
     pc = data["data"]["pointcloud"][:, :, :]
 
     # Extracting the RGB image
-    image = data["data"]["rgba_image"][:, :, :]
+    rgb = data["data"]["rgba_image"][:, :, :]
 
     # Extracting the contrast image
     contrast = data["data"]["contrast"][:, :]
@@ -29,7 +28,7 @@ def _main():
     data.close()
 
     # Displaying the RGB image
-    plt.imshow(image)
+    plt.imshow(rgb)
     plt.show()
 
     # Displaying the Depth Image

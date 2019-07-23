@@ -1,6 +1,5 @@
 """
-This example shows how to connect to a specific Zivid camera based on its
-serial number.
+Connect to a specific Zivid camera based on its serial number.
 """
 
 import zivid
