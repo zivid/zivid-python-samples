@@ -24,14 +24,16 @@ def _main():
         contrast = data["data"]["contrast"][:, :]
 
     # Displaying the RGB image
+    plt.figure()
     plt.imshow(rgb)
-    plt.show()
+    plt.title("RGB image")
 
     # Displaying the Depth Image
     Z = xyz[:, :, 2]
+    plt.figure()
     plt.imshow(Z, vmin=np.nanmin(Z), vmax=np.nanmax(Z), cmap="jet")
     plt.colorbar()
-    plt.show()
+    plt.title("Depth map")
 
 
 if __name__ == "__main__":
