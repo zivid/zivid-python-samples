@@ -1,10 +1,10 @@
 """
-This example shows how to convert a Zivid point cloud from a .ZDF file format
-to a .PLY file format.
+Convert ZDF point cloud to PLY file format without Zivid Software.
 """
 
 import numpy as np
 import struct
+from netCDF4 import Dataset
 
 
 def write_ply_binary(fname, pts):
@@ -46,31 +46,32 @@ def write_ply_binary(fname, pts):
             f.write(s)
 
 
-if __name__ == "__main__":
+def _main():
 
-    from netCDF4 import Dataset
+    # The Zivid3D.zdf file has to be in the same folder as this sample script.
+    filename_zdf = "Zivid3D.zdf"
+    filename_ply = "Zivid3D.ply"
 
-    # Reading a .ZDF point cloud. The "Zivid3D.zdf" file has to be in the same folder
-    # as the "ZDF2PLY" file.
-    FilenameZDF = "Zivid3D.zdf"
-    FilenamePLY = "Zivid3D.ply"
-    data = Dataset(FilenameZDF)
+    print(f"Reading {filename_zdf} point cloud")
+    with Dataset(filename_zdf) as data:
+        # Extracting the point cloud
+        xyz = data["data"]["pointcloud"][:, :, :]
 
-    # Extracting the point cloud
-    xyz = data["data"]["pointcloud"][:, :, :]
+        # Extracting the RGB image
+        rgb = data["data"]["rgba_image"][:, :, :3]
 
-    # Extracting the RGB image
-    image = data["data"]["rgba_image"][:, :, :3]
-
-    # Closing the ZDF file
-    data.close()
-
-    # Disorganizing the point cloud
-    pc = np.dstack([xyz, image])
+    # Getting the point cloud
+    pc = np.dstack([xyz, rgb])
 
     # Replacing nans with zeros
     pc[np.isnan(pc[:, :, 2])] = 0
+
+    # Flattening the point cloud
     pts = pc.reshape(-1, 6)
 
-    # Saving to a .PLY file format
-    write_ply_binary(FilenamePLY, pts)
+    print(f"Saving the frame to {filename_ply}")
+    write_ply_binary(filename_ply, pts)
+
+
+if __name__ == "__main__":
+    _main()
