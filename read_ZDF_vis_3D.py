@@ -28,7 +28,7 @@ def _main():
     # Flattening the point cloud
     pts = pc.reshape(-1, 6)
 
-    # Display the point cloud
+    # Displaying the point cloud
     plotxyzrgb(pts)
 
     # Displaying the RGB image
