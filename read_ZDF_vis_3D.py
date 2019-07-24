@@ -1,7 +1,6 @@
 """
-This example shows how to import a Zivid point cloud from a .ZDF file and
-visualize it using vtk_visualizer (point cloud) and matplotlib (RGB image and
-Depth map).
+Import ZDF point cloud and visualize it using vtk_visualizer (point cloud) and
+matplotlib (RGB image and Depth map).
 """
 
 import zivid
