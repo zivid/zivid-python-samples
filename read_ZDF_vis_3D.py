@@ -45,5 +45,5 @@ def _main():
 
 
 if __name__ == "__main__":
-    # Before running this script run '%gui qt'
+    # Before running this script, run '%gui qt'
     _main()
