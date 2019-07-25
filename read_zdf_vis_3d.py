@@ -1,6 +1,5 @@
 """
-Import ZDF point cloud and visualize it using vtk_visualizer (point cloud) and
-matplotlib (RGB image and Depth map).
+Import ZDF point cloud and visualize it.
 """
 
 import zivid
@@ -28,13 +27,11 @@ def _main():
     # Flattening the point cloud
     pts = pc.reshape(-1, 6)
 
-    # Displaying the point cloud
-    plotxyzrgb(pts)
-
     # Displaying the RGB image
     plt.figure()
     plt.imshow(rgb)
     plt.title("RGB image")
+    plt.show()
 
     # Displaying the Depth Image
     Z = xyz[:, :, 2]
@@ -42,8 +39,13 @@ def _main():
     plt.imshow(Z, vmin=np.nanmin(Z), vmax=np.nanmax(Z), cmap="jet")
     plt.colorbar()
     plt.title("Depth map")
+    plt.show()
+
+    # Displaying the point cloud
+    plotxyzrgb(pts)
 
 
 if __name__ == "__main__":
-    # Before running this script, run '%gui qt'
+    # If running the script from Spyder IDE, first run '%gui qt'
     _main()
+    input("Press Enter to close...")
