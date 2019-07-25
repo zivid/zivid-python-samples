@@ -1,0 +1,16 @@
+[MESSAGES CONTROL]
+disable=bad-continuation,         ######## Disabled because of conflicts with black ########
+        consider-using-enumerate, ######## Temporary disabled ########
+        import-error,
+        invalid-name,
+        missing-docstring,
+        no-name-in-module,
+        redefined-outer-name,
+        too-many-statements,
+        unused-variable,
+        wrong-import-order,
+
+[DESIGN]
+max-args=7
+max-locals=16
+max-returns=9
