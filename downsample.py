@@ -29,12 +29,12 @@ def downsample(xyz, rgb, contrast, dsf):
     [h, w, d] = rgb.shape
 
     if fmod(dsf, 2) != 0 or fmod(h, dsf) or fmod(w, dsf):
-        print(
+        raise ValueError(
             "Downsampling factor - dsf has to have one of the following values: 2, 3, 4, 5, 6."
         )
 
     # Downsampling by sum algorithm
-    # Reshape and sum in first direction
+    # Reshaping and summing in first direction
     sumline = lambda matrix, dsf: (
         np.transpose(
             np.nansum(np.transpose(np.transpose(matrix).reshape(-1, dsf)), 0).reshape(
@@ -43,7 +43,7 @@ def downsample(xyz, rgb, contrast, dsf):
             )
         )
     )
-    # Repeat for second direction
+    # Repeating for second direction
     gridsum = lambda matrix, dsf: (sumline(np.transpose(sumline(matrix, dsf)), dsf))
 
     rgb_new = np.zeros(
@@ -129,5 +129,6 @@ def _main():
 
 
 if __name__ == "__main__":
+    # If running the script from Spyder IDE, first run '%gui qt'
     _main()
     input("Press Enter to close...")
