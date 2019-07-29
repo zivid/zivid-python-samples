@@ -5,7 +5,6 @@ disable=bad-continuation,         ######## Disabled because of conflicts with bl
         invalid-name,
         missing-docstring,
         no-name-in-module,
-        redefined-outer-name,
         too-many-statements,
         unused-variable,
         wrong-import-order,
