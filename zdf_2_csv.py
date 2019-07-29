@@ -2,8 +2,8 @@
 Convert ZDF point cloud to CSV format.
 """
 
-import zivid
 import numpy as np
+import zivid
 
 
 def _main():
