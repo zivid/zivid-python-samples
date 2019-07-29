@@ -14,6 +14,7 @@ apt-yes dist-upgrade || exit $?
 
 apt-yes install \
     python3-dev \
+    cmake \
     python3-venv \
     python3-pip \
     alien \
