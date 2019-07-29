@@ -8,7 +8,6 @@ disable=bad-continuation,         ######## Disabled because of conflicts with bl
         redefined-outer-name,
         too-many-statements,
         unused-variable,
-        wrong-import-order,
 
 [DESIGN]
 max-args=7
