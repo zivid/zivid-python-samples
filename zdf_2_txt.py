@@ -20,7 +20,15 @@ def _main():
     # Getting the point cloud
     point_cloud = frame.get_point_cloud()
     point_cloud = np.dstack(
-        [point_cloud["x"], point_cloud["y"], point_cloud["z"], point_cloud["r"], point_cloud["g"], point_cloud["b"], point_cloud["contrast"]]
+        [
+            point_cloud["x"],
+            point_cloud["y"],
+            point_cloud["z"],
+            point_cloud["r"],
+            point_cloud["g"],
+            point_cloud["b"],
+            point_cloud["contrast"],
+        ]
     )
     # Flattening the point cloud
     flattened_point_cloud = point_cloud.reshape(-1, 7)
@@ -29,7 +37,9 @@ def _main():
     # flattened_point_cloud = point_cloud.reshape(-1,3)
 
     # Removing nans
-    flattened_point_cloud = flattened_point_cloud[~np.isnan(flattened_point_cloud[:, 0]), :]
+    flattened_point_cloud = flattened_point_cloud[
+        ~np.isnan(flattened_point_cloud[:, 0]), :
+    ]
 
     print(f"Saving the frame to {filename_txt}")
     np.savetxt(filename_txt, flattened_point_cloud, delimiter=",", fmt="%.3f")
