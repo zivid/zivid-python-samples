@@ -18,21 +18,21 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    pc = frame.get_point_cloud()
-    pc = np.dstack(
-        [pc["x"], pc["y"], pc["z"], pc["r"], pc["g"], pc["b"], pc["contrast"]]
+    point_cloud = frame.get_point_cloud()
+    point_cloud = np.dstack(
+        [point_cloud["x"], point_cloud["y"], point_cloud["z"], point_cloud["r"], point_cloud["g"], point_cloud["b"], point_cloud["contrast"]]
     )
     # Flattening the point cloud
-    pts = pc.reshape(-1, 7)
+    flattened_point_cloud = point_cloud.reshape(-1, 7)
     # Just the points without color and contrast
-    # pc = np.dstack([pc['x'],pc['y'],pc['z']])
-    # pts = pc.reshape(-1,3)
+    # point_cloud = np.dstack([point_cloud['x'],point_cloud['y'],point_cloud['z']])
+    # flattened_point_cloud = point_cloud.reshape(-1,3)
 
     # Removing nans
-    pts = pts[~np.isnan(pts[:, 0]), :]
+    flattened_point_cloud = flattened_point_cloud[~np.isnan(flattened_point_cloud[:, 0]), :]
 
     print(f"Saving the frame to {filename_txt}")
-    np.savetxt(filename_txt, pts, delimiter=",", fmt="%.3f")
+    np.savetxt(filename_txt, flattened_point_cloud, delimiter=",", fmt="%.3f")
 
 
 if __name__ == "__main__":

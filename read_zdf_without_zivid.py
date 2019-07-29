@@ -28,8 +28,7 @@ def _main():
     plt.show()
 
     # Displaying the Depth Image
-    Z = xyz[:, :, 2]
-    plt.imshow(Z, vmin=np.nanmin(Z), vmax=np.nanmax(Z), cmap="jet")
+    plt.imshow(xyz[:, :, 2], vmin=np.nanmin(xyz[:, :, 2]), vmax=np.nanmax(xyz[:, :, 2]), cmap="jet")
     plt.colorbar()
     plt.show()
 
