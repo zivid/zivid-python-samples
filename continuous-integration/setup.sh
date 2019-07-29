@@ -13,8 +13,10 @@ apt-yes update || exit $?
 apt-yes dist-upgrade || exit $?
 
 apt-yes install \
+    python3-dev \
+    python3-venv \
     python3-pip \
-	alien \
+    alien \
     wget \
     || exit $?
 function install_opencl_cpu_runtime {
