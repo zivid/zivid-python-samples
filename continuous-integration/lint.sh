@@ -3,10 +3,15 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
 
+VENV=$(mktemp --tmpdir --directory zivid-python-samples-lint-venv-XXXX) || exit $?
+python -m venv "$VENV" || exit $?
+source $VENV/bin/activate || exit $?
+
 pythonFiles=$(find "$ROOT_DIR" -name '*.py')
 
 echo Installing requirements
 pip install -r "$SCRIPT_DIR/requirements.txt" || exit $?
+pip install -r "$ROOT_DIR/requirements.txt" || exit $?
 
 echo Running black on:
 echo "$pythonFiles"

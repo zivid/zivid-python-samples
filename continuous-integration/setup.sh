@@ -50,12 +50,4 @@ function install_www_deb {
 install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.4.0+956f554d-12/u18/telicam-sdk_2.0.0.1-1_amd64.deb || exit $?
 install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.4.0+956f554d-12/u18/zivid_1.4.0+956f554d-12_amd64.deb || exit $?
 
-VENV=$(mktemp --tmpdir --directory zivid-python-samples-venv-XXXX) || exit $?
-python -m venv "$VENV" || exit $?
-source $VENV/bin/activate || exit $?
-
-pip install --upgrade pip || exit $?
-
-pip install -r "$ROOT_DIR/requirements.txt" || exit $?
-
 echo Success! ["$(basename $0)"]
