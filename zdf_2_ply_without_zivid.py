@@ -8,6 +8,9 @@ from netCDF4 import Dataset
 
 
 def write_ply_binary(fname, pts):
+    """
+    Function for writing PLY point cloud.
+    """
 
     with open(fname, "wb") as file_pointer:
         line = "ply\n"
