@@ -10,8 +10,8 @@ source $VENV/bin/activate || exit $?
 pythonFiles=$(find "$ROOT_DIR" -name '*.py')
 
 echo Installing requirements
-pip install -r "$SCRIPT_DIR/requirements.txt" || exit $?
 pip install -r "$ROOT_DIR/requirements.txt" || exit $?
+pip install -r "$SCRIPT_DIR/requirements.txt" || exit $?
 
 echo Running black on:
 echo "$pythonFiles"
