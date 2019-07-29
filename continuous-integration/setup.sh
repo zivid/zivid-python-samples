@@ -13,15 +13,16 @@ apt-yes update || exit $?
 apt-yes dist-upgrade || exit $?
 
 apt-yes install \
-    python3-dev \
-    cmake \
+    alien \
     g++ \
+    python3-dev \
     python3-venv \
     python3-pip \
-    alien \
     wget \
     || exit $?
 
+update-alternatives --install /usr/bin/python python /usr/bin/python3 0 || exit $?
+update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 0 || exit $?
 
 function install_opencl_cpu_runtime {
     TMP_DIR=$(mktemp --tmpdir --directory zivid-setup-opencl-cpu-XXXX) || exit $?
@@ -34,6 +35,7 @@ function install_opencl_cpu_runtime {
     popd || exit $?
     rm -r $TMP_DIR || exit $?
 }
+
 install_opencl_cpu_runtime || exit $?
 
 function install_www_deb {
@@ -45,12 +47,15 @@ function install_www_deb {
     rm -r $TMP_DIR || exit $?
 }
 
-install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.3.0+bb9ee328-10/u18/telicam-sdk_2.0.0.1-1_amd64.deb || exit $?
-install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.3.0+bb9ee328-10/u18/zivid_1.3.0+bb9ee328-10_amd64.deb || exit $?
+install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.4.0+956f554d-12/u18/telicam-sdk_2.0.0.1-1_amd64.deb || exit $?
+install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.4.0+956f554d-12/u18/zivid_1.4.0+956f554d-12_amd64.deb || exit $?
 
-pip3 install --upgrade pip || exit $?
+VENV=$(mktemp --tmpdir --directory zivid-python-samples-venv-XXXX) || exit $?
+python -m venv "$VENV" || exit $?
+source $VENV/bin/activate || exit $?
 
-pip3 install -r $SCRIPT_DIR/requirements.txt || exit $?
-pip3 install -r $ROOT_DIR/requirements.txt || exit $?
+pip install --upgrade pip || exit $?
+
+pip install -r "$ROOT_DIR/requirements.txt" || exit $?
 
 echo Success! ["$(basename $0)"]

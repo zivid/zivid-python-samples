@@ -2,3 +2,7 @@ black
 flake8
 pylint
 scikit-build==0.10.0
+numpy
+netCDF4
+matplotlib
+zivid

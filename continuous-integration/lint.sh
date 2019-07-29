@@ -5,6 +5,9 @@ ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
 
 pythonFiles=$(find "$ROOT_DIR" -name '*.py')
 
+echo Installing requirements
+pip install -r "$SCRIPT_DIR/requirements.txt" || exit $?
+
 echo Running black on:
 echo "$pythonFiles"
 black --check --diff $pythonFiles || exit $?
@@ -16,6 +19,5 @@ flake8 --config="$ROOT_DIR/.flake8" $pythonFiles || exit $?
 echo Running pylint on:
 echo "$pythonFiles"
 pylint -j 0 --rcfile "$ROOT_DIR/.pylintrc" $pythonFiles || exit $?
-
 
 echo Success! ["$(basename $0)"]
