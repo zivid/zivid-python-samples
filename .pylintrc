@@ -1,7 +1,6 @@
 [MESSAGES CONTROL]
 disable=bad-continuation,         ######## Disabled because of conflicts with black ########
         consider-using-enumerate, ######## Temporary disabled ########
-        import-error,
         missing-docstring,
         no-name-in-module,
         redefined-outer-name,
