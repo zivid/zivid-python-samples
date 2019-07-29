@@ -15,11 +15,14 @@ apt-yes dist-upgrade || exit $?
 apt-yes install \
     python3-dev \
     cmake \
+    g++ \
     python3-venv \
     python3-pip \
     alien \
     wget \
     || exit $?
+
+
 function install_opencl_cpu_runtime {
     TMP_DIR=$(mktemp --tmpdir --directory zivid-setup-opencl-cpu-XXXX) || exit $?
     pushd $TMP_DIR || exit $?
@@ -44,6 +47,8 @@ function install_www_deb {
 
 install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.3.0+bb9ee328-10/u18/telicam-sdk_2.0.0.1-1_amd64.deb || exit $?
 install_www_deb https://www.zivid.com/hubfs/softwarefiles/releases/1.3.0+bb9ee328-10/u18/zivid_1.3.0+bb9ee328-10_amd64.deb || exit $?
+
+pip3 install --upgrade pip || exit $?
 
 pip3 install -r $SCRIPT_DIR/requirements.txt || exit $?
 pip3 install -r $ROOT_DIR/requirements.txt || exit $?
