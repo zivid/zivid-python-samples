@@ -6,8 +6,8 @@ demonstrate the possibility to have access to both individual frames and the
 resulting HDR frame.
 """
 
-import zivid
 import datetime
+import zivid
 
 
 def capture(camera, settings):
