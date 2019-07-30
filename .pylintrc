@@ -3,7 +3,6 @@ disable=bad-continuation,         ######## Disabled because of conflicts with bl
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
         no-name-in-module,
-        redefined-outer-name,
         too-many-statements,
         unused-variable,
         wrong-import-order,
