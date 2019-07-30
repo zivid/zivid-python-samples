@@ -8,32 +8,35 @@ from netCDF4 import Dataset
 
 
 def write_ply_binary(fname, pts):
+    """
+    Function for writing PLY point cloud.
+    """
 
-    with open(fname, "wb") as f:
+    with open(fname, "wb") as file_pointer:
         line = "ply\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "format binary_little_endian 1.0\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "element vertex %d\n"
-        f.write(line.encode("utf-8") % pts.shape[0])
+        file_pointer.write(line.encode("utf-8") % pts.shape[0])
         line = "property float x\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "property float y\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "property float z\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "property uchar red\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "property uchar green\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "property uchar blue\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
         line = "end_header\n"
-        f.write(line.encode("utf-8"))
+        file_pointer.write(line.encode("utf-8"))
 
         for i in range(len(pts)):
 
-            s = struct.pack(
+            data = struct.pack(
                 "<fffBBB",
                 pts[i, 0],
                 pts[i, 1],
@@ -43,7 +46,7 @@ def write_ply_binary(fname, pts):
                 np.uint8(pts[i, 5]),
             )
 
-            f.write(s)
+            file_pointer.write(data)
 
 
 def _main():
@@ -61,16 +64,16 @@ def _main():
         rgb = data["data"]["rgba_image"][:, :, :3]
 
     # Getting the point cloud
-    pc = np.dstack([xyz, rgb])
+    point_cloud = np.dstack([xyz, rgb])
 
     # Replacing nans with zeros
-    pc[np.isnan(pc[:, :, 2])] = 0
+    point_cloud[np.isnan(point_cloud[:, :, 2])] = 0
 
     # Flattening the point cloud
-    pts = pc.reshape(-1, 6)
+    flattened_point_cloud = point_cloud.reshape(-1, 6)
 
     print(f"Saving the frame to {filename_ply}")
-    write_ply_binary(filename_ply, pts)
+    write_ply_binary(filename_ply, flattened_point_cloud)
 
 
 if __name__ == "__main__":

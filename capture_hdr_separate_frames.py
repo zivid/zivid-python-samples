@@ -11,6 +11,9 @@ import datetime
 
 
 def capture(camera, settings):
+    """
+    Function for capturing a Zivid frame with given settings.
+    """
     camera.settings = settings
     return camera.capture()
 
