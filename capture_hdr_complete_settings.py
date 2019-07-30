@@ -6,8 +6,8 @@ settings work for most scenes. The purpose of this example is to demonstrate
 how to configure all the settings.
 """
 
-import zivid
 import datetime
+import zivid
 
 
 def _main():

@@ -2,8 +2,8 @@
 Import ZDF point cloud.
 """
 
-import zivid
 import numpy as np
+import zivid
 
 
 def _main():
@@ -17,9 +17,9 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    pc = frame.get_point_cloud()
-    xyz = np.dstack([pc["x"], pc["y"], pc["z"]])
-    rgb = np.dstack([pc["r"], pc["g"], pc["b"]])
+    point_cloud = frame.get_point_cloud()
+    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
+    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
 
 
 if __name__ == "__main__":

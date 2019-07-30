@@ -24,18 +24,20 @@ def _main():
         contrast = data["data"]["contrast"][:, :]
 
     # Getting the point cloud
-    pc = np.dstack([xyz, rgb, contrast])
+    point_cloud = np.dstack([xyz, rgb, contrast])
     # Flattening the point cloud
-    pts = pc.reshape(-1, 7)
+    flattened_point_cloud = point_cloud.reshape(-1, 7)
     # Just the points without color and contrast
-    # pc = np.dstack([xyz])
-    # pts = pc.reshape(-1,3)
+    # point_cloud = np.dstack([xyz])
+    # flattened_point_cloud = point_cloud.reshape(-1,3)
 
     # Removing nans
-    pts = pts[~np.isnan(pts[:, 0]), :]
+    flattened_point_cloud = flattened_point_cloud[
+        ~np.isnan(flattened_point_cloud[:, 0]), :
+    ]
 
     print(f"Saving the frame to {filename_csv}")
-    np.savetxt(filename_csv, pts, delimiter=",", fmt="%.3f")
+    np.savetxt(filename_csv, flattened_point_cloud, delimiter=",", fmt="%.3f")
 
 
 if __name__ == "__main__":

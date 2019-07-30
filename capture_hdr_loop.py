@@ -2,8 +2,8 @@
 Capture HDR frames in a loop (while actively changing some HDR settings).
 """
 
-import zivid
 import datetime
+import zivid
 
 
 def _main():

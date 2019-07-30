@@ -6,11 +6,14 @@ demonstrate the possibility to have access to both individual frames and the
 resulting HDR frame.
 """
 
-import zivid
 import datetime
+import zivid
 
 
 def capture(camera, settings):
+    """
+    Function for capturing a Zivid frame with given settings.
+    """
     camera.settings = settings
     return camera.capture()
 
