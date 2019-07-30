@@ -5,11 +5,19 @@
 This repository contains **Python** code samples for **Zivid**.
 
 ## Samples list
-
-- **ReadZDF** - This example shows how to import and display a Zivid point cloud from a .ZDF file.
-- **ZDF2PLY** - This example shows how to convert a Zivid point cloud from a .ZDF file format to a .PLY file format.
-- **ZDF2CSV** - This example shows how to convert a Zivid point cloud from a .ZDF file format to a .CSV file format.
-- **ZDF2TXT** - This example shows how to convert a Zivid point cloud from a .ZDF file format to a .TXT file format.
+- **capture_hdr_complete_settings** - Capture an HDR frame with fully configured settings for each frame.
+- **capture_hdr_loop** - Capture HDR frames in a loop (while actively changing some HDR settings).
+- **capture_hdr_separate_frames** - Capture several individual frames and merge them into one HDR frame.
+- **capture_save_ply** - Capture a ZDF point cloud and save it to PLY file format.
+- **connect_to_serial_number_camera** - Connect to a specific Zivid camera based on its serial number.
+- **read_zdf** - Import ZDF point cloud.
+- **read_zdf_without_zivid** - Import ZDF point cloud without Zivid Software.
+- **zdf_2_csv** - Convert ZDF point cloud to CSV format.
+- **zdf_2_csv_without_zivid** - Convert ZDF point cloud to CSV format without Zivid Software.
+- **zdf_2_ply** - Convert ZDF point cloud to PLY file format.
+- **zdf_2_ply_without_zivid** - Convert ZDF point cloud to PLY file format without Zivid Software.
+- **zdf_2_txt** - Convert ZDF point cloud to TXT format.
+- **zdf_2_txt_without_zivid** - Convert ZDF point cloud to TXT format without Zivid Software.
 
 ## Instructions
 
