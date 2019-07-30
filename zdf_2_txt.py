@@ -2,8 +2,8 @@
 Convert ZDF point cloud to TXT format.
 """
 
-import zivid
 import numpy as np
+import zivid
 
 
 def _main():

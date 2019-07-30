@@ -2,8 +2,8 @@
 Import ZDF point cloud.
 """
 
-import zivid
 import numpy as np
+import zivid
 
 
 def _main():

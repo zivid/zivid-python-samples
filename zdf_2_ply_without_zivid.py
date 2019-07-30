@@ -2,8 +2,8 @@
 Convert ZDF point cloud to PLY file format without Zivid Software.
 """
 
-import numpy as np
 import struct
+import numpy as np
 from netCDF4 import Dataset
 
 
