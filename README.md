@@ -4,7 +4,7 @@
 
 This repository contains additional **Python** code samples for **Zivid**.
 
-The basic samples come with Zivid Python.
+The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-python).
 
 ## Samples list
 - **capture_hdr_complete_settings** - Capture an HDR frame with fully configured settings for each frame.
@@ -28,7 +28,7 @@ Note: The version tested with Zivid cameras is 1.2.0.
 
 2. Install [**Zivid Python](https://github.com/zivid/zivid-python)
 
-3. Launch your Python IDE. Read our instructions on [setting up Python](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
+3. Launch your Python IDE. Read our instructions on [**setting up Python**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
 
 4. Install the runtime requirements using IDE or command line
 
