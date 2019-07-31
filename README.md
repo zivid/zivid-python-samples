@@ -26,7 +26,7 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 1. [**Install Zivid Software**](https://www.zivid.com/downloads)
 Note: The version tested with Zivid cameras is 1.2.0.
 
-2. Install [**Zivid Python**](https://github.com/zivid/zivid-python).
+2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
 
 3. Launch your Python IDE. Read our instructions on [**setting up Python**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
 
