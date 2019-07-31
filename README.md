@@ -23,7 +23,7 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 
 ## Instructions
 
-1. [**Install Zivid Software**](https://www.zivid.com/downloads)
+1. [**Install Zivid Software**](https://www.zivid.com/downloads).
 Note: The version tested with Zivid cameras is 1.2.0.
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
