@@ -4,7 +4,7 @@
 
 This repository contains additional **Python** code samples for **Zivid**.
 
-The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-python).
+The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-python) - the official Python package for Zivid 3D cameras.
 
 ## Samples list
 - **capture_hdr_complete_settings** - Capture an HDR frame with fully configured settings for each frame.
