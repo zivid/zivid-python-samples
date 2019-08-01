@@ -46,9 +46,9 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     [height, width, dimension] = rgb.shape
 
     if (
-        fmod(downsampling_factor, 2) != 0 or
-        fmod(height, downsampling_factor) or
-        fmod(width, downsampling_factor)
+        fmod(downsampling_factor, 2) != 0
+        or fmod(height, downsampling_factor)
+        or fmod(width, downsampling_factor)
     ):
         raise ValueError(
             "Downsampling factor - downsampling_factor has to have one of the following values: 2, 3, 4, 5, 6."
@@ -64,8 +64,8 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     )
     for i in range(3):
         rgb_new[:, :, i] = (
-            (np.transpose(gridsum(rgb[:, :, i], downsampling_factor))) /
-            (downsampling_factor * downsampling_factor)
+            (np.transpose(gridsum(rgb[:, :, i], downsampling_factor)))
+            / (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
     contrast[np.isnan(xyz[:, :, 2])] = 0
