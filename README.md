@@ -7,19 +7,19 @@ This repository contains additional **Python** code samples for **Zivid**.
 The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-python) - the official Python package for Zivid 3D cameras.
 
 ## Samples list
-- [**capture_hdr_complete_settings**](https://github.com/zivid/python-samples/blob/master/capture_hdr_complete_settings.py) - Capture an HDR frame with fully configured settings for each frame.
-- [**capture_hdr_loop**](https://github.com/zivid/python-samples/blob/master/capture_hdr_loop.py) - Capture HDR frames in a loop (while actively changing some HDR settings).
-- [**capture_hdr_separate_frames**](https://github.com/zivid/python-samples/blob/master/capture_hdr_separate_frames.py) - Capture several individual frames and merge them into one HDR frame.
-- [**capture_save_ply**](https://github.com/zivid/python-samples/blob/master/capture_save_ply.py) - Capture a ZDF point cloud and save it to PLY file format.
-- [**connect_to_serial_number_camera**](https://github.com/zivid/python-samples/blob/master/connect_to_serial_number_camera.py) - Connect to a specific Zivid camera based on its serial number.
-- [**read_zdf**](https://github.com/zivid/python-samples/blob/master/read_zdf.py) - Import ZDF point cloud.
-- [**read_zdf_without_zivid**](https://github.com/zivid/python-samples/blob/master/read_zdf_without_zivid.py) - Import ZDF point cloud without Zivid Software.
-- [**zdf_2_csv**](https://github.com/zivid/python-samples/blob/master/zdf_2_csv.py) - Convert ZDF point cloud to CSV format.
-- [**zdf_2_csv_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_csv_without_zivid.py) - Convert ZDF point cloud to CSV format without Zivid Software.
-- [**zdf_2_ply**](https://github.com/zivid/python-samples/blob/master/zdf_2_ply.py) - Convert ZDF point cloud to PLY file format.
-- [**zdf_2_ply_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_ply_without_zivid.py) - Convert ZDF point cloud to PLY file format without Zivid Software.
-- [**zdf_2_txt**](https://github.com/zivid/python-samples/blob/master/zdf_2_txt.py) - Convert ZDF point cloud to TXT format.
-- [**zdf_2_txt_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_txt_without_zivid.py) - Convert ZDF point cloud to TXT format without Zivid Software.
+- [**capture_hdr_complete_settings**](capture_hdr_complete_settings.py) - Capture an HDR frame with fully configured settings for each frame.
+- [**capture_hdr_loop**](capture_hdr_loop.py) - Capture HDR frames in a loop (while actively changing some HDR settings).
+- [**capture_hdr_separate_frames**](capture_hdr_separate_frames.py) - Capture several individual frames and merge them into one HDR frame.
+- [**capture_save_ply**](capture_save_ply.py) - Capture a ZDF point cloud and save it to PLY file format.
+- [**connect_to_serial_number_camera**](connect_to_serial_number_camera.py) - Connect to a specific Zivid camera based on its serial number.
+- [**read_zdf**](read_zdf.py) - Import ZDF point cloud.
+- [**read_zdf_without_zivid**](read_zdf_without_zivid.py) - Import ZDF point cloud without Zivid Software.
+- [**zdf_2_csv**](zdf_2_csv.py) - Convert ZDF point cloud to CSV format.
+- [**zdf_2_csv_without_zivid**](zdf_2_csv_without_zivid.py) - Convert ZDF point cloud to CSV format without Zivid Software.
+- [**zdf_2_ply**](zdf_2_ply.py) - Convert ZDF point cloud to PLY file format.
+- [**zdf_2_ply_without_zivid**](zdf_2_ply_without_zivid.py) - Convert ZDF point cloud to PLY file format without Zivid Software.
+- [**zdf_2_txt**](zdf_2_txt.py) - Convert ZDF point cloud to TXT format.
+- [**zdf_2_txt_without_zivid**](zdf_2_txt_without_zivid.py) - Convert ZDF point cloud to TXT format without Zivid Software.
 
 ## Instructions
 
