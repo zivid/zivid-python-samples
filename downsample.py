@@ -49,7 +49,7 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     """
 
     # Checking if downsampling_factor is ok
-    [height, width, dimension] = rgb.shape
+    [height, width, _] = rgb.shape
 
     if (
         fmod(downsampling_factor, 2) != 0
