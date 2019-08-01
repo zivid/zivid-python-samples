@@ -24,8 +24,9 @@ def _main():
         contrast = data["data"]["contrast"][:, :]
 
     # Displaying the RGB image
+    plt.figure()
     plt.imshow(rgb)
-    plt.show()
+    plt.title("RGB image")
 
     # Displaying the Depth Image
     plt.imshow(
@@ -35,7 +36,7 @@ def _main():
         cmap="jet",
     )
     plt.colorbar()
-    plt.show()
+    plt.title("Depth map")
 
 
 if __name__ == "__main__":
