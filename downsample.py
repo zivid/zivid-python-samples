@@ -71,29 +71,29 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     contrast[np.isnan(xyz[:, :, 2])] = 0
     contrast_weight = gridsum(contrast[:, :, 0], downsampling_factor)
 
-    x = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
-    y = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
-    z = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
+    x_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
+    y_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
+    z_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
 
-    x[:, :, 0] = xyz[:, :, 0]
-    y[:, :, 0] = xyz[:, :, 1]
-    z[:, :, 0] = xyz[:, :, 2]
+    x_initial[:, :, 0] = xyz[:, :, 0]
+    y_initial[:, :, 0] = xyz[:, :, 1]
+    z_initial[:, :, 0] = xyz[:, :, 2]
 
     x_new = np.transpose(
         np.divide(
-            gridsum((np.multiply(x, contrast))[:, :, 0], downsampling_factor),
+            gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor),
             contrast_weight,
         )
     )
     y_new = np.transpose(
         np.divide(
-            gridsum((np.multiply(y, contrast))[:, :, 0], downsampling_factor),
+            gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor),
             contrast_weight,
         )
     )
     z_new = np.transpose(
         np.divide(
-            gridsum((np.multiply(z, contrast))[:, :, 0], downsampling_factor),
+            gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor),
             contrast_weight,
         )
     )
