@@ -2,9 +2,9 @@
 Import ZDF point cloud and visualize it.
 """
 
-import zivid
 import numpy as np
 import matplotlib.pyplot as plt
+import zivid
 from vtk_visualizer import plotxyzrgb
 
 
