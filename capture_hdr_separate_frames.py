@@ -13,6 +13,14 @@ import zivid
 def capture(camera, settings):
     """
     Function for capturing a Zivid frame with given settings.
+
+    Args:
+        camera: Zivid camera
+        settings: Settings to be used for capture
+
+    Returns:
+        Frame
+
     """
     camera.settings = settings
     return camera.capture()

@@ -17,5 +17,8 @@ echo Running pylint on:
 echo "$pythonFiles"
 pylint -j 0 --rcfile "$ROOT_DIR/.pylintrc" $pythonFiles || exit $?
 
+echo Running darglint on:
+echo "$pythonFiles"
+darglint $pythonFiles || exit $?
 
 echo Success! ["$(basename $0)"]
