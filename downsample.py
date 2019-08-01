@@ -9,16 +9,16 @@ import zivid
 from vtk_visualizer import plotxyzrgb
 
 
-def gridsum(matrix, downsampling_factor):
+def _gridsum(matrix, downsampling_factor):
     """
     Reshape and sum in second direction
     """
-    return sumline(
-        np.transpose(sumline(matrix, downsampling_factor)), downsampling_factor
+    return _sumline(
+        np.transpose(_sumline(matrix, downsampling_factor)), downsampling_factor
     )
 
 
-def sumline(matrix, downsampling_factor):
+def _sumline(matrix, downsampling_factor):
     """
     Reshape and sum in first direction
     """
@@ -32,7 +32,7 @@ def sumline(matrix, downsampling_factor):
     )
 
 
-def downsample(xyz, rgb, contrast, downsampling_factor):
+def _downsample(xyz, rgb, contrast, downsampling_factor):
     """
     Function for downsampling a Zivid point cloud
     INPUT:
@@ -69,12 +69,12 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     )
     for i in range(3):
         rgb_new[:, :, i] = (
-            (np.transpose(gridsum(rgb[:, :, i], downsampling_factor)))
+            (np.transpose(_gridsum(rgb[:, :, i], downsampling_factor)))
             / (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
     contrast[np.isnan(xyz[:, :, 2])] = 0
-    contrast_weight = gridsum(contrast[:, :, 0], downsampling_factor)
+    contrast_weight = _gridsum(contrast[:, :, 0], downsampling_factor)
 
     x_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
     y_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
@@ -86,19 +86,19 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
 
     x_new = np.transpose(
         np.divide(
-            gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor),
+            _gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor),
             contrast_weight,
         )
     )
     y_new = np.transpose(
         np.divide(
-            gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor),
+            _gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor),
             contrast_weight,
         )
     )
     z_new = np.transpose(
         np.divide(
-            gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor),
+            _gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor),
             contrast_weight,
         )
     )
@@ -126,7 +126,7 @@ def _main():
 
     # Downsampling the point cloud
     downsampling_factor = 4
-    [xyz_new, rgb_new] = downsample(xyz, rgb, contrast, downsampling_factor)
+    [xyz_new, rgb_new] = _downsample(xyz, rgb, contrast, downsampling_factor)
 
     # Getting the point cloud
     point_cloud = np.dstack([xyz_new, rgb_new])
