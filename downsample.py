@@ -49,12 +49,11 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     """
 
     # Checking if downsampling_factor is ok
-    [height, width, _] = rgb.shape
 
     if (
         fmod(downsampling_factor, 2) != 0
-        or fmod(height, downsampling_factor)
-        or fmod(width, downsampling_factor)
+        or fmod(rgb.shape[0], downsampling_factor)
+        or fmod(rgb.shape[1], downsampling_factor)
     ):
         raise ValueError(
             "Downsampling factor has to have one of the following values: 2, 3, 4, 5, 6."
