@@ -2,20 +2,26 @@
 Import ZDF point cloud and downsample it.
 """
 
-import zivid
-import numpy as np
 from math import fmod
+import numpy as np
 import matplotlib.pyplot as plt
+import zivid
 from vtk_visualizer import plotxyzrgb
 
 
 def gridsum(matrix, downsampling_factor):
+    """
+    Reshape and sum in second direction
+    """
     return sumline(
         np.transpose(sumline(matrix, downsampling_factor)), downsampling_factor
     )
 
 
 def sumline(matrix, downsampling_factor):
+    """
+    Reshape and sum in first direction
+    """
     return np.transpose(
         np.nansum(
             np.transpose(np.transpose(matrix).reshape(-1, downsampling_factor)), 0
