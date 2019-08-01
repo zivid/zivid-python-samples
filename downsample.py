@@ -8,15 +8,27 @@ from math import fmod
 import matplotlib.pyplot as plt
 from vtk_visualizer import plotxyzrgb
 
+def gridsum(matrix,downsampling_factor):
+    return sumline(np.transpose(sumline(matrix, downsampling_factor)), downsampling_factor)
+    
+    
+def sumline(matrix,downsampling_factor):
+    return np.transpose(
+            np.nansum(np.transpose(np.transpose(matrix).reshape(-1, downsampling_factor)), 0).reshape(
+                int(np.shape(np.transpose(matrix))[0]),
+                int(np.shape(np.transpose(matrix))[1] / downsampling_factor),
+            )
+        )
+    
 
-def downsample(xyz, rgb, contrast, dsf):
+def downsample(xyz, rgb, contrast, downsampling_factor):
     # Function for downsampling a Zivid point cloud
     #
     # INPUT:
     # xyz - point cloud
     # image - color image
-    # contrast - Contrast image
-    # dsf - Downsampling factor (values: 1,2,3,4,5,6) is the denominator of a
+    # contrast - contrast image
+    # downsampling_factor - (values: 2,3,4,5,6) the denominator of a
     # fraction that represents the size of the downsampled point cloud relative
     # to the original point cloud, e.g. 2 - one-half, 3 - one-third,
     # 4 one-quarter, etc.
@@ -25,37 +37,24 @@ def downsample(xyz, rgb, contrast, dsf):
     # xyz_new - Downsampled point cloud
     # image_new - Downsampled color image
 
-    # Checking if dsf is ok
-    [h, w, d] = rgb.shape
+    # Checking if downsampling_factor is ok
+    [height, width, dimension] = rgb.shape
 
-    if fmod(dsf, 2) != 0 or fmod(h, dsf) or fmod(w, dsf):
+    if fmod(downsampling_factor, 2) != 0 or fmod(height, downsampling_factor) or fmod(width, downsampling_factor):
         raise ValueError(
-            "Downsampling factor - dsf has to have one of the following values: 2, 3, 4, 5, 6."
+            "Downsampling factor - downsampling_factor has to have one of the following values: 2, 3, 4, 5, 6."
         )
-
-    # Downsampling by sum algorithm
-    # Reshaping and summing in first direction
-    sumline = lambda matrix, dsf: (
-        np.transpose(
-            np.nansum(np.transpose(np.transpose(matrix).reshape(-1, dsf)), 0).reshape(
-                int(np.shape(np.transpose(matrix))[0]),
-                int(np.shape(np.transpose(matrix))[1] / dsf),
-            )
-        )
-    )
-    # Repeating for second direction
-    gridsum = lambda matrix, dsf: (sumline(np.transpose(sumline(matrix, dsf)), dsf))
 
     rgb_new = np.zeros(
-        (int(rgb.shape[0] / dsf), int(rgb.shape[1] / dsf), 3), dtype=np.uint8
+        (int(rgb.shape[0] / downsampling_factor), int(rgb.shape[1] / downsampling_factor), 3), dtype=np.uint8
     )
     for i in range(3):
         rgb_new[:, :, i] = (
-            (np.transpose(gridsum(rgb[:, :, i], dsf))) / (dsf * dsf)
+            (np.transpose(gridsum(rgb[:, :, i], downsampling_factor))) / (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
     contrast[np.isnan(xyz[:, :, 2])] = 0
-    contrast_weight = gridsum(contrast[:, :, 0], dsf)
+    contrast_weight = gridsum(contrast[:, :, 0], downsampling_factor)
 
     x = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
     y = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
@@ -66,13 +65,13 @@ def downsample(xyz, rgb, contrast, dsf):
     z[:, :, 0] = xyz[:, :, 2]
 
     x_new = np.transpose(
-        np.divide(gridsum((np.multiply(x, contrast))[:, :, 0], dsf), contrast_weight)
+        np.divide(gridsum((np.multiply(x, contrast))[:, :, 0], downsampling_factor), contrast_weight)
     )
     y_new = np.transpose(
-        np.divide(gridsum((np.multiply(y, contrast))[:, :, 0], dsf), contrast_weight)
+        np.divide(gridsum((np.multiply(y, contrast))[:, :, 0], downsampling_factor), contrast_weight)
     )
     z_new = np.transpose(
-        np.divide(gridsum((np.multiply(z, contrast))[:, :, 0], dsf), contrast_weight)
+        np.divide(gridsum((np.multiply(z, contrast))[:, :, 0], downsampling_factor), contrast_weight)
     )
 
     xyz_new = np.dstack([x_new, y_new, z_new])
@@ -97,8 +96,8 @@ def _main():
     contrast = np.dstack([pc["contrast"]])
 
     # Downsampling the point cloud
-    dsf = 1
-    [xyz_new, rgb_new] = downsample(xyz, rgb, contrast, dsf)
+    downsampling_factor = 4
+    [xyz_new, rgb_new] = downsample(xyz, rgb, contrast, downsampling_factor)
 
     # Getting the point cloud
     pc = np.dstack([xyz_new, rgb_new])
