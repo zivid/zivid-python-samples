@@ -64,8 +64,8 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
     )
     for i in range(3):
         rgb_new[:, :, i] = (
-            (np.transpose(gridsum(rgb[:, :, i], downsampling_factor)))
-            / (downsampling_factor * downsampling_factor)
+            (np.transpose(gridsum(rgb[:, :, i], downsampling_factor))) /
+            (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
     contrast[np.isnan(xyz[:, :, 2])] = 0
