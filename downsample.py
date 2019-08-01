@@ -57,7 +57,7 @@ def downsample(xyz, rgb, contrast, downsampling_factor):
         or fmod(width, downsampling_factor)
     ):
         raise ValueError(
-            "Downsampling factor - downsampling_factor has to have one of the following values: 2, 3, 4, 5, 6."
+            "Downsampling factor has to have one of the following values: 2, 3, 4, 5, 6."
         )
 
     rgb_new = np.zeros(
