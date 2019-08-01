@@ -25,7 +25,7 @@ def _main():
     pc = np.dstack([xyz, rgb])
 
     # Flattening the point cloud
-    pts = pc.reshape(-1, 6)
+    flattened_point_cloud = pc.reshape(-1, 6)
 
     # Displaying the RGB image
     plt.figure()
@@ -33,16 +33,20 @@ def _main():
     plt.title("RGB image")
     plt.show()
 
-    # Displaying the Depth Image
-    Z = xyz[:, :, 2]
+    # Displaying the Depth map
     plt.figure()
-    plt.imshow(Z, vmin=np.nanmin(Z), vmax=np.nanmax(Z), cmap="jet")
+    plt.imshow(
+        xyz[:, :, 2],
+        vmin=np.nanmin(xyz[:, :, 2]),
+        vmax=np.nanmax(xyz[:, :, 2]),
+        cmap="jet",
+    )
     plt.colorbar()
     plt.title("Depth map")
     plt.show()
 
     # Displaying the point cloud
-    plotxyzrgb(pts)
+    plotxyzrgb(flattened_point_cloud)
 
 
 if __name__ == "__main__":
