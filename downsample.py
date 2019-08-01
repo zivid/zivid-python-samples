@@ -33,20 +33,20 @@ def sumline(matrix, downsampling_factor):
 
 
 def downsample(xyz, rgb, contrast, downsampling_factor):
-    # Function for downsampling a Zivid point cloud
-    #
-    # INPUT:
-    # xyz - point cloud
-    # image - color image
-    # contrast - contrast image
-    # downsampling_factor - (values: 2,3,4,5,6) the denominator of a
-    # fraction that represents the size of the downsampled point cloud relative
-    # to the original point cloud, e.g. 2 - one-half, 3 - one-third,
-    # 4 one-quarter, etc.
-    #
-    # OUTPUT:
-    # xyz_new - Downsampled point cloud
-    # image_new - Downsampled color image
+    """
+    Function for downsampling a Zivid point cloud    
+    INPUT:
+    xyz - point cloud
+    image - color image
+    contrast - contrast image
+    downsampling_factor - (values: 2,3,4,5,6) the denominator of a
+    fraction that represents the size of the downsampled point cloud relative
+    to the original point cloud, e.g. 2 - one-half, 3 - one-third,
+    4 one-quarter, etc.    
+    OUTPUT:
+    xyz_new - Downsampled point cloud
+    image_new - Downsampled color image
+    """
 
     # Checking if downsampling_factor is ok
     [height, width, dimension] = rgb.shape
