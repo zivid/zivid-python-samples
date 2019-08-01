@@ -156,8 +156,9 @@ def _main():
     # Displaying the point cloud
     plotxyzrgb(flattened_point_cloud)
 
+    input("Press Enter to close...")
+
 
 if __name__ == "__main__":
     # If running the script from Spyder IDE, first run '%gui qt'
     _main()
-    input("Press Enter to close...")
