@@ -114,20 +114,20 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    pc = frame.get_point_cloud()
-    xyz = np.dstack([pc["x"], pc["y"], pc["z"]])
-    rgb = np.dstack([pc["r"], pc["g"], pc["b"]])
-    contrast = np.dstack([pc["contrast"]])
+    point_cloud = frame.get_point_cloud()
+    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
+    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
+    contrast = np.dstack([point_cloud["contrast"]])
 
     # Downsampling the point cloud
     downsampling_factor = 4
     [xyz_new, rgb_new] = downsample(xyz, rgb, contrast, downsampling_factor)
 
     # Getting the point cloud
-    pc = np.dstack([xyz_new, rgb_new])
+    point_cloud = np.dstack([xyz_new, rgb_new])
 
     # Flattening the point cloud
-    pts = pc.reshape(-1, 6)
+    flattened_point_cloud = point_cloud.reshape(-1, 6)
 
     # Displaying the RGB image
     plt.figure()
@@ -148,7 +148,7 @@ def _main():
     plt.show()
 
     # Displaying the point cloud
-    plotxyzrgb(pts)
+    plotxyzrgb(flattened_point_cloud)
 
 
 if __name__ == "__main__":
