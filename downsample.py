@@ -54,7 +54,7 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
         rgb.shape[1], downsampling_factor
     ):
         raise ValueError(
-            "Downsampling factor has to be divisible by the point cloud width (1920) and height (1200) of the input point cloud, e.g. 2, 3, 4, 5, 6."
+            "Downsampling factor has to be divisible by the point cloud width (1920) and height (1200)."
         )
 
     rgb_new = np.zeros(
