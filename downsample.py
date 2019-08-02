@@ -10,8 +10,16 @@ from vtk_visualizer import plotxyzrgb
 
 
 def _gridsum(matrix, downsampling_factor):
-    """
-    Reshape and sum in second direction
+    """Reshape and sum in second direction.
+
+    Args:
+        matrix: Matrix to be reshaped and summed in second direction.
+        downsampling_factor: the denominator of a fraction that represents the
+            size of the downsampled point cloud relative to the original point
+            cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
+
+    Returns:
+        Matrix reshaped and summed in second direction.
     """
     return _sumline(
         np.transpose(_sumline(matrix, downsampling_factor)), downsampling_factor
@@ -19,8 +27,16 @@ def _gridsum(matrix, downsampling_factor):
 
 
 def _sumline(matrix, downsampling_factor):
-    """
-    Reshape and sum in first direction
+    """Reshape and sum in first direction.
+
+    Args:
+        matrix: Matrix to be reshaped and summed in first direction.
+        downsampling_factor: the denominator of a fraction that represents the
+            size of the downsampled point cloud relative to the original point
+            cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
+
+    Returns:
+        Matrix reshaped and summed in first direction.
     """
     return np.transpose(
         np.nansum(
@@ -33,23 +49,21 @@ def _sumline(matrix, downsampling_factor):
 
 
 def _downsample(xyz, rgb, contrast, downsampling_factor):
-    """
-    Function for downsampling a Zivid point cloud
-    INPUT:
-    xyz - point cloud
-    image - color image
-    contrast - contrast image
-    downsampling_factor - (values: 2,3,4,5,6) the denominator of a
-    fraction that represents the size of the downsampled point cloud relative
-    to the original point cloud, e.g. 2 - one-half, 3 - one-third,
-    4 one-quarter, etc.
-    OUTPUT:
-    xyz_new - Downsampled point cloud
-    image_new - Downsampled color image
+    """Function for downsampling a Zivid point cloud.
+
+    Args:
+        xyz: Point cloud.
+        rgb: Color image.
+        contrast: Contrast image.
+        downsampling_factor: The denominator of a fraction that represents the
+            size of the downsampled point cloud relative to the original point
+            cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
+
+    Returns:
+        Tuple of downsampled point cloud and color image.
     """
 
     # Checking if downsampling_factor is ok
-
     if fmod(rgb.shape[0], downsampling_factor) or fmod(
         rgb.shape[1], downsampling_factor
     ):
