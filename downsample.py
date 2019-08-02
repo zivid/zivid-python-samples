@@ -10,8 +10,7 @@ from vtk_visualizer import plotxyzrgb
 
 
 def _gridsum(matrix, downsampling_factor):
-    """
-    Reshape and sum in second direction
+    """Reshape and sum in second direction.
     
     Args:
         matrix (numpy.array): Matrix to be reshaped and summed in second direction
@@ -20,7 +19,7 @@ def _gridsum(matrix, downsampling_factor):
         cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
         
     Returns:
-        matrix (numpy.array): Matrix reshaped and summed in second direction
+        numpy.array: Matrix reshaped and summed in second direction
     """
     return _sumline(
         np.transpose(_sumline(matrix, downsampling_factor)), downsampling_factor
@@ -28,8 +27,7 @@ def _gridsum(matrix, downsampling_factor):
 
 
 def _sumline(matrix, downsampling_factor):
-    """
-    Reshape and sum in first direction
+    """Reshape and sum in first direction.
     
     Args:
         matrix (numpy.array): Matrix to be reshaped and summed in first direction
@@ -38,7 +36,7 @@ def _sumline(matrix, downsampling_factor):
         cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
         
     Returns:
-        matrix (numpy.array): Matrix reshaped and summed in first direction
+        numpy.array: Matrix reshaped and summed in first direction
     """
     return np.transpose(
         np.nansum(
@@ -51,8 +49,7 @@ def _sumline(matrix, downsampling_factor):
 
 
 def _downsample(xyz, rgb, contrast, downsampling_factor):
-    """
-    Function for downsampling a Zivid point cloud
+    """Function for downsampling a Zivid point cloud.
     
     Args:
         xyz (numpy.array): Point cloud
@@ -63,8 +60,8 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
         cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
         
     Returns:
-        xyz_new (numpy.array): Downsampled point cloud
-        image_new (numpy.array): Downsampled color image
+        numpy.array: Downsampled point cloud
+        numpy.array: Downsampled color image
     """
 
     # Checking if downsampling_factor is ok
