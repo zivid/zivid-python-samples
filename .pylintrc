@@ -2,7 +2,6 @@
 disable=bad-continuation,         ######## Disabled because of conflicts with black ########
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
-        no-name-in-module,
         too-many-statements,
         unused-variable,
 
