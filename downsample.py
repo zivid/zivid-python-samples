@@ -11,13 +11,13 @@ from vtk_visualizer import plotxyzrgb
 
 def _gridsum(matrix, downsampling_factor):
     """Reshape and sum in second direction.
-    
+
     Args:
         matrix (numpy.array): Matrix to be reshaped and summed in second direction
-        downsampling_factor: the denominator of a fraction that represents the
+        downsampling_factor (int): the denominator of a fraction that represents the
         size of the downsampled point cloud relative to the original point
         cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
-        
+
     Returns:
         numpy.array: Matrix reshaped and summed in second direction
     """
@@ -31,7 +31,7 @@ def _sumline(matrix, downsampling_factor):
     
     Args:
         matrix (numpy.array): Matrix to be reshaped and summed in first direction
-        downsampling_factor: the denominator of a fraction that represents the
+        downsampling_factor (int): the denominator of a fraction that represents the
         size of the downsampled point cloud relative to the original point
         cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
         
