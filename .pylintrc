@@ -3,7 +3,6 @@ disable=bad-continuation,         ######## Disabled because of conflicts with bl
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
         too-many-statements,
-        unused-variable,
 
 [DESIGN]
 max-args=7
