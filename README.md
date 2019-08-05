@@ -1,6 +1,6 @@
 # python-samples
 
-[![Build Status](https://travis-ci.com/zivid/python-samples.svg?branch=master)](https://travis-ci.com/zivid/python-samples)
+[![Build Status][ci-badge]][ci-url]
 
 This repository contains additional **Python** code samples for **Zivid**.
 
@@ -41,3 +41,6 @@ If you need assistance with using Zivid cameras, visit our Knowledge Base at [ht
 
 ## Licence
 Zivid Samples are distributed under the [BSD license](LICENSE).
+
+[ci-badge]: https://img.shields.io/azure-devops/build/zivid-devops/376f5fda-ba80-4d6c-aaaa-cbcd5e0ad6c0/2/master.svg
+[ci-url]: https://dev.azure.com/zivid-devops/python-samples/_build/latest?definitionId=2&branchName=master
