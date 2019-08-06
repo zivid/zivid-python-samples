@@ -40,7 +40,7 @@ Note: The version tested with Zivid cameras is 1.2.0.
 If you need assistance with using Zivid cameras, visit our Knowledge Base at [https://help.zivid.com/](https://help.zivid.com/) or contact us at [customersuccess@zivid.com](mailto:customersuccess@zivid.com).
 
 ## Licence
-Zivid Samples are distributed under the [BSD license](LICENSE).
+Zivid Samples are distributed under the [BSD license](https://github.com/zivid/python-samples/blob/master/LICENSE).
 
 [ci-badge]: https://img.shields.io/azure-devops/build/zivid-devops/376f5fda-ba80-4d6c-aaaa-cbcd5e0ad6c0/2/master.svg
 [ci-url]: https://dev.azure.com/zivid-devops/python-samples/_build/latest?definitionId=2&branchName=master
