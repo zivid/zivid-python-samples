@@ -15,7 +15,14 @@ flake8 --config="$ROOT_DIR/.flake8" $pythonFiles || exit $?
 
 echo Running pylint on:
 echo "$pythonFiles"
-pylint -j 0 --rcfile "$ROOT_DIR/.pylintrc" --extension-pkg-whitelist=netCDF4 $pythonFiles || exit $?
+
+pylint \
+    -j 0 \
+    --rcfile "$ROOT_DIR/.pylintrc" \
+    --dummy-variables-rgx="((^|, )(app|rgb|xyz|contrast))+$" \
+    --extension-pkg-whitelist=netCDF4 \
+    $pythonFiles \
+    || exit $?
 
 echo Running darglint on:
 echo "$pythonFiles"
