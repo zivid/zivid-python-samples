@@ -13,6 +13,7 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 - [**capture_save_ply**](https://github.com/zivid/python-samples/blob/master/capture_save_ply.py) - Capture a ZDF point cloud and save it to PLY file format.
 - [**connect_to_serial_number_camera**](https://github.com/zivid/python-samples/blob/master/connect_to_serial_number_camera.py) - Connect to a specific Zivid camera based on its serial number.
 - [**read_zdf**](https://github.com/zivid/python-samples/blob/master/read_zdf.py) - Import ZDF point cloud.
+- [**read_zdf_vis_3d**](https://github.com/zivid/python-samples/blob/master/read_zdf_vis_3d.py) - Import ZDF point cloud and visualize it.
 - [**read_zdf_without_zivid**](https://github.com/zivid/python-samples/blob/master/read_zdf_without_zivid.py) - Import ZDF point cloud without Zivid Software.
 - [**zdf_2_csv**](https://github.com/zivid/python-samples/blob/master/zdf_2_csv.py) - Convert ZDF point cloud to CSV format.
 - [**zdf_2_csv_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_csv_without_zivid.py) - Convert ZDF point cloud to CSV format without Zivid Software.

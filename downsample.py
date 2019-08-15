@@ -5,8 +5,8 @@ Import ZDF point cloud and downsample it.
 from math import fmod
 import numpy as np
 import matplotlib.pyplot as plt
-import zivid
 from vtk_visualizer import plotxyzrgb
+import zivid
 
 
 def _gridsum(matrix, downsampling_factor):
