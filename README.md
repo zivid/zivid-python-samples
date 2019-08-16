@@ -12,6 +12,7 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 - [**capture_hdr_separate_frames**](https://github.com/zivid/python-samples/blob/master/capture_hdr_separate_frames.py) - Capture several individual frames and merge them into one HDR frame.
 - [**capture_save_ply**](https://github.com/zivid/python-samples/blob/master/capture_save_ply.py) - Capture a ZDF point cloud and save it to PLY file format.
 - [**connect_to_serial_number_camera**](https://github.com/zivid/python-samples/blob/master/connect_to_serial_number_camera.py) - Connect to a specific Zivid camera based on its serial number.
+- [**downsample**](https://github.com/zivid/python-samples/blob/master/downsample.py) - Import ZDF point cloud and downsample it.
 - [**read_zdf**](https://github.com/zivid/python-samples/blob/master/read_zdf.py) - Import ZDF point cloud.
 - [**read_zdf_vis_3d**](https://github.com/zivid/python-samples/blob/master/read_zdf_vis_3d.py) - Import ZDF point cloud and visualize it.
 - [**read_zdf_without_zivid**](https://github.com/zivid/python-samples/blob/master/read_zdf_without_zivid.py) - Import ZDF point cloud without Zivid Software.
