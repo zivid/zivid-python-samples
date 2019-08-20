@@ -3,3 +3,4 @@ netCDF4
 matplotlib
 vtk
 vtk_visualizer
+opencv-python

@@ -22,6 +22,7 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 - [**zdf_2_ply_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_ply_without_zivid.py) - Convert ZDF point cloud to PLY file format without Zivid Software.
 - [**zdf_2_txt**](https://github.com/zivid/python-samples/blob/master/zdf_2_txt.py) - Convert ZDF point cloud to TXT format.
 - [**zdf_2_txt_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_txt_without_zivid.py) - Convert ZDF point cloud to TXT format without Zivid Software.
+- [**zdf_2_opencv**](https://github.com/zivid/python-samples/blob/master/zdf_2_opencv.py) - Import a ZDF point cloud and convert it to RGB image and Depth map in OpenCV format.
 
 ## Instructions
 

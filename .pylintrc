@@ -3,6 +3,8 @@ disable=bad-continuation,         ######## Disabled because of conflicts with bl
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
         too-many-statements,
+[TYPE CHECK]
+generated-members=cv2.*
 
 [DESIGN]
 max-args=7
