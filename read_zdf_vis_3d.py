@@ -1,11 +1,87 @@
-"""
-Import ZDF point cloud and visualize it.
-"""
+"""Import ZDF point cloud and visualize it."""
 
+import math
 import numpy as np
 import matplotlib.pyplot as plt
-from vtk_visualizer import plotxyzrgb
+import pptk
 import zivid
+
+
+def _display_rgb(rgb):
+    """Display RGB image.
+
+    Args:
+        rgb: RGB image
+
+    """
+    plt.figure()
+    plt.imshow(rgb)
+    plt.title("RGB image")
+    plt.show(block=False)
+
+
+def _display_depthmap(xyz):
+    """Create and display depthmap.
+
+    Args:
+        xyz: X, Y and Z images (point cloud co-ordinates)
+
+    """
+    plt.figure()
+    plt.imshow(
+        xyz[:, :, 2],
+        vmin=np.nanmin(xyz[:, :, 2]),
+        vmax=np.nanmax(xyz[:, :, 2]),
+        cmap="jet",
+    )
+    plt.colorbar()
+    plt.title("Depth map")
+    plt.show(block=False)
+
+
+def _get_mid_point(xyz):
+    """Calculate mid point from average of the 100 centermost points.
+
+    Args:
+        xyz: X, Y and Z images (point cloud co-ordinates)
+
+    Returns:
+        mid_point: Calculated mid point
+
+    """
+    xyz_center_cube = xyz[
+        int(xyz.shape[0] / 2 - 5) : int(xyz.shape[0] / 2 + 5),
+        int(xyz.shape[1] / 2 - 5) : int(xyz.shape[1] / 2 + 5),
+        :,
+    ]
+    return (
+        np.nanmedian(xyz_center_cube[:, :, 0]),
+        np.nanmedian(xyz_center_cube[:, :, 1]),
+        np.nanmedian(xyz_center_cube[:, :, 2]),
+    )
+
+
+def _display_pointcloud(rgb, xyz):
+    """Display point cloud.
+
+    Display the provided point cloud `xyz`, and color it with `rgb`.
+
+    We take the centermost co-ordinate as 'lookat' point. We assume that
+    camera location is at azimuth -pi/2 and elevation -pi/2 relative to
+    the 'lookat' point.
+
+    Args:
+        rgb: RGB image
+        xyz: X, Y and Z images (point cloud co-ordinates)
+
+    """
+    mid_point = _get_mid_point(xyz)
+    point_cloud_to_view = xyz
+    point_cloud_to_view[np.isnan(xyz[:, :, 2])] = 0
+    viewer = pptk.viewer(point_cloud_to_view)
+    viewer.attributes(rgb.reshape(-1, 3) / 255.0)
+    viewer.set(lookat=mid_point)
+    viewer.set(phi=-math.pi / 2, theta=-math.pi / 2, r=mid_point[2])
 
 
 def _main():
@@ -18,38 +94,18 @@ def _main():
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)
 
-    # Getting the point cloud
     point_cloud = frame.get_point_cloud()
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
     rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
 
-    # Flattening the point cloud
-    flattened_point_cloud = point_cloud.reshape(-1, 6)
+    _display_rgb(rgb)
 
-    # Displaying the RGB image
-    plt.figure()
-    plt.imshow(rgb)
-    plt.title("RGB image")
-    plt.show()
+    _display_depthmap(xyz)
 
-    # Displaying the Depth map
-    plt.figure()
-    plt.imshow(
-        xyz[:, :, 2],
-        vmin=np.nanmin(xyz[:, :, 2]),
-        vmax=np.nanmax(xyz[:, :, 2]),
-        cmap="jet",
-    )
-    plt.colorbar()
-    plt.title("Depth map")
-    plt.show()
-
-    # Displaying the point cloud
-    plotxyzrgb(flattened_point_cloud)
+    _display_pointcloud(rgb, xyz)
 
     input("Press Enter to close...")
 
 
 if __name__ == "__main__":
-    # If running the script from Spyder IDE, first run '%gui qt'
     _main()
