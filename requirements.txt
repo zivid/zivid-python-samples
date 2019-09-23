@@ -4,3 +4,4 @@ matplotlib
 vtk
 vtk_visualizer
 opencv-python
+pptk
