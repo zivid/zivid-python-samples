@@ -5,3 +5,4 @@ vtk
 vtk_visualizer
 opencv-python
 pptk
+pyyaml
