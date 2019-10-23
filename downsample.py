@@ -59,6 +59,9 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
             size of the downsampled point cloud relative to the original point
             cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
 
+    Raises:
+        ValueError: If downsampling factor is not correct.
+
     Returns:
         Tuple of downsampled point cloud and color image.
     """
