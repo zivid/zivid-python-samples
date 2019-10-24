@@ -1,3 +1,10 @@
+schedules:
+- cron: "5 22 * * *"
+  displayName: Master nightly build
+  branches:
+    include:
+    - master
+  always: true
 jobs:
 - job: Linux
   pool:
