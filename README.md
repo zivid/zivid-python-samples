@@ -43,6 +43,7 @@ There are two main categories of samples: **camera** and **applications**. The s
       - **Dependencies:**
         - [Eigen](http://eigen.tuxfamily.org/) version 3.3.7 or newer
     - [**create_depth_map**][create_depth_map-url] - Import a ZDF point cloud and convert it to OpenCV format, then extract and visualize depth map.
+    - [**mask_point_cloud**][mask_point_cloud-url] - Import ZDF point cloud, apply a binary mask, and visualize it.
       - **Dependencies:**
         - [OpenCV](https://opencv.org/) version 4.0.1 or newer
 
