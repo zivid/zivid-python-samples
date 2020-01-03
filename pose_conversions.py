@@ -88,46 +88,6 @@ class AxisAngle:
         return f"Axis:\n{self.axis}\nAngle:\n{self.angle:.4}"
 
 
-class RollPitchYaw:
-    """Convenience class to combine rotation convention with its rotation angles."""
-
-    def __init__(self, convention: RotationConvention, roll_pitch_yaw=np.zeros(3)):
-        """Initialize class and allocate memory for its variables.
-
-        The rotation test convention we use here is that Roll is a rotation about x-axis,
-        Pitch is a rotation about y-axis and Yaw is a rotation about z-axis.
-        Whether the axes are moving (intrinsic) or fixed (extrinsic) is defined by
-        the rotation convention.
-        The array is ordered by Roll, Pitch and then Yaw.
-
-        Since scipy.spatial.transform.Rotation is used, see also
-        .. _`scipy.spatial.transform.Rotation.as_euler`:
-            https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.as_euler.html%23scipy.spatial.transform.Rotation.as_euler
-        .. _`scipy.spatial.transform.Rotation.from_euler`:
-           https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.from_euler.html%23scipy.spatial.transform.Rotation.from_euler
-
-        Args:
-            convention: Rotation convention
-            roll_pitch_yaw: Rotation angles
-
-        """
-        self.convention = convention
-        self.roll_pitch_yaw = roll_pitch_yaw
-
-
-class Representations:
-    """Convenience class to store all conversions."""
-
-    def __init__(self):
-        """Initialize class and allocate memory for its variables."""
-        self.axis_angle = AxisAngle()
-        self.rotation_vector = np.zeros(3)
-        self.quaternion = np.zeros(4)
-        self.rotations = list()
-
-    # def addRotation(self, )
-
-
 def zivid_to_robot(transformation_matrix):
     """Convert from Zivid to Robot (Transformation Matrix --> any format).
 
@@ -140,33 +100,43 @@ def zivid_to_robot(transformation_matrix):
     """
     rotation_matrix = transformation_matrix[:3, :3]
     rotation = R.from_matrix(rotation_matrix)
-    robot_representations = Representations()
+    robot_representations = {
+        "axis_angle": AxisAngle(),
+        "rotation_vector": np.zeros(3),
+        "quaternion": np.zeros(4),
+        "rotations": list(),
+    }
 
     print(f"\nConverting Rotation Matrix to Axis-Angle")
-    robot_representations.axis_angle = AxisAngle(rotation.as_rotvec())
-    print(robot_representations.axis_angle)
+    robot_representations["axis_angle"] = AxisAngle(rotation.as_rotvec())
+    print(robot_representations["axis_angle"])
 
     print(f"\nConverting Axis-Angle to Rotation Vector")
-    robot_representations.rotation_vector = robot_representations.axis_angle.as_rotvec()
-    print(f"{robot_representations.rotation_vector}")
+    robot_representations["rotation_vector"] = robot_representations[
+        "axis_angle"
+    ].as_rotvec()
+    print(f"{robot_representations['rotation_vector']}")
 
     print(f"\nConverting Rotation Matrix to Quaternion")
-    robot_representations.quaternion = rotation.as_quat()
-    print(f"{robot_representations.quaternion}")
+    robot_representations["quaternion"] = rotation.as_quat()
+    print(f"{robot_representations['quaternion']}")
 
     for convention in RotationConvention:
         print(
             f"\nConverting Rotation Matrix to Roll-Pitch-Yaw angles ({convention.name}):"
         )
-        robot_representations.rotations.append(
-            RollPitchYaw(convention, rotation.as_euler(convention.value))
+        robot_representations["rotations"].append(
+            {
+                "convention": convention,
+                "roll_pitch_yaw": rotation.as_euler(convention.value),
+            }
         )
-        print(f"{robot_representations.rotations[-1].rollPitchYaw}")
+        print(f"{robot_representations['rotations'][-1]['roll_pitch_yaw']}")
 
     return robot_representations
 
 
-def robot_to_zivid(representations: Representations, translation_vector):
+def robot_to_zivid(representations, translation_vector):
     """Convert from Robot to Zivid (any format --> Rotation Matrix).
 
     Args:
@@ -177,17 +147,18 @@ def robot_to_zivid(representations: Representations, translation_vector):
         4x4 Transformation Matrix
 
     """
-    for rotation in representations.rotations:
+    for rotation in representations["rotations"]:
         print(
-            f"\nConverting Roll-Pitch-Yaw angles ({rotation.convention.name}) to Rotation Matrix:"
+            f"\nConverting Roll-Pitch-Yaw angles ({rotation['convention'].name})"
+            + " to Rotation Matrix:"
         )
         rotation_matrix_from_roll_pitch_yaw = R.from_euler(
-            rotation.convention.value, rotation.rollPitchYaw
+            rotation["convention"].value, rotation["roll_pitch_yaw"]
         )
         print(f"{rotation_matrix_from_roll_pitch_yaw.as_matrix()}")
 
     print(f"\nConverting Rotation Vector to Axis-Angle")
-    axis_angle = AxisAngle(representations.rotation_vector)
+    axis_angle = AxisAngle(representations["rotation_vector"])
     print(axis_angle)
 
     print(f"\nConverting Axis-Angle to Quaternion:")
