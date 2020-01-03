@@ -51,9 +51,14 @@ class AxisAngle:
     def __init__(self, axis=np.array([0, 0, 1]), angle=None):
         """Initialize class and its variables.
 
+        Can be initialized with a unit vector and an angle, or only a rotation vector.
+
         Args:
             axis: rotation axis
             angle: rotation angle
+
+        Raises:
+            ValueError: if angle vector is provided, but vector is not a unit vector
 
         """
         self.angle = angle
