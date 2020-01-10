@@ -9,6 +9,7 @@ This example shows how to use Eigen to convert to and from:
 
 import enum
 from pathlib import Path
+from dataclasses import dataclass, field
 import numpy as np
 import cv2
 from scipy.spatial.transform import Rotation as R
@@ -78,14 +79,24 @@ class AxisAngle:
         """
         return self.axis * self.angle
 
-    def __str__(self):
-        """Return string representation of axis angle.
+    def as_quaternion(self):
+        """Return quaternion from axis angle.
 
         Returns:
-            string representation
+            quaternion
 
         """
-        return f"Axis:\n{self.axis}\nAngle:\n{self.angle:.4}"
+        return R.from_rotvec(self.as_rotvec()).as_quat()
+
+
+@dataclass
+class Representations:
+    """Class to hold various transformation representations."""
+
+    axis_angle: AxisAngle() = AxisAngle()
+    rotation_vector: np.array = np.zeros(3)
+    quaternion: np.array = np.zeros(4)
+    rotations: list = field(default_factory=list)
 
 
 def zivid_to_robot(transformation_matrix):
@@ -100,38 +111,32 @@ def zivid_to_robot(transformation_matrix):
     """
     rotation_matrix = transformation_matrix[:3, :3]
     rotation = R.from_matrix(rotation_matrix)
-    robot_representations = {
-        "axis_angle": AxisAngle(),
-        "rotation_vector": np.zeros(3),
-        "quaternion": np.zeros(4),
-        "rotations": list(),
-    }
+    robot_representations = Representations()
 
     print(f"\nConverting Rotation Matrix to Axis-Angle")
-    robot_representations["axis_angle"] = AxisAngle(rotation.as_rotvec())
-    print(robot_representations["axis_angle"])
+    robot_representations.axis_angle = AxisAngle(rotation.as_rotvec())
+    print(f"Axis:\n{robot_representations.axis_angle.axis}")
+    print(f"Angle:\n{robot_representations.axis_angle.angle:.4}")
 
     print(f"\nConverting Axis-Angle to Rotation Vector")
-    robot_representations["rotation_vector"] = robot_representations[
-        "axis_angle"
-    ].as_rotvec()
-    print(f"{robot_representations['rotation_vector']}")
+    robot_representations.rotation_vector = robot_representations.axis_angle.as_rotvec()
+    print(f"{robot_representations.rotation_vector}")
 
     print(f"\nConverting Rotation Matrix to Quaternion")
-    robot_representations["quaternion"] = rotation.as_quat()
-    print(f"{robot_representations['quaternion']}")
+    robot_representations.quaternion = rotation.as_quat()
+    print(f"{robot_representations.quaternion}")
 
     for convention in RotationConvention:
         print(
             f"\nConverting Rotation Matrix to Roll-Pitch-Yaw angles ({convention.name}):"
         )
-        robot_representations["rotations"].append(
+        robot_representations.rotations.append(
             {
                 "convention": convention,
                 "roll_pitch_yaw": rotation.as_euler(convention.value),
             }
         )
-        print(f"{robot_representations['rotations'][-1]['roll_pitch_yaw']}")
+        print(f"{robot_representations.rotations[-1]['roll_pitch_yaw']}")
 
     return robot_representations
 
@@ -147,7 +152,7 @@ def robot_to_zivid(representations, translation_vector):
         4x4 Transformation Matrix
 
     """
-    for rotation in representations["rotations"]:
+    for rotation in representations.rotations:
         print(
             f"\nConverting Roll-Pitch-Yaw angles ({rotation['convention'].name})"
             + " to Rotation Matrix:"
@@ -158,11 +163,12 @@ def robot_to_zivid(representations, translation_vector):
         print(f"{rotation_matrix_from_roll_pitch_yaw.as_matrix()}")
 
     print(f"\nConverting Rotation Vector to Axis-Angle")
-    axis_angle = AxisAngle(representations["rotation_vector"])
-    print(axis_angle)
+    axis_angle = AxisAngle(representations.rotation_vector)
+    print(f"Axis:\n{axis_angle.axis}")
+    print(f"Angle:\n{axis_angle.angle:.4}")
 
     print(f"\nConverting Axis-Angle to Quaternion:")
-    quaternion = R.from_rotvec(axis_angle.as_rotvec()).as_quat()
+    quaternion = axis_angle.as_quaternion()
     print(f"{quaternion}")
 
     print(f"\nConverting Quaternion to Rotation Matrix:")
