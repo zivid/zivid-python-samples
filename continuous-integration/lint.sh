@@ -3,7 +3,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
 
-pythonFiles=$(find "$ROOT_DIR" -name '*.py')
+pythonFiles=$(find "$ROOT_DIR" -name '*.py' -not -path "*/hand-eye-calibration/3rdParty*")
 
 echo Running black on:
 echo "$pythonFiles"

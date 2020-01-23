@@ -7,6 +7,12 @@ This repository contains additional **Python** code samples for **Zivid**.
 The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-python) - the official Python package for Zivid 3D cameras.
 
 ## Samples list
+- [**Hand-eye-calibration**](https://github.com/zivid/python-samples/tree/full-hand-eye-sample/hand-eye-calibration)
+	- [**universal_robots_perform_hand_eye_calibration**](https://github.com/zivid/python-samples/blob/full-hand-eye-sample/hand-eye-calibration/universal_robots_perform_hand_eye_calibration.py) - Generate dataset and perform hand-eye calibration on generated dataset. 
+	- **Dependencies:**
+		- [OpenCV](https://opencv.org/) version 4.0.1 or newer.
+		- [RTDE](https://www.universal-robots.com/how-tos-and-faqs/how-to/ur-how-tos/real-time-data-exchange-rtde-guide-22229/) version 1.0 or newer.
+		- [Scipy](https://www.scipy.org/) version 1.4.0 or newer.
 - [**capture_hdr_complete_settings**](https://github.com/zivid/python-samples/blob/master/capture_hdr_complete_settings.py) - Capture an HDR frame with fully configured settings for each frame.
 - [**capture_hdr_loop**](https://github.com/zivid/python-samples/blob/master/capture_hdr_loop.py) - Capture HDR frames in a loop (while actively changing some HDR settings).
 - [**capture_hdr_separate_frames**](https://github.com/zivid/python-samples/blob/master/capture_hdr_separate_frames.py) - Capture several individual frames and merge them into one HDR frame.
@@ -16,9 +22,8 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 - [**downsample**](https://github.com/zivid/python-samples/blob/master/downsample.py) - Import ZDF point cloud and downsample it.
 - [**read_zdf**](https://github.com/zivid/python-samples/blob/master/read_zdf.py) - Import ZDF point cloud.
 - [**read_zdf_vis_3d**](https://github.com/zivid/python-samples/blob/master/read_zdf_vis_3d.py) - Import ZDF point cloud and visualize it.
+- [**utilize_eye_in_hand_calibration**](https://github.com/zivid/python-samples/blob/master/utilize_eye_in_hand_calibration.py) - Utilize the result of eye-in-hand calibration to transform (picking) point.
 - [**read_zdf_without_zivid**](https://github.com/zivid/python-samples/blob/master/read_zdf_without_zivid.py) - Import ZDF point cloud without Zivid Software.
-- [**utilize_eye_in_hand_calibration**](https://github.com/zivid/python-samples/blob/master/utilize_eye_in_hand_calibration.py) - Utilize the result of eye-in-hand calibration to transform (picking) point
-coordinates from the camera frame to the robot base frame.
 - [**zdf_2_csv_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_csv_without_zivid.py) - Convert ZDF point cloud to CSV format without Zivid Software.
 - [**zdf_2_ply_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_ply_without_zivid.py) - Convert ZDF point cloud to PLY file format without Zivid Software.
 - [**zdf_2_txt_without_zivid**](https://github.com/zivid/python-samples/blob/master/zdf_2_txt_without_zivid.py) - Convert ZDF point cloud to TXT format without Zivid Software.
