@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<rtde_config>
+	<recipe key="out">
+        <field name="actual_TCP_pose" type="VECTOR6D"/>
+		<field name="output_int_register_24" type="INT32"/>
+        <field name="output_bit_register_64" type="BOOL"/>
+	</recipe>
+    
+	<recipe key="in">
+		<field name="input_bit_register_64" type="BOOL"/>
+        <field name="input_bit_register_65" type="BOOL"/>
+	</recipe>
+</rtde_config>
