@@ -20,7 +20,7 @@ The basic samples come with [**Zivid Python**](https://github.com/zivid/zivid-py
 - [**connect_to_serial_number_camera**](https://github.com/zivid/python-samples/blob/master/connect_to_serial_number_camera.py) - Connect to a specific Zivid camera based on its serial number.
 - [**convert_zdf**](https://github.com/zivid/python-samples/blob/master/convert_zdf.py) - Convert from ZDF to your preferred format (.ply, .csv, .txt, .png, .jpg, .bmp, .tiff).
 - [**downsample**](https://github.com/zivid/python-samples/blob/master/downsample.py) - Import ZDF point cloud and downsample it.
-- [**read_zdf**](https://github.com/zivid/python-samples/blob/master/read_zdf.py) - Import ZDF point cloud.
+- [**read_iterate_zdf**](https://github.com/zivid/python-samples/blob/master/read_iterate_zdf.py) - Import ZDF point cloud.
 - [**read_zdf_vis_3d**](https://github.com/zivid/python-samples/blob/master/read_zdf_vis_3d.py) - Import ZDF point cloud and visualize it.
 - [**utilize_eye_in_hand_calibration**](https://github.com/zivid/python-samples/blob/master/utilize_eye_in_hand_calibration.py) - Utilize the result of eye-in-hand calibration to transform (picking) point.
 - [**read_zdf_without_zivid**](https://github.com/zivid/python-samples/blob/master/read_zdf_without_zivid.py) - Import ZDF point cloud without Zivid Software.
