@@ -1,6 +1,7 @@
 """Import ZDF point cloud and visualize it."""
 
 import math
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import pptk
@@ -88,8 +89,7 @@ def _main():
 
     app = zivid.Application()
 
-    # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    filename_zdf = "Zivid3D.zdf"
+    filename_zdf = Path(__file__).parents[3] / "Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)

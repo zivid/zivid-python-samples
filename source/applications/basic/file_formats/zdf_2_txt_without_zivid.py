@@ -2,14 +2,14 @@
 Convert ZDF point cloud to TXT format without Zivid Software.
 """
 
+from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
 
 def _main():
 
-    # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    filename_zdf = "Zivid3D.zdf"
+    filename_zdf = Path(__file__).parents[2] / "Zivid3D.zdf"
     filename_txt = "Zivid3D.txt"
 
     print(f"Reading {filename_zdf} point cloud")
