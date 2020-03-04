@@ -315,11 +315,11 @@ def _capture_one_frame_and_robot_pose(
 
     # Signal robot to move to next position, then set signal to low again.
     _write_robot_state(
-        con, input_data, finish_capture=True, camera_ready=ready_to_capture,
+        con, input_data, finish_capture=True, camera_ready=ready_to_capture
     )
     time.sleep(0.1)
     _write_robot_state(
-        con, input_data, finish_capture=False, camera_ready=ready_to_capture,
+        con, input_data, finish_capture=False, camera_ready=ready_to_capture
     )
     _save_zdf_and_pose(save_dir, image_num, frame, transform)
     print("Image and pose saved")
