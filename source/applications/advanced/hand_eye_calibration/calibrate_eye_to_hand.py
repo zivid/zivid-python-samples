@@ -19,14 +19,13 @@ def _acquire_checkerboard_frame(camera):
 
 def _enter_robot_pose(index):
     inputted = input(
-        "Enter pose with id={} (a line with 16 space separated values describing 4x4 row-major matrix):".format(
-            index
-        )
+        f"Enter pose with id={index} (a line with 16 space separated values"
+        " describing 4x4 row-major matrix):"
     )
     elements = inputted.split(maxsplit=15)
     data = np.array(elements, dtype=np.float64).reshape((4, 4))
     robot_pose = zivid.hand_eye.Pose(data)
-    print("The following pose was entered:\n{}".format(robot_pose))
+    print(f"The following pose was entered:\n{robot_pose}")
     return robot_pose
 
 
@@ -63,14 +62,14 @@ def _main():
         elif command == "c":
             calibrate = True
         else:
-            print("Unknown command '{}'".format(command))
+            print(f"Unknown command '{command}'")
 
     print("Performing hand-eye calibration...")
     calibration_result = zivid.hand_eye.calibrate_eye_to_hand(calibration_inputs)
     code.interact(local=locals())
     if calibration_result:
         print("OK")
-        print("Result:\n{}".format(calibration_result))
+        print(f"Result:\n{calibration_result}")
     else:
         print("FAILED")
 
