@@ -225,6 +225,9 @@ def roll_pitch_yaw_to_rotation_matrix(rpy_list):
     Args:
         rpy_list: list of Roll Pitch Yaw angles in radians
 
+    Returns:
+        None
+
     """
     for rotation in rpy_list:
         rotation_matrix = R.from_euler(
@@ -242,6 +245,9 @@ def save_transformation_matrix_to_yaml(transformation_matrix, path: Path):
     Args:
         transformation_matrix: 4x4 Transformation Matrix
         path: path to save the YAML output
+
+    Returns:
+        None
 
     """
     file_storage_out = cv2.FileStorage(path, cv2.FILE_STORAGE_WRITE)
@@ -270,6 +276,9 @@ def print_header(txt: str):
 
     Args:
         txt: Text to be printed in header
+
+    Returns:
+        None
 
     """
     terminal_width = 70

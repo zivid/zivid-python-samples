@@ -14,6 +14,9 @@ def _display_rgb(rgb):
     Args:
         rgb: RGB image
 
+    Returns:
+        None
+
     """
     plt.figure()
     plt.imshow(rgb)
@@ -26,6 +29,9 @@ def _display_depthmap(xyz):
 
     Args:
         xyz: X, Y and Z images (point cloud co-ordinates)
+
+    Returns:
+        None
 
     """
     plt.figure()
@@ -74,6 +80,9 @@ def _display_pointcloud(rgb, xyz):
     Args:
         rgb: RGB image
         xyz: X, Y and Z images (point cloud co-ordinates)
+
+    Returns:
+        None
 
     """
     mid_point = _get_mid_point(xyz)
