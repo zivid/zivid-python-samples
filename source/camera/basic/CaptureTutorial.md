@@ -84,7 +84,7 @@ suggest_settings_parameters = SuggestSettingsParameters(
     max_capture_time=datetime.timedelta(milliseconds=1200),
     ambient_light_frequency=AmbientLightFrequency.none,
 )
-settings_collection = zivid.capture_assistant.suggest_settings(
+settings_list = zivid.capture_assistant.suggest_settings(
     camera, suggest_settings_parameters
 )
 ```
@@ -133,10 +133,10 @@ with camera.update_settings() as updater:
 
 We may also set a list of settings to be used in an [HDR capture](#capture-hdr) ([go to source][settingsHDR-url]).
 ```python
-settings_collection = [camera.settings for _ in range(3)]
-settings_collection[0].iris = 14
-settings_collection[1].iris = 21
-settings_collection[2].iris = 35
+settings_list = [camera.settings for _ in range(3)]
+settings_list[0].iris = 14
+settings_list[1].iris = 21
+settings_list[2].iris = 35
 ```
 
 #### 2D Settings
@@ -170,9 +170,9 @@ frame = camera.capture()
 
 As was revealed in the [Capture Assistant](#capture-assistant) section, a capture may consist of multiple frames. In order to capture multiple frames, and combine them, we can do as follows ([go to source][captureHDR-url])
 ```python
-hdr_frame = zivid.hdr.capture(camera, settings_collection)
+hdr_frame = zivid.hdr.capture(camera, settings_list)
 ```
-It is possible to [manually create](#hdr-frame) the `settings_collection`, if not set via [Capture Assistant](#capture-assistant).
+It is possible to [manually create](#hdr-frame) the `settings_list`, if not set via [Capture Assistant](#capture-assistant).
 
 ### Capture 2D
 
