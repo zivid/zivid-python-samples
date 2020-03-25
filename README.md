@@ -45,6 +45,9 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**create_depth_map**][create_depth_map-url] - Import a ZDF point cloud and convert it to OpenCV format, then extract and visualize depth map.
       - **Dependencies:**
         - [OpenCV](https://opencv.org/) version 4.0.1 or newer
+    - [**gamma_correction**][gamma_correction-url] - Modify gamma of the 2D image.
+      - **Dependencies:**
+        - [OpenCV](https://opencv.org/) version 4.0.1 or newer
 
 ## Instructions
 
@@ -91,3 +94,4 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 [rtde_guide-url]: https://www.universal-robots.com/how-tos-and-faqs/how-to/ur-how-tos/real-time-data-exchange-rtde-guide-22229/
 [downsample-url]: source/applications/advanced/downsample.py
 [create_depth_map-url]: source/applications/advanced/create_depth_map.py
+[gamma_correction-url]: source/applications/advanced/gamma_correction.py
