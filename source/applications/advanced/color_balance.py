@@ -232,6 +232,7 @@ def _main():
 
     _display_rgb(rgb, "RGB image before color balance (2D capture)")
     _display_rgb(rgb_balanced, "RGB image after color balance (2D capture)")
+    input("Press Enter to close...")
 
 
 if __name__ == "__main__":
