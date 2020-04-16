@@ -49,6 +49,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**gamma_correction**][gamma_correction-url] - Modify gamma of the 2D image.
       - **Dependencies:**
         - [OpenCV](https://opencv.org/) version 4.0.1 or newer
+    - [**color_balance**][color_balance-url] - Balance color for RGB image.
 
 ## Instructions
 
@@ -96,3 +97,4 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 [downsample-url]: source/applications/advanced/downsample.py
 [create_depth_map-url]: source/applications/advanced/create_depth_map.py
 [gamma_correction-url]: source/applications/advanced/gamma_correction.py
+[color_balance-url]: source/applications/advanced/color_balance.py
