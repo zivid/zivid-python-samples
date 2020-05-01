@@ -1,15 +1,17 @@
 """
 Convert ZDF point cloud to CSV format without Zivid Software.
+Note: ZIVID_DATA needs to be set to the location of Zivid Sample Data files.
 """
 
 from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
+import os
 
 
 def _main():
 
-    filename_zdf = Path(__file__).parents[2] / "Zivid3D.zdf"
+    filename_zdf = Path() / f"{str(os.environ['ZIVID_DATA'])}/Zivid3D.zdf"
     filename_csv = "Zivid3D.csv"
 
     print(f"Reading {filename_zdf} point cloud")

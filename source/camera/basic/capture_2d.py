@@ -13,7 +13,7 @@ def _main():
 
     with camera.capture_2d(settings_2d) as frame_2d:
         image = frame_2d.image()
-        image.save("result.png")
+        image.save("Result.png")
 
 
 if __name__ == "__main__":

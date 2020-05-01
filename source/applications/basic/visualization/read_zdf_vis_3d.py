@@ -95,7 +95,7 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = Path(__file__).parents[3] / "Zivid3D.zdf"
+    filename_zdf = Path() / f"{str(zivid.environment.data_path())}/Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)

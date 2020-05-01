@@ -13,7 +13,7 @@ def _main():
         updater.settings.filters.reflection.enabled = True
 
     with camera.capture() as frame:
-        frame.save("result.zdf")
+        frame.save("Result.zdf")
 
 
 if __name__ == "__main__":

@@ -130,10 +130,10 @@ def _main():
     app = zivid.Application()
 
     # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    filename_zdf = Path(__file__).parents[2] / "Zivid3D.zdf"
+    filename_zdf = "Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(filename_zdf)
+    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
 
     # Getting the point cloud
     point_cloud = frame.get_point_cloud().to_array()

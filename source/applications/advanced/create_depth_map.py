@@ -13,10 +13,10 @@ def _main():
     app = zivid.Application()
 
     # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    filename_zdf = Path(__file__).parents[2] / "Zivid3D.zdf"
+    filename_zdf = "Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(filename_zdf)
+    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
 
     # Getting the point cloud
     point_cloud = frame.get_point_cloud().to_array()
@@ -37,7 +37,7 @@ def _main():
     rgb = np.dstack([point_cloud["b"], point_cloud["g"], point_cloud["r"]])
 
     # Displaying the RGB image
-    rgb_window = "RGB image"
+    rgb_window = "ImageRGB"
     cv2.namedWindow(rgb_window, cv2.WINDOW_NORMAL)
     cv2.imshow(rgb_window, rgb)
 
@@ -51,7 +51,7 @@ def _main():
     cv2.imwrite(f"{rgb_window}.png", rgb)
 
     # Displaying the Depth map
-    depth_window = "Depth map"
+    depth_window = "DepthMap"
     cv2.namedWindow(depth_window, cv2.WINDOW_NORMAL)
     cv2.imshow(depth_window, depth_map_color_map)
 

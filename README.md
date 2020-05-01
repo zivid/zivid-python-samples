@@ -58,13 +58,15 @@ Note: The version tested with Zivid cameras is 1.8.0.
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
 
-3. [Optional] Launch the Python IDE of your choice. Read our instructions on [**setting up Python**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
+3. [**Download Zivid Sample Data**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data).
 
-4. Install the runtime requirements using IDE or command line:
+4. [Optional] Launch the Python IDE of your choice. Read our instructions on [**setting up Python**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/427556/Setting+up+Python).
+
+5. Install the runtime requirements using IDE or command line:
 
        pip install -r requirements.txt
 
-5. Open and run one of the samples.
+6. Open and run one of the samples.
 
 ## Support
 If you need assistance with using Zivid cameras, visit our Knowledge Base at [https://help.zivid.com/](https://help.zivid.com/) or contact us at [customersuccess@zivid.com](mailto:customersuccess@zivid.com).

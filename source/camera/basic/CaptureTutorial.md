@@ -62,7 +62,7 @@ for cam in cameras:
 
 You may want to experiment with the SDK, without access to a physical camera. Minor changes are required to keep the sample working ([go to source][filecamera-url]).
 ```python
-camera = app.create_file_camera("MiscObjects.zdf")
+camera = app.create_file_camera((str(zivid.environment.data_path()) + "/MiscObjects.zdf")
 ```
 
 ---
@@ -155,7 +155,7 @@ settings_2d.brightness = 1
 Zivid Studio can store the current settings to .yml files. These can be read and applied in the API. You may find it easier to modify the settings in these (human-readable) yaml-files in your preferred editor.
 ```python
 path_to_settings_file = Path()
-camera.settings = _read_settings_from_file(path_to_settings_file/"frame_01.yml")
+camera.settings = _read_settings_from_file(path_to_settings_file/"Frame01.yml")
 ```
 For this to work you need to implement the function for reading settings from file ([go to source][readsettings-url]).
 
@@ -185,7 +185,7 @@ frame_2d = camera.capture_2d(settings_2d)
 
 We can now save our results ([go to source][save-url]).
 ```python
-frame.save("result.zdf")
+frame.save("Result.zdf")
 ```
 The API detects which format to use. See [Point Cloud][kb-point_cloud-url] for a list of supported formats.
 
@@ -193,7 +193,7 @@ The API detects which format to use. See [Point Cloud][kb-point_cloud-url] for a
 
 If we captured a 2D image, we can save it ([go to source][save2d-url]).
 ```python
-frame_2d.image.save("result.png")
+frame_2d.image.save("Result.png")
 ```
 
 ## Conclusion

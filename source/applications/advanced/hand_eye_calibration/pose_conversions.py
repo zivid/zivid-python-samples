@@ -11,6 +11,7 @@ import enum
 from pathlib import Path
 from dataclasses import dataclass, field
 import numpy as np
+import zivid
 import cv2
 from scipy.spatial.transform import Rotation as R
 
@@ -19,7 +20,9 @@ def _main():
     np.set_printoptions(precision=4, suppress=True)
     print_header("This example shows conversions to/from Transformation Matrix")
 
-    transformation_matrix = get_transformation_matrix_from_yaml("robotTransform.yaml")
+    transformation_matrix = get_transformation_matrix_from_yaml(
+        f"{str(zivid.environment.data_path())}/RobotTransform.yaml"
+    )
     print(f"Transformation Matrix:\n{transformation_matrix}")
 
     # Extract Rotation Matrix and Translation Vector from Transformation Matrix
@@ -53,7 +56,7 @@ def _main():
     # Replace rotation matrix in transformation matrix
     transformation_matrix[:3, :3] = rotation_matrix
     # Save transformation matrix which has passed through quaternion representation
-    save_transformation_matrix_to_yaml(transformation_matrix, "robotTransformOut.yaml")
+    save_transformation_matrix_to_yaml(transformation_matrix, "RobotTransformOut.yaml")
 
 
 class RotationConvention(enum.Enum):

@@ -12,7 +12,7 @@ def _main():
     settings_list[2].iris = 35
 
     with camera.capture(settings_list) as hdr_frame:
-        hdr_frame.save("result.zdf")
+        hdr_frame.save("Result.zdf")
 
 
 if __name__ == "__main__":

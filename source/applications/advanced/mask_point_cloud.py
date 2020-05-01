@@ -93,7 +93,7 @@ def _main():
     filename_zdf = "Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(Path(__file__).parents[2] / filename_zdf)
+    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
 
     point_cloud = frame.get_point_cloud().to_array()
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
