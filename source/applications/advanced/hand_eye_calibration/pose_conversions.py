@@ -17,7 +17,7 @@ from scipy.spatial.transform import Rotation as R
 
 def _main():
     np.set_printoptions(precision=4, suppress=True)
-    print_header(f"This example shows conversions to/from Transformation Matrix")
+    print_header("This example shows conversions to/from Transformation Matrix")
 
     transformation_matrix = get_transformation_matrix_from_yaml("robotTransform.yaml")
     print(f"Transformation Matrix:\n{transformation_matrix}")
@@ -87,7 +87,7 @@ class AxisAngle:
             self.angle = np.linalg.norm(axis)
             self.axis = axis / self.angle
         elif np.linalg.norm(axis) != 0:
-            raise ValueError(f"Angle provided, but vector is not unit vector")
+            raise ValueError("Angle provided, but vector is not unit vector")
 
     def as_rotvec(self):
         """Return rotation vector from axis angle.

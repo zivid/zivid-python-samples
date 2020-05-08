@@ -92,15 +92,15 @@ def _initialize_robot_sync(host: str):
 
     # To ensure that the application is compatable with further versions of UR controller
     if not con.negotiate_protocol_version():
-        raise RuntimeError(f"Protocol do not match")
+        raise RuntimeError("Protocol do not match")
 
     if not con.send_output_setup(output_names, output_types, frequency=200):
-        raise RuntimeError(f"Unable to configure output")
+        raise RuntimeError("Unable to configure output")
 
     robot_input_data = con.send_input_setup(input_names, input_types)
 
     if not con.send_start():
-        raise RuntimeError(f"Unable to start synchronization")
+        raise RuntimeError("Unable to start synchronization")
 
     print("Communication initialization completed. \n")
 
@@ -229,13 +229,13 @@ def _save_hand_eye_results(save_dir: Path, transform: np.array, residuals: list)
     """
 
     file_storage_transform = cv2.FileStorage(
-        str(save_dir / f"transformation.yaml"), cv2.FILE_STORAGE_WRITE
+        str(save_dir / "transformation.yaml"), cv2.FILE_STORAGE_WRITE
     )
     file_storage_transform.write("PoseState", transform)
     file_storage_transform.release()
 
     file_storage_residuals = cv2.FileStorage(
-        str(save_dir / f"residuals.yaml"), cv2.FILE_STORAGE_WRITE
+        str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE
     )
     residual_list = []
     for res in residuals:
@@ -287,7 +287,7 @@ def _verify_good_capture(frame: zivid.Frame):
     detected_features = zivid.hand_eye.detect_feature_points(point_cloud)
 
     if not detected_features:
-        raise RuntimeError(f"Failed to detect feature points from captured frame.")
+        raise RuntimeError("Failed to detect feature points from captured frame.")
 
 
 def _capture_one_frame_and_robot_pose(

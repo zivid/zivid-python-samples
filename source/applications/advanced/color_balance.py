@@ -12,7 +12,7 @@ import zivid
 @dataclass
 class MeanColor:
     """
-    RGB channel mean colors
+    RGB  channel mean colors
 
     Attributes:
         red (np.array): Red channel mean value
@@ -170,7 +170,7 @@ def _color_balance_calibration(camera, settings_3d):
         corrected_blue_balance: Corrected blue balance
 
     """
-    print(f"Starting color balance calibration")
+    print("Starting color balance calibration")
     corrected_red_balance = 1.0
     corrected_blue_balance = 1.0
     settings_list = [settings_3d]
@@ -226,7 +226,7 @@ def _main():
 
     [red_balance, blue_balance] = _color_balance_calibration(camera, settings_3d)
 
-    print(f"Applying color balance on 2D image")
+    print("Applying color balance on 2D image")
     rgb = _capture_rgb(camera, settings_2d)
     rgb_balanced = _apply_color_balance(rgb, red_balance, blue_balance)
 
