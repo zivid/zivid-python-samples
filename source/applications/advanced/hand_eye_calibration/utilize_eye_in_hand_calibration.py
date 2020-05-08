@@ -4,9 +4,9 @@ coordinates from the camera frame to the robot base frame.
 """
 
 from pathlib import Path
-import zivid
 import numpy as np
 import cv2
+import zivid
 
 
 def _assert_valid_matrix(file_name):

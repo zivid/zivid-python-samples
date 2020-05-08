@@ -4,9 +4,9 @@ Note: ZIVID_DATA needs to be set to the location of Zivid Sample Data files.
 """
 
 from pathlib import Path
+import os
 import numpy as np
 from netCDF4 import Dataset
-import os
 
 
 def _main():

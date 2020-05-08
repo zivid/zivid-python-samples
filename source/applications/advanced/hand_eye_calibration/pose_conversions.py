@@ -11,8 +11,8 @@ import enum
 from pathlib import Path
 from dataclasses import dataclass, field
 import numpy as np
-import zivid
 import cv2
+import zivid
 from scipy.spatial.transform import Rotation as R
 
 

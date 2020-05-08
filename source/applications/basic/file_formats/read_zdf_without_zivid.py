@@ -4,10 +4,10 @@ Note: ZIVID_DATA needs to be set to the location of Zivid Sample Data files.
 """
 
 from pathlib import Path
+import os
 from netCDF4 import Dataset
 from matplotlib import pyplot as plt
 import numpy as np
-import os
 
 
 def _main():
