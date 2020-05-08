@@ -26,7 +26,7 @@ def _main():
     height = frame.get_point_cloud().height
     width = frame.get_point_cloud().width
 
-    print(f"Point cloud information:")
+    print("Point cloud information:")
     print(f"Number of points: {point_cloud.size}")
     print(f"Height: {height}, Width: {width}")
 
