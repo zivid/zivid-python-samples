@@ -54,7 +54,7 @@ There are two main categories of samples: **camera** and **applications**. The s
 ## Instructions
 
 1. [**Install Zivid Software**](https://www.zivid.com/downloads).
-Note: The version tested with Zivid cameras is 1.8.0.
+Note: The version tested with Zivid cameras is 1.8.1.
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
 
