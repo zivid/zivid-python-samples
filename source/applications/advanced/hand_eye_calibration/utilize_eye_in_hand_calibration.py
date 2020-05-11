@@ -6,6 +6,7 @@ coordinates from the camera frame to the robot base frame.
 from pathlib import Path
 import numpy as np
 import cv2
+import zivid
 
 
 def _assert_valid_matrix(file_name):
@@ -67,16 +68,20 @@ def _main():
     print(f"Point coordinates in camera frame: {point_in_camera_frame[0:3]}")
 
     # Check if YAML files are valid
-    _assert_valid_matrix(str(Path("eyeInHandTransform.yaml")))
-    _assert_valid_matrix(str(Path("robotTransform.yaml")))
+    eye_in_hand_transform_file = str(
+        Path(f"{str(zivid.environment.data_path())}/EyeInHandTransform.yaml")
+    )
+    robot_transform_file = str(
+        Path(f"{str(zivid.environment.data_path())}/RobotTransform.yaml")
+    )
+    _assert_valid_matrix(eye_in_hand_transform_file)
+    _assert_valid_matrix(robot_transform_file)
 
     # Reading camera pose in end-effector frame (result of eye-in-hand calibration)
-    transform_end_effector_to_camera = _read_transform(
-        str(Path("eyeInHandTransform.yaml"))
-    )
+    transform_end_effector_to_camera = _read_transform(eye_in_hand_transform_file)
 
     # Reading end-effector pose in robot base frame
-    transform_base_to_end_effector = _read_transform(str(Path("robotTransform.yaml")))
+    transform_base_to_end_effector = _read_transform(robot_transform_file)
 
     # Computing camera pose in robot base frame
     transform_base_to_camera = np.matmul(

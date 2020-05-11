@@ -76,11 +76,11 @@ def _main():
     camera = app.connect_camera()
 
     bgr_original = _capture_2d_image(camera)
-    cv2.imwrite("original.jpg", bgr_original)
+    cv2.imwrite("Original.jpg", bgr_original)
 
     print(f"Applying gamma correction: {user_options.gamma}")
     bgr_adjusted = adjust_gamma(bgr_original, user_options.gamma)
-    cv2.imwrite("adjusted.jpg", bgr_adjusted)
+    cv2.imwrite("Adjusted.jpg", bgr_adjusted)
 
     width = (int)(bgr_original.shape[1] / 2)
     combined_image = np.hstack([bgr_original[:, :width], bgr_adjusted[:, -width:]])

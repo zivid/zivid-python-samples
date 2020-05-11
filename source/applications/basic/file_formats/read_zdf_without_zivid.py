@@ -1,8 +1,10 @@
 """
 Import ZDF point cloud without Zivid Software.
+Note: ZIVID_DATA needs to be set to the location of Zivid Sample Data files.
 """
 
 from pathlib import Path
+import os
 from netCDF4 import Dataset
 from matplotlib import pyplot as plt
 import numpy as np
@@ -10,7 +12,7 @@ import numpy as np
 
 def _main():
 
-    filename_zdf = Path(__file__).parents[2] / "Zivid3D.zdf"
+    filename_zdf = Path() / f"{str(os.environ['ZIVID_DATA'])}/Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
     with Dataset(filename_zdf) as data:

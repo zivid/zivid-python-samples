@@ -33,7 +33,7 @@ frame = camera.capture()
 
 We can now save our results. By default the 3D point cloud is saved in Zivid format `.zdf` ([go to source][save-url]).
 ```python
-frame.save("result.zdf")
+frame.save("Result.zdf")
 ```
 
 ## Conclusion

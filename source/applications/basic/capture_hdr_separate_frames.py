@@ -50,9 +50,9 @@ def _main():
     hdr = zivid.hdr.combine_frames([frame1, frame2, frame3])
 
     print("Saving the frames")
-    frame1.save("frame1.zdf")
-    frame2.save("frame2.zdf")
-    frame3.save("frame3.zdf")
+    frame1.save("Frame1.zdf")
+    frame2.save("Frame2.zdf")
+    frame3.save("Frame3.zdf")
 
     print("Saving the HDR frame")
     hdr.save("HDR.zdf")
