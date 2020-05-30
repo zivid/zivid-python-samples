@@ -17,7 +17,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**capture_hdr**][capture_hdr-url] - This example shows how to acquire HDR images from the Zivid camera.
     - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - This example shows how to acquire HDR images from the Zivid camera and configure all settings.
   - **info_util_other**
-    - [**print_version_info**][print_version_info-url] - This example shows how to print version info from the Zivid camera.
+    - [**print_version_info**][print_version_info-url] - This example shows how to print version info about connected Zivid cameras and the installed Zivid SDK.
 
 - **applications**
   - **basic**
