@@ -1,4 +1,8 @@
-"""Import ZDF point cloud, apply a binary mask, and visualize it."""
+"""
+Import ZDF point cloud, apply a binary mask, and visualize it.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+"""
 
 import math
 from pathlib import Path
@@ -6,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pptk
 import zivid
+
+from utils.paths import get_sample_data_path
 
 
 def _display_rgb(rgb):
@@ -90,10 +96,9 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = "Zivid3D.zdf"
-
+    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
     print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
+    frame = zivid.Frame(filename_zdf)
 
     point_cloud = frame.get_point_cloud().to_array()
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])

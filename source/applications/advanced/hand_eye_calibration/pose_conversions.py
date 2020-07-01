@@ -1,10 +1,13 @@
-"""Example to show conversions to/from Transformation Matrix.
+"""
+Example to show conversions to/from Transformation Matrix.
 
 Zivid primarily operate with a (4x4) Transformation Matrix (Rotation Matrix + Translation Vector).
 This example shows how to use Eigen to convert to and from:
   AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion
 
  It provides convenience functions that can be reused in applicable applications.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 import enum
@@ -12,8 +15,9 @@ from pathlib import Path
 from dataclasses import dataclass, field
 import numpy as np
 import cv2
-import zivid
 from scipy.spatial.transform import Rotation as R
+
+from utils.paths import get_sample_data_path
 
 
 def _main():
@@ -21,7 +25,7 @@ def _main():
     print_header("This example shows conversions to/from Transformation Matrix")
 
     transformation_matrix = get_transformation_matrix_from_yaml(
-        f"{str(zivid.environment.data_path())}/RobotTransform.yaml"
+        Path() / get_sample_data_path() / "RobotTransform.yaml"
     )
     print(f"Transformation Matrix:\n{transformation_matrix}")
 

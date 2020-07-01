@@ -1,17 +1,19 @@
 """
 Convert ZDF point cloud to TXT format without Zivid Software.
-Note: ZIVID_DATA needs to be set to the location of Zivid Sample Data files.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from pathlib import Path
-import os
 import numpy as np
 from netCDF4 import Dataset
+
+from utils.paths import get_sample_data_path
 
 
 def _main():
 
-    filename_zdf = Path() / f"{str(os.environ['ZIVID_DATA'])}/Zivid3D.zdf"
+    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
     filename_txt = "Zivid3D.txt"
 
     print(f"Reading {filename_zdf} point cloud")

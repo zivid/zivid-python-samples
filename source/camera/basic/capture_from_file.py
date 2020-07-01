@@ -1,11 +1,15 @@
 """File camera capture sample."""
+from pathlib import Path
+
 import zivid
+
+from utils.paths import get_sample_data_path
 
 
 def _main():
     app = zivid.Application()
     camera = app.create_file_camera(
-        str(zivid.environment.data_path()) + "/MiscObjects.zdf"
+        Path() / get_sample_data_path() / "FileCameraZividOne.zfc"
     )
 
     with camera.capture() as frame:

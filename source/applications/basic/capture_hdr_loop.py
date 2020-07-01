@@ -11,6 +11,8 @@ from pathlib import Path
 import yaml
 import zivid
 
+from utils.paths import get_sample_data_path
+
 
 def _read_settings_from_file(path: Path) -> zivid.Settings:
     settings_from_yaml = yaml.load(path.read_text(), Loader=yaml.Loader)["Settings"]
@@ -49,7 +51,9 @@ def _main():
         for frame_index in range(number_of_frames_per_hdr):
             settings = _read_settings_from_file(
                 Path()
-                / f"{str(zivid.environment.data_path())}/Settings/Set{hdr_index+1}/Frame0{frame_index+1}.yml"
+                / Path()
+                / get_sample_data_path()
+                / "Settings/Set{hdr_index+1}/Frame0{frame_index+1}.yml"
             )
             print(
                 f"\tFrame {frame_index + 1}:"

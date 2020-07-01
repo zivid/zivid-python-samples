@@ -66,7 +66,13 @@ Note: The version tested with Zivid cameras is 1.8.1.
 
        pip install -r requirements.txt
 
-6. Open and run one of the samples.
+6. Add the directory `source` to PYTHONPATH. Navigate to the root of the repository and run:
+
+    - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
+    - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
+    - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
+
+7. Open and run one of the samples.
 
 ## Support
 If you need assistance with using Zivid cameras, visit our Knowledge Base at [https://help.zivid.com/](https://help.zivid.com/) or contact us at [customersuccess@zivid.com](mailto:customersuccess@zivid.com).

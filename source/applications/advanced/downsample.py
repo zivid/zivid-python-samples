@@ -1,5 +1,7 @@
 """
 Import ZDF point cloud and downsample it.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from math import fmod
@@ -9,6 +11,8 @@ import matplotlib.pyplot as plt
 
 from vtk_visualizer import plotxyzrgb
 import zivid
+
+from utils.paths import get_sample_data_path
 
 
 def _gridsum(matrix, downsampling_factor):
@@ -129,11 +133,9 @@ def _main():
 
     app = zivid.Application()
 
-    # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    filename_zdf = "Zivid3D.zdf"
-
+    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
     print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
+    frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
     point_cloud = frame.get_point_cloud().to_array()

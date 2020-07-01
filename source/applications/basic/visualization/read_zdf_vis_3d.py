@@ -1,4 +1,8 @@
-"""Import ZDF point cloud and visualize it."""
+"""
+Import ZDF point cloud and visualize it.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+"""
 
 import math
 from pathlib import Path
@@ -6,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pptk
 import zivid
+
+from utils.paths import get_sample_data_path
 
 
 def _display_rgb(rgb):
@@ -95,7 +101,7 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = Path() / f"{str(zivid.environment.data_path())}/Zivid3D.zdf"
+    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
 
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)
