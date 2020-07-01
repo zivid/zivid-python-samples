@@ -62,13 +62,13 @@ for cam in cameras:
 
 You may want to experiment with the SDK, without access to a physical camera. Minor changes are required to keep the sample working ([go to source][filecamera-url]).
 ```python
-camera = app.create_file_camera((str(zivid.environment.data_path()) + "/MiscObjects.zdf")
+camera = app.create_file_camera((Path() / get_sample_data_path() / "FileCameraZividOne.zfc")
 ```
 
 ---
 **Note**
 
-The quality of the point cloud you get from *MiscObjects.zdf* is not representative of the Zivid One+.
+The quality of the point cloud you get from *FileCameraZividOne.zfc* is not representative of the Zivid One+.
 
 ---
 

@@ -1,12 +1,15 @@
 """
 Utilize the result of eye-in-hand calibration to transform (picking) point
 coordinates from the camera frame to the robot base frame.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from pathlib import Path
 import numpy as np
 import cv2
-import zivid
+
+from utils.paths import get_sample_data_path
 
 
 def _assert_valid_matrix(file_name):
@@ -66,8 +69,8 @@ def _main():
     print(f"Point coordinates in camera frame: {point_in_camera_frame[0:3]}")
 
     # Check if YAML files are valid
-    eye_in_hand_transform_file = str(Path(f"{str(zivid.environment.data_path())}/EyeInHandTransform.yaml"))
-    robot_transform_file = str(Path(f"{str(zivid.environment.data_path())}/RobotTransform.yaml"))
+    eye_in_hand_transform_file = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
+    robot_transform_file = Path() / get_sample_data_path() / "RobotTransform.yaml"
     _assert_valid_matrix(eye_in_hand_transform_file)
     _assert_valid_matrix(robot_transform_file)
 

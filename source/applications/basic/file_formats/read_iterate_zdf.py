@@ -1,19 +1,22 @@
 """
 This example shows how to import, display and iterate over a Zivid point cloud from a .ZDF
 file.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from pathlib import Path
 import numpy as np
 import zivid
 
+from utils.paths import get_sample_data_path
+
 
 def _main():
 
     app = zivid.Application()
 
-    filename_zdf = Path() / f"{str(zivid.environment.data_path())}/Zivid3D.zdf"
-
+    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)
 
