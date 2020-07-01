@@ -8,13 +8,12 @@ def _main():
     camera = app.connect_camera()
 
     settings_2d = zivid.Settings2D()
-    settings_2d.iris = 20
-    settings_2d.exposure_time = datetime.timedelta(microseconds=30000)
-    settings_2d.brightness(1.8)
-    settings_2d.gain(2.0)
+    settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
+    settings_2d.acquisitions[0].aperture = 2.83
+    settings_2d.acquisitions[0].exposure_time = datetime.timedelta(microseconds=10000)
 
-    with camera.capture_2d(settings_2d) as frame_2d:
-        image = frame_2d.image()
+    with camera.capture(settings_2d) as frame_2d:
+        image = frame_2d.image_rgba()
         image.save("Result.png")
 
 

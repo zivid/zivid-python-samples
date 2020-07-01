@@ -56,11 +56,14 @@ def _capture_2d_image(camera):
         OpenCV BGR image
 
     """
-    settings_2d = zivid.Settings2D()
-    with camera.capture_2d(settings_2d) as frame_2d:
-        image = frame_2d.image()
-        image_array = image.to_array()
-        return np.dstack([image_array["b"], image_array["g"], image_array["r"]])
+    settings_2d = zivid.Settings2D(
+        acquisitions=[zivid.Settings2D.Acquisition()],
+    )
+    with camera.capture(settings_2d) as frame_2d:
+        image = frame_2d.image_rgba()
+        rgba = image.copy_data()
+        bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
+        return bgr
 
 
 def _main():

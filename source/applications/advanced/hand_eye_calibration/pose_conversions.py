@@ -1,10 +1,13 @@
-"""Example to show conversions to/from Transformation Matrix.
+"""
+Example to show conversions to/from Transformation Matrix.
 
 Zivid primarily operate with a (4x4) Transformation Matrix (Rotation Matrix + Translation Vector).
 This example shows how to use Eigen to convert to and from:
   AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion
 
  It provides convenience functions that can be reused in applicable applications.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 import enum
@@ -12,8 +15,9 @@ from pathlib import Path
 from dataclasses import dataclass, field
 import numpy as np
 import cv2
-import zivid
 from scipy.spatial.transform import Rotation as R
+
+from sample_utils.paths import get_sample_data_path
 
 
 def _main():
@@ -21,7 +25,7 @@ def _main():
     print_header("This example shows conversions to/from Transformation Matrix")
 
     transformation_matrix = get_transformation_matrix_from_yaml(
-        f"{str(zivid.environment.data_path())}/RobotTransform.yaml"
+        Path() / get_sample_data_path() / "RobotTransform.yaml"
     )
     print(f"Transformation Matrix:\n{transformation_matrix}")
 
@@ -247,12 +251,12 @@ def save_transformation_matrix_to_yaml(transformation_matrix, path: Path):
     Returns None
 
     """
-    file_storage_out = cv2.FileStorage(path, cv2.FILE_STORAGE_WRITE)
+    file_storage_out = cv2.FileStorage(str(path), cv2.FILE_STORAGE_WRITE)
     file_storage_out.write("TransformationMatrixFromQuaternion", transformation_matrix)
     file_storage_out.release()
 
 
-def get_transformation_matrix_from_yaml(path: Path):
+def get_transformation_matrix_from_yaml(path):
     """Get Transformation Matrix from YAML. Uses OpenCV to maintain yaml format.
 
     Args:
@@ -262,7 +266,7 @@ def get_transformation_matrix_from_yaml(path: Path):
         4x4 Transformation Matrix
 
     """
-    file_storage_in = cv2.FileStorage(path, cv2.FILE_STORAGE_READ)
+    file_storage_in = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
     transformation_matrix = file_storage_in.getNode("PoseState").mat()
     file_storage_in.release()
     return transformation_matrix

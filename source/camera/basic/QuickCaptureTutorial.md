@@ -22,11 +22,19 @@ First we have to connect to the camera ([go to source][connect-url]).
 camera = app.connect_camera()
 ```
 
+## Configure
+
+Then we have to create settings ([go to source][settings-url]).
+```python
+settings = zivid.Settings()
+settings.acquisitions.append(zivid.Settings.Acquisition())
+```
+
 ## Capture
 
 Now we can capture a frame. The default capture is a single 3D point cloud ([go to source][capture-url]).
 ```python
-frame = camera.capture()
+frame = camera.capture(settings)
 ```
 
 ## Save
@@ -45,7 +53,8 @@ This tutorial showed how few API calls are required to capture a point cloud wit
 [The complete Capture Tutorial](CaptureTutorial.md)
 
 [installation-instructions-url]: ../../../README.md#instructions
-[start_app-url]: capture.py#L7
-[connect-url]: capture.py#L8
-[capture-url]: capture.py#L15
-[save-url]: capture.py#L16
+[start_app-url]: capture.py#L10
+[connect-url]: capture.py#L13
+[settings-url]: capture.py#L16-L17
+[capture-url]: capture.py#L24
+[save-url]: capture.py#L27
