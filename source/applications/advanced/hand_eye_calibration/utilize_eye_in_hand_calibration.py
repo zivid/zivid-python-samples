@@ -1,12 +1,15 @@
 """
 Utilize the result of eye-in-hand calibration to transform (picking) point
 coordinates from the camera frame to the robot base frame.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from pathlib import Path
 import numpy as np
 import cv2
-import zivid
+
+from sample_utils.paths import get_sample_data_path
 
 
 def _assert_valid_matrix(file_name):
@@ -20,9 +23,8 @@ def _assert_valid_matrix(file_name):
         NameError: If the transformation matrix named 'PoseState' is not found in the file.
         ValueError: If the dimensions of the transformation matrix are not 4 x 4.
     """
-
-    file_storage = cv2.FileStorage(file_name, cv2.FILE_STORAGE_READ)
-    if not file_storage.open(file_name, cv2.FILE_STORAGE_READ):
+    file_storage = cv2.FileStorage(str(file_name), cv2.FILE_STORAGE_READ)
+    if not file_storage.open(str(file_name), cv2.FILE_STORAGE_READ):
         file_storage.release()
         raise FileNotFoundError(f"Could not open {file_name}")
 
@@ -48,8 +50,7 @@ def _read_transform(file_name):
         transform: Transformation matrix.
 
     """
-
-    file_storage = cv2.FileStorage(file_name, cv2.FILE_STORAGE_READ)
+    file_storage = cv2.FileStorage(str(transform_file), cv2.FILE_STORAGE_READ)
     transform = file_storage.getNode("PoseState").mat()
     file_storage.release()
 
@@ -66,8 +67,8 @@ def _main():
     print(f"Point coordinates in camera frame: {point_in_camera_frame[0:3]}")
 
     # Check if YAML files are valid
-    eye_in_hand_transform_file = str(Path(f"{str(zivid.environment.data_path())}/EyeInHandTransform.yaml"))
-    robot_transform_file = str(Path(f"{str(zivid.environment.data_path())}/RobotTransform.yaml"))
+    eye_in_hand_transform_file = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
+    robot_transform_file = Path() / get_sample_data_path() / "RobotTransform.yaml"
     _assert_valid_matrix(eye_in_hand_transform_file)
     _assert_valid_matrix(robot_transform_file)
 

@@ -54,7 +54,7 @@ There are two main categories of samples: **camera** and **applications**. The s
 ## Instructions
 
 1. [**Install Zivid Software**](https://www.zivid.com/downloads).
-Note: The version tested with Zivid cameras is 1.8.1.
+Note: The version tested with Zivid cameras is 2.0.0.
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
 
@@ -66,7 +66,13 @@ Note: The version tested with Zivid cameras is 1.8.1.
 
        pip install -r requirements.txt
 
-6. Open and run one of the samples.
+6. Add the directory `source` to PYTHONPATH. Navigate to the root of the repository and run:
+
+    - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
+    - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
+    - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
+
+7. Open and run one of the samples.
 
 ## Support
 If you need assistance with using Zivid cameras, visit our Knowledge Base at [https://help.zivid.com/](https://help.zivid.com/) or contact us at [customersuccess@zivid.com](mailto:customersuccess@zivid.com).
@@ -100,3 +106,4 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 [create_depth_map-url]: source/applications/advanced/create_depth_map.py
 [gamma_correction-url]: source/applications/advanced/gamma_correction.py
 [color_balance-url]: source/applications/advanced/color_balance.py
+[mask_point_cloud-url]: source/applications/advanced/mask_point_cloud.py

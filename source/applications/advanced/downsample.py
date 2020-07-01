@@ -1,5 +1,7 @@
 """
 Import ZDF point cloud and downsample it.
+Note: Zivid Sample Data files must be downloaded, see
+https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from math import fmod
@@ -9,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from vtk_visualizer import plotxyzrgb
 import zivid
+from sample_utils.paths import get_sample_data_path
 
 
 def _gridsum(matrix, downsampling_factor):
@@ -46,13 +49,13 @@ def _sumline(matrix, downsampling_factor):
     )
 
 
-def _downsample(xyz, rgb, contrast, downsampling_factor):
+def _downsample(xyz, rgb, snr, downsampling_factor):
     """Function for downsampling a Zivid point cloud.
 
     Args:
         xyz: Point cloud.
         rgb: Color image.
-        contrast: Contrast image.
+        snr: SNR image.
         downsampling_factor: The denominator of a fraction that represents the
             size of the downsampled point cloud relative to the original point
             cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
@@ -81,35 +84,16 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
             (np.transpose(_gridsum(rgb[:, :, i], downsampling_factor))) / (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
-    contrast[np.isnan(xyz[:, :, 2])] = 0
-    contrast_weight = _gridsum(contrast[:, :, 0], downsampling_factor)
+    snr[np.isnan(xyz[:, :, 2])] = 0
+    snr_weight = _gridsum(snr, downsampling_factor)
 
-    x_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
-    y_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
-    z_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
+    x_initial = xyz[:, :, 0]
+    y_initial = xyz[:, :, 1]
+    z_initial = xyz[:, :, 2]
 
-    x_initial[:, :, 0] = xyz[:, :, 0]
-    y_initial[:, :, 0] = xyz[:, :, 1]
-    z_initial[:, :, 0] = xyz[:, :, 2]
-
-    x_new = np.transpose(
-        np.divide(
-            _gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
-        )
-    )
-    y_new = np.transpose(
-        np.divide(
-            _gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
-        )
-    )
-    z_new = np.transpose(
-        np.divide(
-            _gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
-        )
-    )
+    x_new = np.transpose(np.divide(_gridsum((np.multiply(x_initial, snr)), downsampling_factor), snr_weight,))
+    y_new = np.transpose(np.divide(_gridsum((np.multiply(y_initial, snr)), downsampling_factor), snr_weight,))
+    z_new = np.transpose(np.divide(_gridsum((np.multiply(z_initial, snr)), downsampling_factor), snr_weight,))
 
     xyz_new = np.dstack([x_new, y_new, z_new])
 
@@ -120,21 +104,19 @@ def _main():
 
     app = zivid.Application()
 
-    # The Zivid3D.zdf file has to be in the same folder as this sample script.
-    filename_zdf = "Zivid3D.zdf"
-
+    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
     print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
+    frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    point_cloud = frame.get_point_cloud().to_array()
-    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
-    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
-    contrast = np.dstack([point_cloud["contrast"]])
+    point_cloud = frame.point_cloud()
+    xyz = point_cloud.copy_data("xyz")
+    rgba = point_cloud.copy_data("rgba")
+    snr = frame.point_cloud().copy_data("snr")
 
     # Downsampling the point cloud
     downsampling_factor = 4
-    [xyz_new, rgb_new] = _downsample(xyz, rgb, contrast, downsampling_factor)
+    [xyz_new, rgb_new] = _downsample(xyz, rgba[:,:,0:3], snr, downsampling_factor)
 
     # Getting the point cloud
     point_cloud = np.dstack([xyz_new, rgb_new])
