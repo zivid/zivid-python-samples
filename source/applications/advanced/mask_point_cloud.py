@@ -100,15 +100,15 @@ def _main():
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)
 
-    point_cloud = frame.get_point_cloud().to_array()
-    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
-    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
+    point_cloud = frame.point_cloud()
+    xyz = point_cloud.copy_data("xyz")
+    rgba = point_cloud.copy_data("rgba")
 
     pixels_to_display = 300
     print(f"Generating a binary mask of central {pixels_to_display} x {pixels_to_display} pixels")
-    mask = np.zeros((rgb.shape[0], rgb.shape[1]), np.bool)
-    height = frame.get_point_cloud().height
-    width = frame.get_point_cloud().width
+    mask = np.zeros((rgba.shape[0], rgba.shape[1]), np.bool)
+    height = frame.point_cloud().height
+    width = frame.point_cloud().width
     h_min = int((height - pixels_to_display) / 2)
     h_max = int((height + pixels_to_display) / 2)
     w_min = int((width - pixels_to_display) / 2)
@@ -119,14 +119,14 @@ def _main():
     xyz_masked = xyz.copy()
     xyz_masked[mask == 0] = np.nan
 
-    _display_rgb(rgb)
+    _display_rgb(rgba[:,:,0:3])
 
     _display_depthmap(xyz)
-    _display_pointcloud(rgb, xyz)
+    _display_pointcloud(rgba[:,:,0:3], xyz)
     input("Press Enter to continue...")
 
     _display_depthmap(xyz_masked)
-    _display_pointcloud(rgb, xyz_masked)
+    _display_pointcloud(rgba[:,:,0:3], xyz_masked)
     input("Press Enter to close...")
 
 

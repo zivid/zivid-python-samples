@@ -21,8 +21,7 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    point_cloud = frame.get_point_cloud().to_array()
-    depth_map = np.dstack([point_cloud["z"]])
+    depth_map = frame.point_cloud().copy_data("z")
 
     depth_map_uint8 = (
         (depth_map - np.nanmin(depth_map)) / (np.nanmax(depth_map) - np.nanmin(depth_map)) * 255
@@ -32,14 +31,15 @@ def _main():
     depth_map_color_map = cv2.applyColorMap(depth_map_uint8, cv2.COLORMAP_JET)
 
     # Setting nans to black
-    depth_map_color_map[np.isnan(depth_map)[:, :, 0]] = 0
+    depth_map_color_map[np.isnan(depth_map)[:, :]] = 0
 
-    rgb = np.dstack([point_cloud["b"], point_cloud["g"], point_cloud["r"]])
+    rgba = frame.point_cloud().copy_data("rgba")
+    bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
 
     # Displaying the RGB image
     rgb_window = "ImageRGB"
     cv2.namedWindow(rgb_window, cv2.WINDOW_NORMAL)
-    cv2.imshow(rgb_window, rgb)
+    cv2.imshow(rgb_window, bgr)
 
     # Waiting for the window to be closed
     print("Close the RGB image to continue")
@@ -48,7 +48,7 @@ def _main():
     cv2.destroyWindow(rgb_window)
 
     # Saving the RGB image
-    cv2.imwrite(f"{rgb_window}.png", rgb)
+    cv2.imwrite(f"{rgb_window}.png", bgr)
 
     # Displaying the Depth map
     depth_window = "DepthMap"

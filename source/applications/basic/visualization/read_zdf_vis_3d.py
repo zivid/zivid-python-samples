@@ -106,15 +106,15 @@ def _main():
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)
 
-    point_cloud = frame.get_point_cloud().to_array()
-    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
-    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
+    point_cloud = frame.point_cloud()
+    xyz = point_cloud.copy_data("xyz")
+    rgba = point_cloud.copy_data("rgba")
 
-    _display_rgb(rgb)
+    _display_rgb(rgba[:,:,0:3])
 
     _display_depthmap(xyz)
 
-    _display_pointcloud(rgb, xyz)
+    _display_pointcloud(rgba[:,:,0:3], xyz)
 
     input("Press Enter to close...")
 
