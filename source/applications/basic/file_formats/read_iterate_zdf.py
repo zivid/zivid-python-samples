@@ -21,13 +21,13 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Extracting point cloud from the frame
-    point_cloud = frame.get_point_cloud().to_array()
+    point_cloud = frame.point_cloud().to_array()
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
     rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
     contrast = np.dstack([point_cloud["contrast"]])
 
-    height = frame.get_point_cloud().height
-    width = frame.get_point_cloud().width
+    height = frame.point_cloud().height
+    width = frame.point_cloud().width
 
     print("Point cloud information:")
     print(f"Number of points: {point_cloud.size}")

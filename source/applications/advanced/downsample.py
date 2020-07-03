@@ -138,7 +138,7 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    point_cloud = frame.get_point_cloud().to_array()
+    point_cloud = frame.point_cloud().to_array()
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
     rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
     contrast = np.dstack([point_cloud["contrast"]])

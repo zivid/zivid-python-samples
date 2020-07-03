@@ -122,7 +122,7 @@ def _main():
     print(f"Reading {user_options.filename} point cloud")
     frame = zivid.Frame(user_options.filename)
 
-    point_cloud = frame.get_point_cloud().to_array()
+    point_cloud = frame.point_cloud().to_array()
 
     if user_options.ply:
         _convert_2_ply(frame, file_path.stem)

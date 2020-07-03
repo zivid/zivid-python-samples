@@ -21,7 +21,7 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Getting the point cloud
-    point_cloud = frame.get_point_cloud().to_array()
+    point_cloud = frame.point_cloud().to_array()
     depth_map = np.dstack([point_cloud["z"]])
 
     depth_map_uint8 = (

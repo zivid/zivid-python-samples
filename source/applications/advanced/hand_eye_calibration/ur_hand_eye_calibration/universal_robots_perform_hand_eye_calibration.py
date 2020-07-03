@@ -298,7 +298,7 @@ def _verify_good_capture(frame: zivid.Frame):
         RuntimeError: If no feature points are detected in frame
     """
 
-    point_cloud = frame.get_point_cloud()
+    point_cloud = frame.point_cloud()
     detected_features = zivid.hand_eye.detect_feature_points(point_cloud)
 
     if not detected_features:
@@ -431,7 +431,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
         if frame_file.is_file() and pose_file.is_file():
 
             print(f"Detect feature points from img{idata:02d}.zdf")
-            point_cloud = zivid.Frame(frame_file).get_point_cloud()
+            point_cloud = zivid.Frame(frame_file).point_cloud()
             detected_features = zivid.hand_eye.detect_feature_points(point_cloud)
 
             if not detected_features:

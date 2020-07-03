@@ -59,7 +59,7 @@ def _main():
                 frame = _acquire_checkerboard_frame(camera)
 
                 print("Detecting checkerboard square centers... ")
-                result = zivid.hand_eye.detect_feature_points(frame.get_point_cloud())
+                result = zivid.hand_eye.detect_feature_points(frame.point_cloud())
 
                 if result:
                     print("OK")
