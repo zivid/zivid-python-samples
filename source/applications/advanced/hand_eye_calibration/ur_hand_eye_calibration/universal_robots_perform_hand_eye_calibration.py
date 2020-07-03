@@ -209,8 +209,15 @@ def pose_from_datastring(datastring: str):
     """
 
     string = datastring.split("data:")[-1].strip().strip("[").strip("]")
+<<<<<<< HEAD
     pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape((4, 4))
     return zivid.hand_eye.Pose(pose_matrix)
+=======
+    pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape(
+        (4, 4)
+    )
+    return zivid.calibration.Pose(pose_matrix)
+>>>>>>> 66b6ccb... Update Hand-Eye samples for new API
 
 
 def _save_hand_eye_results(save_dir: Path, transform: np.array, residuals: list):
@@ -273,7 +280,7 @@ def _verify_good_capture(frame: zivid.Frame):
     """
 
     point_cloud = frame.point_cloud()
-    detected_features = zivid.hand_eye.detect_feature_points(point_cloud)
+    detected_features = zivid.calibration.detect_feature_points(point_cloud)
 
     if not detected_features:
         raise RuntimeError("Failed to detect feature points from captured frame.")
@@ -392,7 +399,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
 
             print(f"Detect feature points from img{idata:02d}.zdf")
             point_cloud = zivid.Frame(frame_file).point_cloud()
-            detected_features = zivid.hand_eye.detect_feature_points(point_cloud)
+            detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
             if not detected_features:
                 raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
@@ -401,8 +408,9 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
             with open(pose_file) as file:
                 pose = pose_from_datastring(file.read())
 
-            detection_result = zivid.hand_eye.CalibrationInput(pose, detected_features)
-            calibration_inputs.append(detection_result)
+            calibration_inputs.append(
+                zivid.calibration.HandEyeInput(pose, detection_result)
+            )
         else:
             break
 
@@ -411,14 +419,14 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
     print(f"\nPerform {mode} calibration")
 
     if mode == "eye-in-hand":
-        calibration_result = zivid.hand_eye.calibrate_eye_in_hand(calibration_inputs)
+        calibration_result = zivid.calibration.calibrate_eye_in_hand(calibration_inputs)
     elif mode == "eye-to-hand":
-        calibration_result = zivid.hand_eye.calibrate_eye_to_hand(calibration_inputs)
+        calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
     else:
         raise ValueError(f"Invalid calibration mode: {mode}")
 
-    transform = calibration_result.hand_eye_transform
-    residuals = calibration_result.per_pose_calibration_residuals
+    transform = calibration_result.transform
+    residuals = calibration_result.residuals
 
     print("\n\nTransform: \n")
     np.set_printoptions(precision=5, suppress=True)
