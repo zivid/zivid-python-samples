@@ -100,3 +100,4 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 [create_depth_map-url]: source/applications/advanced/create_depth_map.py
 [gamma_correction-url]: source/applications/advanced/gamma_correction.py
 [color_balance-url]: source/applications/advanced/color_balance.py
+[mask_point_cloud-url]: source/applications/advanced/mask_point_cloud.py
