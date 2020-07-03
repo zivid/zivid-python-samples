@@ -41,29 +41,20 @@ def _flatten_point_cloud(point_cloud):
     """Convert from point cloud to flattened point cloud (with numpy).
 
     Args:
-        point_cloud: a numpy array
+        point_cloud: a handle to point cloud in the GPU memory
 
     Returns:
-        2D numpy array, with 7 columns and npixels rows
+        2D numpy array, with 8 columns and npixels rows
 
     """
     # Convert to numpy 3D array
     point_cloud = np.dstack(
-        [
-            point_cloud["x"],
-            point_cloud["y"],
-            point_cloud["z"],
-            point_cloud["r"],
-            point_cloud["g"],
-            point_cloud["b"],
-            point_cloud["contrast"],
-        ]
+        [point_cloud.copy_data("xyz"), point_cloud.copy_data("rgba"), point_cloud.copy_data("snr")]
     )
     # Flattening the point cloud
-    flattened_point_cloud = point_cloud.reshape(-1, 7)
-    # Just the points without color and contrast
-    # point_cloud = np.dstack([point_cloud['x'],point_cloud['y'],point_cloud['z']])
-    # flattened_point_cloud = point_cloud.reshape(-1,3)
+    flattened_point_cloud = point_cloud.reshape(-1, 8)
+    # Just the points without color and SNR
+    # flattened_point_cloud = point_cloud.copy_data("xyz").reshape(-1,3)
 
     # Removing nans
     return flattened_point_cloud[~np.isnan(flattened_point_cloud[:, 0]), :]
@@ -85,7 +76,7 @@ def _convert_2_csv(point_cloud, file_name: str):
     """Convert from point cloud to csv or txt.
 
     Args:
-        point_cloud: a numpy array
+        point_cloud: a handle to point cloud in the GPU memory
         file_name: File name with extension
 
     """
@@ -97,13 +88,14 @@ def _convert_2_2d(point_cloud, file_name: str):
     """Convert from point cloud to 2D image.
 
     Args:
-        point_cloud: a numpy array
+        point_cloud: a handle to point cloud in the GPU memory
         file_name: File name without extension
 
     """
     print(f"Saving the frame to {file_name}")
-    rgb = np.dstack([point_cloud["b"], point_cloud["g"], point_cloud["r"]])
-    cv2.imwrite(file_name, rgb)
+    rgba = point_cloud.copy_data("rgba")
+    bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
+    cv2.imwrite(file_name, bgr)
 
 
 def _main():
@@ -118,7 +110,7 @@ def _main():
     print(f"Reading {user_options.filename} point cloud")
     frame = zivid.Frame(user_options.filename)
 
-    point_cloud = frame.get_point_cloud().to_array()
+    point_cloud = frame.point_cloud()
 
     if user_options.ply:
         _convert_2_ply(frame, file_path.stem)

@@ -59,7 +59,7 @@ def _capture_2d_image(camera):
     settings_2d = zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()],)
     with camera.capture(settings_2d) as frame_2d:
         image = frame_2d.image()
-        image_array = image.to_array()
+        image_array = image.copy_data()
         return np.dstack([image_array["b"], image_array["g"], image_array["r"]])
 
 

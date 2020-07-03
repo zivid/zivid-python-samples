@@ -21,9 +21,9 @@ class MeanColor:
 
     """
 
-    red: np.array
-    green: np.array
-    blue: np.array
+    red: np.float64
+    green: np.float64
+    blue: np.float64
 
 
 def _frame2d_to_rgb(frame: zivid.Frame2D):
@@ -36,7 +36,7 @@ def _frame2d_to_rgb(frame: zivid.Frame2D):
         rgb: RGB image
 
     """
-    image = frame.image_rgba().to_array()
+    image = frame.image_rgba().copy_data()
     return np.dstack([image["r"], image["g"], image["b"]])
 
 
