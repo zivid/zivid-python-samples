@@ -21,9 +21,9 @@ class MeanColor:
 
     """
 
-    red: np.array
-    green: np.array
-    blue: np.array
+    red: np.float64
+    green: np.float64
+    blue: np.float64
 
 
 def _frame2d_to_rgb(frame: zivid.Frame2D):

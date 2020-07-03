@@ -21,19 +21,19 @@ def _main():
     frame = zivid.Frame(filename_zdf)
 
     # Extracting point cloud from the frame
-    point_cloud = frame.get_point_cloud().to_array()
-    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
-    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
-    contrast = np.dstack([point_cloud["contrast"]])
+    xyzrgba = frame.point_cloud().copy_data("xyzrgba")
+    xyz = np.dstack([xyzrgba["x"], xyzrgba["y"], xyzrgba["z"]])
+    rgb = np.dstack([xyzrgba["r"], xyzrgba["g"], xyzrgba["b"]])
+    snr = frame.point_cloud().copy_data("snr")
 
-    height = frame.get_point_cloud().height
-    width = frame.get_point_cloud().width
+    height = frame.point_cloud().height
+    width = frame.point_cloud().width
 
     print("Point cloud information:")
-    print(f"Number of points: {point_cloud.size}")
+    print(f"Number of points: {height * width}")
     print(f"Height: {height}, Width: {width}")
 
-    # Iterating over the point cloud and displaying X, Y, Z, R, G, B, and Contrast
+    # Iterating over the point cloud and displaying X, Y, Z, R, G, B, and SNR
     # for central 10 x 10 pixels
     pixels_to_display = 10
     for i in range(int((height - pixels_to_display) / 2), int((height + pixels_to_display) / 2)):
@@ -41,7 +41,7 @@ def _main():
             print(
                 f"Values at pixel ({i} , {j}): X:{xyz[i,j,0]:.1f} Y:{xyz[i,j,1]:.1f}"
                 f"Z:{xyz[i,j,2]:.1f} R:{rgb[i,j,0]} G:{rgb[i,j,1]} B:{rgb[i,j,2]}"
-                f"Contrast:{contrast[i,j,0]:.1f}"
+                f"SNR:{snr[i,j,0]:.1f}"
             )
 
 

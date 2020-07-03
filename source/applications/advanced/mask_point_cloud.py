@@ -97,15 +97,15 @@ def _main():
     print(f"Reading {filename_zdf} point cloud")
     frame = zivid.Frame(filename_zdf)
 
-    point_cloud = frame.get_point_cloud().to_array()
+    point_cloud = frame.point_cloud().copy_data("xyzrgba")
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
     rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
 
     pixels_to_display = 300
     print(f"Generating a binary mask of central {pixels_to_display} x {pixels_to_display} pixels")
     mask = np.zeros((rgb.shape[0], rgb.shape[1]), np.bool)
-    height = frame.get_point_cloud().height
-    width = frame.get_point_cloud().width
+    height = frame.point_cloud().height
+    width = frame.point_cloud().width
     h_min = int((height - pixels_to_display) / 2)
     h_max = int((height + pixels_to_display) / 2)
     w_min = int((width - pixels_to_display) / 2)
