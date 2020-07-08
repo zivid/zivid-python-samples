@@ -54,13 +54,13 @@ def _sumline(matrix, downsampling_factor):
     )
 
 
-def _downsample(xyz, rgb, contrast, downsampling_factor):
+def _downsample(xyz, rgb, snr, downsampling_factor):
     """Function for downsampling a Zivid point cloud.
 
     Args:
         xyz: Point cloud.
         rgb: Color image.
-        contrast: Contrast image.
+        snr: SNR image.
         downsampling_factor: The denominator of a fraction that represents the
             size of the downsampled point cloud relative to the original point
             cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
@@ -94,8 +94,8 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
             / (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
-    contrast[np.isnan(xyz[:, :, 2])] = 0
-    contrast_weight = _gridsum(contrast[:, :, 0], downsampling_factor)
+    snr[np.isnan(xyz[:, :, 2])] = 0
+    snr_weight = _gridsum(snr[:, :, 0], downsampling_factor)
 
     x_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
     y_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
@@ -107,20 +107,20 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
 
     x_new = np.transpose(
         np.divide(
-            _gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
+            _gridsum((np.multiply(x_initial, snr))[:, :, 0], downsampling_factor),
+            snr_weight,
         )
     )
     y_new = np.transpose(
         np.divide(
-            _gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
+            _gridsum((np.multiply(y_initial, snr))[:, :, 0], downsampling_factor),
+            snr_weight,
         )
     )
     z_new = np.transpose(
         np.divide(
-            _gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
+            _gridsum((np.multiply(z_initial, snr))[:, :, 0], downsampling_factor),
+            snr_weight,
         )
     )
 
@@ -141,11 +141,11 @@ def _main():
     point_cloud = frame.point_cloud().to_array()
     xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
     rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
-    contrast = np.dstack([point_cloud["contrast"]])
+    snr = np.dstack([point_cloud["snr"]])
 
     # Downsampling the point cloud
     downsampling_factor = 4
-    [xyz_new, rgb_new] = _downsample(xyz, rgb, contrast, downsampling_factor)
+    [xyz_new, rgb_new] = _downsample(xyz, rgb, snr, downsampling_factor)
 
     # Getting the point cloud
     point_cloud = np.dstack([xyz_new, rgb_new])

@@ -4,7 +4,7 @@ Example: $ python convert_zdf.py --ply Zivid3D.zdf
 
 Available formats:
     .ply - Polygon File Format
-    .csv,.txt - [X, Y, Z, r, g, b, Contrast]
+    .csv,.txt - [X, Y, Z, r, g, b, SNR]
     .png,.jpg,.bmp,.tiff - 2D RGB image
 """
 
@@ -60,12 +60,12 @@ def _flatten_point_cloud(point_cloud):
             point_cloud["r"],
             point_cloud["g"],
             point_cloud["b"],
-            point_cloud["contrast"],
+            point_cloud["snr"],
         ]
     )
     # Flattening the point cloud
     flattened_point_cloud = point_cloud.reshape(-1, 7)
-    # Just the points without color and contrast
+    # Just the points without color and SNR
     # point_cloud = np.dstack([point_cloud['x'],point_cloud['y'],point_cloud['z']])
     # flattened_point_cloud = point_cloud.reshape(-1,3)
 
