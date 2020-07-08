@@ -55,7 +55,7 @@ def _downsample(xyz, rgb, snr, downsampling_factor):
     Args:
         xyz: Point cloud.
         rgb: Color image.
-        snr: Contrast image.
+        snr: SNR image.
         downsampling_factor: The denominator of a fraction that represents the
             size of the downsampled point cloud relative to the original point
             cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
@@ -80,19 +80,15 @@ def _downsample(xyz, rgb, snr, downsampling_factor):
         ).astype(np.uint8)
 
     snr[np.isnan(xyz[:, :, 2])] = 0
-    snr_weight = _gridsum(snr[:, :, 0], downsampling_factor)
+    snr_weight = _gridsum(snr, downsampling_factor)
 
-    x_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
-    y_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
-    z_initial = np.zeros((int(xyz.shape[0]), int(xyz.shape[1]), 1), dtype=np.float32)
+    x_initial = xyz[:, :, 0]
+    y_initial = xyz[:, :, 1]
+    z_initial = xyz[:, :, 2]
 
-    x_initial[:, :, 0] = xyz[:, :, 0]
-    y_initial[:, :, 0] = xyz[:, :, 1]
-    z_initial[:, :, 0] = xyz[:, :, 2]
-
-    x_new = np.transpose(np.divide(_gridsum((np.multiply(x_initial, snr))[:, :, 0], downsampling_factor), snr_weight,))
-    y_new = np.transpose(np.divide(_gridsum((np.multiply(y_initial, snr))[:, :, 0], downsampling_factor), snr_weight,))
-    z_new = np.transpose(np.divide(_gridsum((np.multiply(z_initial, snr))[:, :, 0], downsampling_factor), snr_weight,))
+    x_new = np.transpose(np.divide(_gridsum((np.multiply(x_initial, snr)), downsampling_factor), snr_weight,))
+    y_new = np.transpose(np.divide(_gridsum((np.multiply(y_initial, snr)), downsampling_factor), snr_weight,))
+    z_new = np.transpose(np.divide(_gridsum((np.multiply(z_initial, snr)), downsampling_factor), snr_weight,))
 
     xyz_new = np.dstack([x_new, y_new, z_new])
 

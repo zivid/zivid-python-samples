@@ -33,7 +33,7 @@ def _main():
     print(f"Number of points: {height * width}")
     print(f"Height: {height}, Width: {width}")
 
-    # Iterating over the point cloud and displaying X, Y, Z, R, G, B, and Contrast
+    # Iterating over the point cloud and displaying X, Y, Z, R, G, B, and SNR
     # for central 10 x 10 pixels
     pixels_to_display = 10
     for i in range(int((height - pixels_to_display) / 2), int((height + pixels_to_display) / 2)):

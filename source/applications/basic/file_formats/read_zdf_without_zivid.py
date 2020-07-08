@@ -24,8 +24,8 @@ def _main():
         # Extracting the RGB image
         rgb = data["data"]["rgba_image"][:, :, :3]
 
-        # Extracting the contrast image
-        contrast = data["data"]["contrast"][:, :]
+        # Extracting the SNR image
+        snr = data["data"]["snr"][:, :]
 
     # Displaying the RGB image
     plt.figure()

@@ -4,7 +4,7 @@ Example: $ python convert_zdf.py --ply Zivid3D.zdf
 
 Available formats:
     .ply - Polygon File Format
-    .csv,.txt - [X, Y, Z, r, g, b, Contrast]
+    .csv,.txt - [X, Y, Z, r, g, b, SNR]
     .png,.jpg,.bmp,.tiff - 2D RGB image
 """
 

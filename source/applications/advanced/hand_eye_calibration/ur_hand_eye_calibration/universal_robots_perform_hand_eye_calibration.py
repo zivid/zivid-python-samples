@@ -209,15 +209,8 @@ def pose_from_datastring(datastring: str):
     """
 
     string = datastring.split("data:")[-1].strip().strip("[").strip("]")
-<<<<<<< HEAD
     pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape((4, 4))
     return zivid.hand_eye.Pose(pose_matrix)
-=======
-    pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape(
-        (4, 4)
-    )
-    return zivid.calibration.Pose(pose_matrix)
->>>>>>> 66b6ccb... Update Hand-Eye samples for new API
 
 
 def _save_hand_eye_results(save_dir: Path, transform: np.array, residuals: list):
@@ -408,9 +401,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
             with open(pose_file) as file:
                 pose = pose_from_datastring(file.read())
 
-            calibration_inputs.append(
-                zivid.calibration.HandEyeInput(pose, detection_result)
-            )
+            calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
         else:
             break
 

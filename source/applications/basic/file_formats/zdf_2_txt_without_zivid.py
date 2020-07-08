@@ -24,14 +24,14 @@ def _main():
         # Extracting the RGB image
         rgb = data["data"]["rgba_image"][:, :, :3]
 
-        # Extracting the contrast image
-        contrast = data["data"]["contrast"][:, :]
+        # Extracting the SNR image
+        snr = data["data"]["snr"][:, :]
 
     # Getting the point cloud
-    point_cloud = np.dstack([xyz, rgb, contrast])
+    point_cloud = np.dstack([xyz, rgb, snr])
     # Flattening the point cloud
     flattened_point_cloud = point_cloud.reshape(-1, 7)
-    # Just the points without color and contrast
+    # Just the points without color and SNR
     # pc = np.dstack([xyz])
     # flattened_point_cloud = pc.reshape(-1,3)
 
