@@ -61,8 +61,8 @@ def _capture_2d_image(camera):
         OpenCV BGR image
 
     """
-    settings_2d = zivid.Settings2D()
-    with camera.capture_2d(settings_2d) as frame_2d:
+    settings_2d = zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()],)
+    with camera.capture(settings_2d) as frame_2d:
         image = frame_2d.image()
         image_array = image.to_array()
         return np.dstack([image_array["b"], image_array["g"], image_array["r"]])

@@ -1,6 +1,6 @@
 """File camera capture sample."""
+import datetime
 from pathlib import Path
-
 import zivid
 
 from utils.paths import get_sample_data_path
@@ -12,7 +12,15 @@ def _main():
         Path() / get_sample_data_path() / "FileCameraZividOne.zfc"
     )
 
-    with camera.capture() as frame:
+    settings = zivid.Settings(
+        acquisitions=[
+            zivid.Settings.Acquisition(
+                aperture=5.66, exposure_time=datetime.timedelta(microseconds=8333),
+            ),
+        ],
+    )
+
+    with camera.capture(settings) as frame:
         frame.save("Result.zdf")
 
 

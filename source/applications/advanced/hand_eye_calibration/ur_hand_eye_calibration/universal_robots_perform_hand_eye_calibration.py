@@ -145,19 +145,22 @@ def _generate_folder():
     return location_dir
 
 
-def _get_frame_and_transform_matrix(con: rtde, cam: zivid.Camera):
+def _get_frame_and_transform_matrix(
+    con: rtde, camera: zivid.Camera, settings: zivid.Settings
+):
     """Capture image with Zivid camera and read robot pose
 
     Args:
         con: Connection between computer and robot
-        cam: Zivid camera
+        camera: Zivid camera
+        settings: Zivid settings
 
     Returns:
         Zivid frame
         4x4 tranformation matrix
     """
 
-    frame = cam.capture()
+    frame = camera.capture(settings)
     robot_pose = np.array(con.receive().actual_TCP_pose)
 
     translation = robot_pose[:3] * 1000
@@ -170,19 +173,31 @@ def _get_frame_and_transform_matrix(con: rtde, cam: zivid.Camera):
     return frame, transform
 
 
-def _set_camera_settings(cam: zivid.Camera):
+def _camera_settings() -> zivid.Settings:
     """Set camera settings
 
-    Args:
-        cam: Zivid camera
+    Returns:
+        Zivid Settings
     """
-    with cam.update_settings() as updater:
-        updater.settings.iris = 17
-        updater.settings.exposure_time = datetime.timedelta(microseconds=10000)
-        updater.settings.filters.reflection.enabled = True
-        updater.settings.brightness = 1.0
-        updater.settings.filters.gaussian.enabled = 1
-        updater.settings.gain = 1
+    return zivid.Settings(
+        acquisitions=[
+            zivid.Settings.Acquisition(
+                aperture=8.0,
+                exposure_time=datetime.timedelta(microseconds=10000),
+                brightness=1.0,
+                gain=1,
+            )
+        ],
+        processing=zivid.Settings.Processing(
+            filters=zivid.Settings.Processing.Filters(
+                smoothing=zivid.Settings.Processing.Filters.Smoothing(
+                    gaussian=zivid.Settings.Processing.Filters.Smoothing.Gaussian(
+                        enabled=True
+                    )
+                )
+            )
+        ),
+    )
 
 
 def _read_robot_state(con: rtde):
@@ -292,7 +307,8 @@ def _verify_good_capture(frame: zivid.Frame):
 
 def _capture_one_frame_and_robot_pose(
     con: rtde,
-    cam: zivid.Camera,
+    camera: zivid.Camera,
+    settings: zivid.Settings,
     save_dir: Path,
     input_data,
     image_num: int,
@@ -303,14 +319,15 @@ def _capture_one_frame_and_robot_pose(
 
     Args:
         con: Connection between computer and robot
-        cam: Zivid camera
+        camera: Zivid camera
+        settings: Zivid settings
         save_dir: Path to where data will be saved
         input_data: Input package containing the specific input data registers
         image_num: Image number
         ready_to_capture: Boolean value to robot_state that camera is ready to capture images
     """
 
-    frame, transform = _get_frame_and_transform_matrix(con, cam)
+    frame, transform = _get_frame_and_transform_matrix(con, camera, settings)
     _verify_good_capture(frame)
 
     # Signal robot to move to next position, then set signal to low again.
@@ -337,9 +354,9 @@ def _generate_dataset(con: rtde, input_data):
     """
 
     with zivid.Application() as app:
-        with app.connect_camera() as cam:
+        with app.connect_camera() as camera:
 
-            _set_camera_settings(cam)
+            settings = _camera_settings()
             save_dir = _generate_folder()
 
             # Signal robot that camera is ready
@@ -366,7 +383,8 @@ def _generate_dataset(con: rtde, input_data):
                     print(f"Capture image {_image_count(robot_state)}")
                     _capture_one_frame_and_robot_pose(
                         con,
-                        cam,
+                        camera,
+                        settings,
                         save_dir,
                         input_data,
                         images_captured,
