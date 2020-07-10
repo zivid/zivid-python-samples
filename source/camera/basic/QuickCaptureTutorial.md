@@ -26,7 +26,7 @@ camera = app.connect_camera()
 
 Now we can capture a frame. The default capture is a single 3D point cloud ([go to source][capture-url]).
 ```python
-frame = camera.capture()
+frame = camera.capture(settings)
 ```
 
 ## Save
