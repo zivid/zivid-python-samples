@@ -7,14 +7,14 @@ import zivid.hand_eye
 
 
 def _acquire_checkerboard_frame(camera):
+    print("Configuring settings...")
+    settings = zivid.Settings()
+    settings.acquisitions.append(zivid.Settings.Acquisition())
+    settings.acquisitions[0].aperture = 8.0
+    settings.acquisitions[0].exposure_time = datetime.timedelta(microseconds=20000)
+    settings.processing.filters.smoothing.gaussian.enabled = True
     print("Capturing checkerboard image... ")
-    with camera.update_settings() as updater:
-        updater.settings.iris = 17
-        updater.settings.gain = 1.0
-        updater.settings.exposure_time = datetime.timedelta(microseconds=20000)
-        updater.settings.filters.gaussian.enabled = True
-    print("OK")
-    return camera.capture()
+    return camera.capture(settings)
 
 
 def _enter_robot_pose(index):
