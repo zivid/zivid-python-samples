@@ -46,7 +46,7 @@ camera = app.connect_camera(serial_number="2020C0DE")
 ---
 **Note** 
 
-The serial number of your camera is shown in the Zivid Studio.
+The serial number of your camera is shown in Zivid Studio.
 
 ---
 
