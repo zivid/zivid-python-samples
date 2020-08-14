@@ -16,7 +16,9 @@ apt-yes install \
     python3-pip \
     || exit $?
 
-pip3 install -r $SCRIPT_DIR/requirements.txt || exit $?
-pip3 install -r $ROOT_DIR/requirements.txt || exit $?
+python3 -m pip install --upgrade pip || exit $?
+
+python3 -m pip install --requirement "$SCRIPT_DIR/requirements.txt" || exit $?
+python3 -m pip install --requirement "$ROOT_DIR/requirements.txt" || exit $?
 
 echo Success! ["$(basename $0)"]
