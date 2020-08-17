@@ -17,55 +17,28 @@ def _main():
     camera = app.connect_camera()
 
     print("Configuring the camera settings")
+    iris_setting = [17, 27, 27]
+    exposure_setting = [10000, 10000, 40000]
+    gain_setting = [1.0, 1.0, 2.0]
     settings_collection = [camera.settings for _ in range(3)]
-
-    settings_collection[0].iris = 10
-    settings_collection[0].exposure_time = datetime.timedelta(microseconds=10000)
-    settings_collection[0].brightness = 1
-    settings_collection[0].gain = 1
-    settings_collection[0].bidirectional = 0
-    settings_collection[0].filters.contrast.enabled = True
-    settings_collection[0].filters.Contrast.threshold = 5
-    settings_collection[0].filters.gaussian.enabled = True
-    settings_collection[0].filters.gaussian.sigma = 1.5
-    settings_collection[0].filters.outlier.enabled = True
-    settings_collection[0].filters.outlier.threshold = 5
-    settings_collection[0].filters.reflection.enabled = True
-    settings_collection[0].filters.saturated.enabled = True
-    settings_collection[0].blue_balance = 1.081
-    settings_collection[0].red_balance = 1.709
-
-    settings_collection[1].iris = 20
-    settings_collection[1].exposure_time = datetime.timedelta(microseconds=20000)
-    settings_collection[1].brightness = 0.5
-    settings_collection[1].gain = 2
-    settings_collection[1].bidirectional = 0
-    settings_collection[1].filters.contrast.enabled = True
-    settings_collection[1].filters.contrast.threshold = 5
-    settings_collection[1].filters.gaussian.enabled = True
-    settings_collection[1].filters.gaussian.sigma = 1.5
-    settings_collection[1].filters.outlier.enabled = True
-    settings_collection[1].filters.outlier.threshold = 5
-    settings_collection[1].filters.reflection.enabled = True
-    settings_collection[1].filters.saturated.enabled = True
-    settings_collection[1].blue_balance = 1.081
-    settings_collection[1].red_balance = 1.709
-
-    settings_collection[2].iris = 30
-    settings_collection[2].exposure_time = datetime.timedelta(microseconds=33000)
-    settings_collection[2].brightness = 1
-    settings_collection[2].gain = 1
-    settings_collection[2].bidirectional = 1
-    settings_collection[2].filters.contrast.enabled = True
-    settings_collection[2].filters.contrast.threshold = 5
-    settings_collection[2].filters.gaussian.enabled = True
-    settings_collection[2].filters.gaussian.sigma = 1.5
-    settings_collection[2].filters.outlier.enabled = True
-    settings_collection[2].filters.outlier.threshold = 5
-    settings_collection[2].filters.reflection.enabled = True
-    settings_collection[2].filters.saturated.enabled = True
-    settings_collection[2].blue_balance = 1.081
-    settings_collection[2].red_balance = 1.709
+    for i in range(len(settings_collection)):
+        settings_collection[i].iris = iris_setting[i]
+        settings_collection[i].exposure_time = datetime.timedelta(
+            microseconds=exposure_setting[i]
+        )
+        settings_collection[i].brightness = 1
+        settings_collection[i].gain = gain_setting[i]
+        settings_collection[i].bidirectional = 0
+        settings_collection[i].filters.contrast.enabled = True
+        settings_collection[i].filters.Contrast.threshold = 0.5
+        settings_collection[i].filters.gaussian.enabled = True
+        settings_collection[i].filters.gaussian.sigma = 1.5
+        settings_collection[i].filters.outlier.enabled = True
+        settings_collection[i].filters.outlier.threshold = 5
+        settings_collection[i].filters.reflection.enabled = True
+        settings_collection[i].filters.saturated.enabled = True
+        settings_collection[i].blue_balance = 1
+        settings_collection[i].red_balance = 1
 
     print("Capturing an HDR frame")
     with camera.capture(settings_collection) as hdr_frame:
