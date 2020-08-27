@@ -326,7 +326,7 @@ def _capture_one_frame_and_robot_pose(
 
 
 def _generate_dataset(con: rtde, input_data):
-    """ Generate dataset based on predefined robot poses
+    """Generate dataset based on predefined robot poses
 
     Args:
         con: Connection between computer and robot
@@ -387,7 +387,7 @@ def _generate_dataset(con: rtde, input_data):
 
 
 def perform_hand_eye_calibration(mode: str, data_dir: Path):
-    """ Perform had-eye calibration based on mode
+    """Perform had-eye calibration based on mode
 
     Args:
         mode: Calibration mode, eye-in-hand or eye-to-hand
