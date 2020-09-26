@@ -21,9 +21,7 @@ def _main():
 
     for hdr_index in range(1, 4):
         print(f"Capturing an HDR image, alternative settings #{hdr_index}")
-        settings = get_settings_from_yaml(
-            Path() / get_sample_data_path() / f"Settings/Settings{hdr_index:02d}.yml"
-        )
+        settings = get_settings_from_yaml(Path() / get_sample_data_path() / f"Settings/Settings{hdr_index:02d}.yml")
 
         with camera.capture(settings) as hdr_frame:
             out_file_name = f"HDR_Settings_{hdr_index}.zdf"

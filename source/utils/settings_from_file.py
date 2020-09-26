@@ -16,9 +16,7 @@ def _acquisitions_from_yaml(acquisitions_from_yaml):
             zivid.Settings.Acquisition(
                 brightness=acquisition["Acquisition"]["Brightness"],
                 aperture=acquisition["Acquisition"]["Aperture"],
-                exposure_time=datetime.timedelta(
-                    microseconds=acquisition["Acquisition"]["ExposureTime"]
-                ),
+                exposure_time=datetime.timedelta(microseconds=acquisition["Acquisition"]["ExposureTime"]),
                 gain=acquisition["Acquisition"]["Gain"],
             )
         )
@@ -26,9 +24,7 @@ def _acquisitions_from_yaml(acquisitions_from_yaml):
 
 
 def _contrast_distortion_from_yaml(from_yaml):
-    contrast_distortion = (
-        zivid.Settings.Processing.Filters.Experimental.ContrastDistortion()
-    )
+    contrast_distortion = zivid.Settings.Processing.Filters.Experimental.ContrastDistortion()
     contrast_distortion.correction.enabled = from_yaml["Correction"]["Enabled"]
     contrast_distortion.correction.strength = from_yaml["Correction"]["Strength"]
     contrast_distortion.removal.enabled = from_yaml["Removal"]["Enabled"]

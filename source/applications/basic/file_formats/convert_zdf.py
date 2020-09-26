@@ -30,13 +30,9 @@ def _options():
     group.add_argument("--jpg", action="store_true", help="Convert to JPEG (3D->2D)")
     group.add_argument("--tiff", action="store_true", help="Convert to TIFF (3D->2D)")
     group.add_argument(
-        "--png",
-        action="store_true",
-        help="Convert to Portable Network Graphics (3D->2D)",
+        "--png", action="store_true", help="Convert to Portable Network Graphics (3D->2D)",
     )
-    group.add_argument(
-        "--bmp", action="store_true", help="Convert to Windows bitmap (3D->2D)"
-    )
+    group.add_argument("--bmp", action="store_true", help="Convert to Windows bitmap (3D->2D)")
 
     return parser.parse_args()
 
