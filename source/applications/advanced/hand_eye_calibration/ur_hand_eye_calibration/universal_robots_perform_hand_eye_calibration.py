@@ -37,20 +37,14 @@ def _options():
     """
     parser = argparse.ArgumentParser(description=__doc__)
     mode_group = parser.add_mutually_exclusive_group(required=True)
-    mode_group.add_argument(
-        "--eih", "--eye-in-hand", action="store_true", help="eye-in-hand calibration"
-    )
-    mode_group.add_argument(
-        "--eth", "--eye-to-hand", action="store_true", help="eye-to-hand calibration"
-    )
+    mode_group.add_argument("--eih", "--eye-in-hand", action="store_true", help="eye-in-hand calibration")
+    mode_group.add_argument("--eth", "--eye-to-hand", action="store_true", help="eye-to-hand calibration")
     parser.add_argument("--ip", required=True, help="IP address to robot")
 
     return parser.parse_args()
 
 
-def _write_robot_state(
-    con: rtde, input_data, finish_capture: bool = False, camera_ready: bool = False
-):
+def _write_robot_state(con: rtde, input_data, finish_capture: bool = False, camera_ready: bool = False):
     """Write to robot I/O registrer
 
     Args:
@@ -107,9 +101,7 @@ def _initialize_robot_sync(host: str):
     return con, robot_input_data
 
 
-def _save_zdf_and_pose(
-    save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.array
-):
+def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.array):
     """Save data to folder
 
     Args:
@@ -121,9 +113,7 @@ def _save_zdf_and_pose(
 
     frame.save(save_dir / f"img{image_num:02d}.zdf")
 
-    file_storage = cv2.FileStorage(
-        str(save_dir / f"pos{image_num:02d}.yaml"), cv2.FILE_STORAGE_WRITE
-    )
+    file_storage = cv2.FileStorage(str(save_dir / f"pos{image_num:02d}.yaml"), cv2.FILE_STORAGE_WRITE)
     file_storage.write("PoseState", transform)
     file_storage.release()
 
@@ -135,9 +125,7 @@ def _generate_folder():
         Directory to where data will be saved
     """
 
-    location_dir = (
-        Path.cwd() / "datasets" / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    )
+    location_dir = Path.cwd() / "datasets" / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     if not location_dir.is_dir():
         location_dir.mkdir(parents=True)
@@ -213,9 +201,7 @@ def pose_from_datastring(datastring: str):
     """
 
     string = datastring.split("data:")[-1].strip().strip("[").strip("]")
-    pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape(
-        (4, 4)
-    )
+    pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape((4, 4))
     return zivid.hand_eye.Pose(pose_matrix)
 
 
@@ -228,15 +214,11 @@ def _save_hand_eye_results(save_dir: Path, transform: np.array, residuals: list)
         residuals: List of residuals
     """
 
-    file_storage_transform = cv2.FileStorage(
-        str(save_dir / "transformation.yaml"), cv2.FILE_STORAGE_WRITE
-    )
+    file_storage_transform = cv2.FileStorage(str(save_dir / "transformation.yaml"), cv2.FILE_STORAGE_WRITE)
     file_storage_transform.write("PoseState", transform)
     file_storage_transform.release()
 
-    file_storage_residuals = cv2.FileStorage(
-        str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE
-    )
+    file_storage_residuals = cv2.FileStorage(str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE)
     residual_list = []
     for res in residuals:
         tmp = list([res.translation, res.translation])
@@ -314,13 +296,9 @@ def _capture_one_frame_and_robot_pose(
     _verify_good_capture(frame)
 
     # Signal robot to move to next position, then set signal to low again.
-    _write_robot_state(
-        con, input_data, finish_capture=True, camera_ready=ready_to_capture
-    )
+    _write_robot_state(con, input_data, finish_capture=True, camera_ready=ready_to_capture)
     time.sleep(0.1)
-    _write_robot_state(
-        con, input_data, finish_capture=False, camera_ready=ready_to_capture
-    )
+    _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
     _save_zdf_and_pose(save_dir, image_num, frame, transform)
     print("Image and pose saved")
 
@@ -344,9 +322,7 @@ def _generate_dataset(con: rtde, input_data):
 
             # Signal robot that camera is ready
             ready_to_capture = True
-            _write_robot_state(
-                con, input_data, finish_capture=False, camera_ready=ready_to_capture
-            )
+            _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
 
             robot_state = _read_robot_state(con)
 
@@ -360,9 +336,7 @@ def _generate_dataset(con: rtde, input_data):
             while _image_count(robot_state) != -1:
                 robot_state = _read_robot_state(con)
 
-                if _ready_for_capture(robot_state) and images_captured == _image_count(
-                    robot_state
-                ):
+                if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
                     print(f"Capture image {_image_count(robot_state)}")
                     _capture_one_frame_and_robot_pose(
                         con,
@@ -417,9 +391,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
             detected_features = zivid.hand_eye.detect_feature_points(point_cloud)
 
             if not detected_features:
-                raise RuntimeError(
-                    f"Failed to detect feature points from frame {frame_file}"
-                )
+                raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
 
             print(f"Read robot pose from pos{idata:02d}.yaml")
             with open(pose_file) as file:

@@ -72,9 +72,7 @@ def _set_settings(dimension, iris, exposure_time, brightness, gain):
         settings.brightness = brightness
         settings.gain = gain
     else:
-        raise ValueError(
-            f"The dimension value should be '3d' or '2d', got: '{dimension}'"
-        )
+        raise ValueError(f"The dimension value should be '3d' or '2d', got: '{dimension}'")
 
     return settings
 
@@ -195,16 +193,10 @@ def _color_balance_calibration(camera, settings_3d):
                 f"{int(mean_color.blue)} "
             )
         )
-        if int(mean_color.green) == int(mean_color.red) and int(
-            mean_color.green
-        ) == int(mean_color.blue):
+        if int(mean_color.green) == int(mean_color.red) and int(mean_color.green) == int(mean_color.blue):
             break
-        corrected_red_balance = (
-            camera.settings.red_balance * mean_color.green / mean_color.red
-        )
-        corrected_blue_balance = (
-            camera.settings.blue_balance * mean_color.green / mean_color.blue
-        )
+        corrected_red_balance = camera.settings.red_balance * mean_color.green / mean_color.red
+        corrected_blue_balance = camera.settings.blue_balance * mean_color.green / mean_color.blue
     _display_rgb(rgb, "RGB image after color balance (3D capture)")
 
     return (corrected_red_balance, corrected_blue_balance)

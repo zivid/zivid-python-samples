@@ -19,8 +19,7 @@ def _acquire_checkerboard_frame(camera):
 
 def _enter_robot_pose(index):
     inputted = input(
-        f"Enter pose with id={index} (a line with 16 space separated values"
-        " describing 4x4 row-major matrix):"
+        f"Enter pose with id={index} (a line with 16 space separated values" " describing 4x4 row-major matrix):"
     )
     elements = inputted.split(maxsplit=15)
     data = np.array(elements, dtype=np.float64).reshape((4, 4))
@@ -38,9 +37,7 @@ def _main():
     calibrate = False
 
     while not calibrate:
-        command = input(
-            "Enter command, p (to add robot pose) or c (to perform calibration):"
-        ).strip()
+        command = input("Enter command, p (to add robot pose) or c (to perform calibration):").strip()
         if command == "p":
             try:
                 robot_pose = _enter_robot_pose(current_pose_id)

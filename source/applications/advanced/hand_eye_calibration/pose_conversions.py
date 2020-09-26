@@ -232,12 +232,8 @@ def roll_pitch_yaw_to_rotation_matrix(rpy_list):
 
     """
     for rotation in rpy_list:
-        rotation_matrix = R.from_euler(
-            rotation["convention"].value, rotation["roll_pitch_yaw"]
-        ).as_matrix()
-        print(
-            f"Rotation Matrix from Roll-Pitch-Yaw angles ({rotation['convention'].name}):"
-        )
+        rotation_matrix = R.from_euler(rotation["convention"].value, rotation["roll_pitch_yaw"]).as_matrix()
+        print(f"Rotation Matrix from Roll-Pitch-Yaw angles ({rotation['convention'].name}):")
         print(f"{rotation_matrix}")
 
 

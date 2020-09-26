@@ -34,9 +34,7 @@ def _options():
         action="store_true",
         help="Convert to Portable Network Graphics (3D->2D)",
     )
-    group.add_argument(
-        "--bmp", action="store_true", help="Convert to Windows bitmap (3D->2D)"
-    )
+    group.add_argument("--bmp", action="store_true", help="Convert to Windows bitmap (3D->2D)")
 
     return parser.parse_args()
 

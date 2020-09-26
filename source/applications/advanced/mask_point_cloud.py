@@ -100,9 +100,7 @@ def _main():
     rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
 
     pixels_to_display = 300
-    print(
-        f"Generating a binary mask of central {pixels_to_display} x {pixels_to_display} pixels"
-    )
+    print(f"Generating a binary mask of central {pixels_to_display} x {pixels_to_display} pixels")
     mask = np.zeros((rgb.shape[0], rgb.shape[1]), np.bool)
     height = frame.get_point_cloud().height
     width = frame.get_point_cloud().width

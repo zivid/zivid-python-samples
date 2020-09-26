@@ -13,9 +13,7 @@ def _main():
         ambient_light_frequency=AmbientLightFrequency.hz50,
     )
 
-    settings_list = zivid.capture_assistant.suggest_settings(
-        camera, suggest_settings_parameters
-    )
+    settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
 
     with zivid.hdr.capture(camera, settings_list) as hdr_frame:
         hdr_frame.save("Result.zdf")

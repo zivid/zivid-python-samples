@@ -35,9 +35,7 @@ def _assert_valid_matrix(file_name):
     shape = pose_state_node.mat().shape
     if shape[0] != 4 or shape[1] != 4:
         file_storage.release()
-        raise ValueError(
-            f"Expected 4x4 matrix in {file_name}, but got {shape[0]} x {shape[1]}"
-        )
+        raise ValueError(f"Expected 4x4 matrix in {file_name}, but got {shape[0]} x {shape[1]}")
 
 
 def _read_transform(file_name):
@@ -68,12 +66,8 @@ def _main():
     print(f"Point coordinates in camera frame: {point_in_camera_frame[0:3]}")
 
     # Check if YAML files are valid
-    eye_in_hand_transform_file = str(
-        Path(f"{str(zivid.environment.data_path())}/EyeInHandTransform.yaml")
-    )
-    robot_transform_file = str(
-        Path(f"{str(zivid.environment.data_path())}/RobotTransform.yaml")
-    )
+    eye_in_hand_transform_file = str(Path(f"{str(zivid.environment.data_path())}/EyeInHandTransform.yaml"))
+    robot_transform_file = str(Path(f"{str(zivid.environment.data_path())}/RobotTransform.yaml"))
     _assert_valid_matrix(eye_in_hand_transform_file)
     _assert_valid_matrix(robot_transform_file)
 
@@ -84,9 +78,7 @@ def _main():
     transform_base_to_end_effector = _read_transform(robot_transform_file)
 
     # Computing camera pose in robot base frame
-    transform_base_to_camera = np.matmul(
-        transform_base_to_end_effector, transform_end_effector_to_camera
-    )
+    transform_base_to_camera = np.matmul(transform_base_to_end_effector, transform_end_effector_to_camera)
 
     # Computing (picking) point in robot base frame
     point_in_base_frame = np.matmul(transform_base_to_camera, point_in_camera_frame)

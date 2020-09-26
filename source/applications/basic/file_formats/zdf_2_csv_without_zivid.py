@@ -34,9 +34,7 @@ def _main():
     # flattened_point_cloud = point_cloud.reshape(-1,3)
 
     # Removing nans
-    flattened_point_cloud = flattened_point_cloud[
-        ~np.isnan(flattened_point_cloud[:, 0]), :
-    ]
+    flattened_point_cloud = flattened_point_cloud[~np.isnan(flattened_point_cloud[:, 0]), :]
 
     print(f"Saving the frame to {filename_csv}")
     np.savetxt(filename_csv, flattened_point_cloud, delimiter=",", fmt="%.3f")

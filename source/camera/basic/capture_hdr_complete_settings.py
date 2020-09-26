@@ -23,9 +23,7 @@ def _main():
     settings_collection = [camera.settings for _ in range(3)]
     for i in range(len(settings_collection)):
         settings_collection[i].iris = iris_setting[i]
-        settings_collection[i].exposure_time = datetime.timedelta(
-            microseconds=exposure_setting[i]
-        )
+        settings_collection[i].exposure_time = datetime.timedelta(microseconds=exposure_setting[i])
         settings_collection[i].brightness = 1
         settings_collection[i].gain = gain_setting[i]
         settings_collection[i].bidirectional = 0
