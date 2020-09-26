@@ -23,9 +23,7 @@ def _main():
     depth_map = np.dstack([point_cloud["z"]])
 
     depth_map_uint8 = (
-        (depth_map - np.nanmin(depth_map))
-        / (np.nanmax(depth_map) - np.nanmin(depth_map))
-        * 255
+        (depth_map - np.nanmin(depth_map)) / (np.nanmax(depth_map) - np.nanmin(depth_map)) * 255
     ).astype(np.uint8)
 
     # Applying color map

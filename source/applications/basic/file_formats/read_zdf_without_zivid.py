@@ -33,10 +33,7 @@ def _main():
 
     # Displaying the Depth Image
     plt.imshow(
-        xyz[:, :, 2],
-        vmin=np.nanmin(xyz[:, :, 2]),
-        vmax=np.nanmax(xyz[:, :, 2]),
-        cmap="jet",
+        xyz[:, :, 2], vmin=np.nanmin(xyz[:, :, 2]), vmax=np.nanmax(xyz[:, :, 2]), cmap="jet",
     )
     plt.colorbar()
     plt.title("Depth map")

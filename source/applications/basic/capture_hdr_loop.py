@@ -16,9 +16,7 @@ def _read_settings_from_file(path: Path) -> zivid.Settings:
     settings_from_yaml = yaml.load(path.read_text(), Loader=yaml.Loader)["Settings"]
     settings = zivid.Settings(
         brightness=settings_from_yaml["Brightness"],
-        exposure_time=datetime.timedelta(
-            microseconds=settings_from_yaml["ExposureTime"]
-        ),
+        exposure_time=datetime.timedelta(microseconds=settings_from_yaml["ExposureTime"]),
         gain=settings_from_yaml["Gain"],
         iris=settings_from_yaml["Iris"],
     )
@@ -48,8 +46,7 @@ def _main():
         settingslist = []
         for frame_index in range(number_of_frames_per_hdr):
             settings = _read_settings_from_file(
-                Path()
-                / f"{str(zivid.environment.data_path())}/Settings/Set{hdr_index+1}/Frame0{frame_index+1}.yml"
+                Path() / f"{str(zivid.environment.data_path())}/Settings/Set{hdr_index+1}/Frame0{frame_index+1}.yml"
             )
             print(
                 f"\tFrame {frame_index + 1}:"

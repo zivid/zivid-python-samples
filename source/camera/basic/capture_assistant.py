@@ -9,13 +9,10 @@ def _main():
     camera = app.connect_camera()
 
     suggest_settings_parameters = SuggestSettingsParameters(
-        max_capture_time=datetime.timedelta(milliseconds=1200),
-        ambient_light_frequency=AmbientLightFrequency.hz50,
+        max_capture_time=datetime.timedelta(milliseconds=1200), ambient_light_frequency=AmbientLightFrequency.hz50,
     )
 
-    settings_list = zivid.capture_assistant.suggest_settings(
-        camera, suggest_settings_parameters
-    )
+    settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
 
     with zivid.hdr.capture(camera, settings_list) as hdr_frame:
         hdr_frame.save("Result.zdf")

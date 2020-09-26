@@ -23,9 +23,7 @@ def _gridsum(matrix, downsampling_factor):
     Returns:
         Matrix reshaped and summed in second direction.
     """
-    return _sumline(
-        np.transpose(_sumline(matrix, downsampling_factor)), downsampling_factor
-    )
+    return _sumline(np.transpose(_sumline(matrix, downsampling_factor)), downsampling_factor)
 
 
 def _sumline(matrix, downsampling_factor):
@@ -41,11 +39,8 @@ def _sumline(matrix, downsampling_factor):
         Matrix reshaped and summed in first direction.
     """
     return np.transpose(
-        np.nansum(
-            np.transpose(np.transpose(matrix).reshape(-1, downsampling_factor)), 0
-        ).reshape(
-            int(np.shape(np.transpose(matrix))[0]),
-            int(np.shape(np.transpose(matrix))[1] / downsampling_factor),
+        np.nansum(np.transpose(np.transpose(matrix).reshape(-1, downsampling_factor)), 0).reshape(
+            int(np.shape(np.transpose(matrix))[0]), int(np.shape(np.transpose(matrix))[1] / downsampling_factor),
         )
     )
 
@@ -69,25 +64,15 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
     """
 
     # Checking if downsampling_factor is ok
-    if fmod(rgb.shape[0], downsampling_factor) or fmod(
-        rgb.shape[1], downsampling_factor
-    ):
-        raise ValueError(
-            "Downsampling factor has to be a factor of point cloud width (1920) and height (1200)."
-        )
+    if fmod(rgb.shape[0], downsampling_factor) or fmod(rgb.shape[1], downsampling_factor):
+        raise ValueError("Downsampling factor has to be a factor of point cloud width (1920) and height (1200).")
 
     rgb_new = np.zeros(
-        (
-            int(rgb.shape[0] / downsampling_factor),
-            int(rgb.shape[1] / downsampling_factor),
-            3,
-        ),
-        dtype=np.uint8,
+        (int(rgb.shape[0] / downsampling_factor), int(rgb.shape[1] / downsampling_factor), 3,), dtype=np.uint8,
     )
     for i in range(3):
         rgb_new[:, :, i] = (
-            (np.transpose(_gridsum(rgb[:, :, i], downsampling_factor)))
-            / (downsampling_factor * downsampling_factor)
+            (np.transpose(_gridsum(rgb[:, :, i], downsampling_factor))) / (downsampling_factor * downsampling_factor)
         ).astype(np.uint8)
 
     contrast[np.isnan(xyz[:, :, 2])] = 0
@@ -102,22 +87,13 @@ def _downsample(xyz, rgb, contrast, downsampling_factor):
     z_initial[:, :, 0] = xyz[:, :, 2]
 
     x_new = np.transpose(
-        np.divide(
-            _gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
-        )
+        np.divide(_gridsum((np.multiply(x_initial, contrast))[:, :, 0], downsampling_factor), contrast_weight,)
     )
     y_new = np.transpose(
-        np.divide(
-            _gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
-        )
+        np.divide(_gridsum((np.multiply(y_initial, contrast))[:, :, 0], downsampling_factor), contrast_weight,)
     )
     z_new = np.transpose(
-        np.divide(
-            _gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor),
-            contrast_weight,
-        )
+        np.divide(_gridsum((np.multiply(z_initial, contrast))[:, :, 0], downsampling_factor), contrast_weight,)
     )
 
     xyz_new = np.dstack([x_new, y_new, z_new])
@@ -160,10 +136,7 @@ def _main():
     # Displaying the Depth map
     plt.figure()
     plt.imshow(
-        xyz_new[:, :, 2],
-        vmin=np.nanmin(xyz_new[:, :, 2]),
-        vmax=np.nanmax(xyz_new[:, :, 2]),
-        cmap="jet",
+        xyz_new[:, :, 2], vmin=np.nanmin(xyz_new[:, :, 2]), vmax=np.nanmax(xyz_new[:, :, 2]), cmap="jet",
     )
     plt.colorbar()
     plt.title("Depth map")

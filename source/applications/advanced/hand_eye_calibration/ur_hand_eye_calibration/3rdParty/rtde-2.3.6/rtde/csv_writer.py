@@ -24,15 +24,16 @@
 import csv
 
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 
 from rtde import serialize
 
+
 class CSVWriter(object):
-    
-    def __init__(self, csvfile, names, types, delimiter=' '):
+    def __init__(self, csvfile, names, types, delimiter=" "):
         if len(names) != len(types):
-            raise ValueError('List sizes are not identical.')
+            raise ValueError("List sizes are not identical.")
         self.__names = names
         self.__types = types
         self.__header_names = []
@@ -42,16 +43,16 @@ class CSVWriter(object):
             self.__columns += size
             if size > 1:
                 for j in range(size):
-                    name = self.__names[i]+'_'+str(j)
+                    name = self.__names[i] + "_" + str(j)
                     self.__header_names.append(name)
             else:
                 name = self.__names[i]
                 self.__header_names.append(name)
         self.__writer = csv.writer(csvfile, delimiter=delimiter)
-    
+
     def writeheader(self):
         self.__writer.writerow(self.__header_names)
-    
+
     def writerow(self, data_object):
         data = []
         for i in range(len(self.__names)):
@@ -62,4 +63,3 @@ class CSVWriter(object):
             else:
                 data.append(value)
         self.__writer.writerow(data)
-    

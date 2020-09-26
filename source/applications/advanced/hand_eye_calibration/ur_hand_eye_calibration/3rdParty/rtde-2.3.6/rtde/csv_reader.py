@@ -30,20 +30,22 @@ from .rtde import LOGNAME
 _log = logging.getLogger(LOGNAME)
 
 
-runtime_state = 'runtime_state'
-runtime_state_running = '2'
+runtime_state = "runtime_state"
+runtime_state_running = "2"
+
 
 class CSVReader(object):
     __samples = None
     __filename = None
-    def get_header_data(self,__reader):
+
+    def get_header_data(self, __reader):
         header = next(__reader)
         return header
 
-    def __init__(self, csvfile, delimiter = ' ', filter_running_program=False):
+    def __init__(self, csvfile, delimiter=" ", filter_running_program=False):
         self.__filename = csvfile.name
 
-        csvfile = [csvfile for csvfile in csvfile.readlines() if csvfile.strip()] # remove any empty lines
+        csvfile = [csvfile for csvfile in csvfile.readlines() if csvfile.strip()]  # remove any empty lines
 
         reader = csv.reader(csvfile, delimiter=delimiter)
         header = self.get_header_data(reader)
@@ -51,13 +53,13 @@ class CSVReader(object):
         # read csv file
         data = [row for row in reader]
 
-        if len(data)==0:
-            _log.warn('No data read from file: ' + self.__filename)
+        if len(data) == 0:
+            _log.warn("No data read from file: " + self.__filename)
 
         # filter data
         if filter_running_program:
             if runtime_state not in header:
-                _log.warn('Unable to filter data since runtime_state field is missing in data set')
+                _log.warn("Unable to filter data since runtime_state field is missing in data set")
             else:
                 idx = header.index(runtime_state)
                 data = [row for row in data if row[idx] == runtime_state_running]
@@ -65,7 +67,7 @@ class CSVReader(object):
         self.__samples = len(data)
 
         if self.__samples == 0:
-            _log.warn('No data left from file: ' + self.__filename + ' after filtering')
+            _log.warn("No data left from file: " + self.__filename + " after filtering")
 
         # transpose data
         data = list(zip(*data))
