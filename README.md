@@ -10,19 +10,19 @@ There are two main categories of samples: **camera** and **applications**. The s
 
 - **camera**
   - **basic** ([quick tutorial][QuickCaptureTutorial-url] / [complete tutorial][CompleteCaptureTutorial-url])
-    - [**capture**][capture-url] - This example shows how to acquire images from the Zivid camera.
-    - [**capture_2d**][capture_2d-url] - This example shows how to acquire only 2D images from the Zivid camera.
-    - [**capture_assistant**][capture_assistant-url] - This example shows how to use Capture Assistant to acquire HDR images from the Zivid camera.
-    - [**capture_from_file**][capture_from_file-url] - This example shows how to acquire HDR images from file. This example can be used without access to a physical camera.
-    - [**capture_hdr**][capture_hdr-url] - This example shows how to acquire HDR images from the Zivid camera.
-    - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - This example shows how to acquire HDR images from the Zivid camera and configure all settings.
+    - [**capture**][capture-url] - Capture point clouds, with color, from the Zivid camera.
+    - [**capture_2d**][capture_2d-url] - Capture 2D images from the Zivid camera.
+    - [**capture_assistant**][capture_assistant-url] - Use Capture Assistant to capture point clouds, with color, from the Zivid camera.
+    - [**capture_from_file**][capture_from_file-url] - Capture point clouds, with color, from the Zivid file camera.
+    - [**capture_hdr**][capture_hdr-url] - Capture HDR point clouds, with color, from the Zivid camera.
+    - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - Capture point clouds, with color, from the Zivid camera with fully configured settings.
+  - **advanced**
+    - [**capture_hdr_loop**][capture_hdr_loop-url] - Cover the same dynamic range in a scene with different acquisition settings to optimize for quality, speed, or to find a compromise.
   - **info_util_other**
     - [**print_version_info**][print_version_info-url] - This example shows how to print version info about connected Zivid cameras and the installed Zivid SDK.
 
 - **applications**
   - **basic**
-    - [**capture_hdr_loop**][capture_hdr_loop-url] - This example shows how to acquire HDR images from the Zivid camera in a loop (while actively changing some HDR settings).
-    - [**capture_hdr_separate_frames**][capture_hdr_separate_frames-url] - Capture several individual frames and merge them into one HDR
     - **visualization**
       - [**read_zdf_vis_3d**][read_zdf_vis_3d-url] - This example shows how to read a PCL point cloud and visualize it.
     - **file_formats**
@@ -54,7 +54,7 @@ There are two main categories of samples: **camera** and **applications**. The s
 ## Instructions
 
 1. [**Install Zivid Software**](https://www.zivid.com/downloads).
-Note: The version tested with Zivid cameras is 2.0.0.
+Note: The version tested with Zivid cameras is 2.1.0.
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
 
@@ -91,7 +91,7 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 [capture_hdr-url]: source/camera/basic/capture_hdr.py
 [capture_hdr_complete_settings-url]: source/camera/basic/capture_hdr_complete_settings.py
 [print_version_info-url]: source/camera/info_util_other/print_version_info.py
-[capture_hdr_loop-url]: source/applications/basic/capture_hdr_loop.py
+[capture_hdr_loop-url]: source/camera/advanced/capture_hdr_loop.py
 [capture_hdr_separate_frames-url]: source/applications/basic/capture_hdr_separate_frames.py
 [read_zdf_vis_3d-url]: source/applications/basic/visualization/read_zdf_vis_3d.py
 [convert_zdf-url]: source/applications/basic/file_formats/convert_zdf.py

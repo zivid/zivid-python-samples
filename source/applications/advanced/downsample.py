@@ -4,100 +4,60 @@ Note: Zivid Sample Data files must be downloaded, see
 https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
-from math import fmod
+import math
 from pathlib import Path
 import numpy as np
-import matplotlib.pyplot as plt
-
-from vtk_visualizer import plotxyzrgb
+import pptk
 import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _gridsum(matrix, downsampling_factor):
-    """Reshape and sum in second direction.
+def _get_mid_point(xyz):
+    """Calculate mid point from average of the 100 centermost points.
 
     Args:
-        matrix: Matrix to be reshaped and summed in second direction.
-        downsampling_factor: the denominator of a fraction that represents the
-            size of the downsampled point cloud relative to the original point
-            cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
+        xyz: X, Y and Z images (point cloud co-ordinates)
 
     Returns:
-        Matrix reshaped and summed in second direction.
+        mid_point: Calculated mid point
+
     """
-    return _sumline(np.transpose(_sumline(matrix, downsampling_factor)), downsampling_factor)
-
-
-def _sumline(matrix, downsampling_factor):
-    """Reshape and sum in first direction.
-
-    Args:
-        matrix: Matrix to be reshaped and summed in first direction.
-        downsampling_factor: the denominator of a fraction that represents the
-            size of the downsampled point cloud relative to the original point
-            cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
-
-    Returns:
-        Matrix reshaped and summed in first direction.
-    """
-    return np.transpose(
-        np.nansum(np.transpose(np.transpose(matrix).reshape(-1, downsampling_factor)), 0).reshape(
-            int(np.shape(np.transpose(matrix))[0]),
-            int(np.shape(np.transpose(matrix))[1] / downsampling_factor),
-        )
+    offset = 5
+    xyz_center_cube = xyz[
+        int(xyz.shape[0] / 2 - offset) : int(xyz.shape[0] / 2 + offset),
+        int(xyz.shape[1] / 2 - offset) : int(xyz.shape[1] / 2 + offset),
+        :,
+    ]
+    return (
+        np.nanmedian(xyz_center_cube[:, :, 0]),
+        np.nanmedian(xyz_center_cube[:, :, 1]),
+        np.nanmedian(xyz_center_cube[:, :, 2]),
     )
 
 
-def _downsample(xyz, rgb, snr, downsampling_factor):
-    """Function for downsampling a Zivid point cloud.
+def _visualize_point_cloud(point_cloud):
+    """Visualize point cloud.
+
+    Visualize the provided point cloud `xyz`, and color it with `rgb`.
+
+    We take the centermost co-ordinate as 'lookat' point. We assume that camera location is at azimuth -pi/2 and
+    elevation -pi/2 relative to the 'lookat' point.
 
     Args:
-        xyz: Point cloud.
-        rgb: Color image.
-        snr: SNR image.
-        downsampling_factor: The denominator of a fraction that represents the
-            size of the downsampled point cloud relative to the original point
-            cloud, e.g. 2 - one-half, 3 - one-third, 4 one-quarter, etc.
-
-    Raises:
-        ValueError: If downsampling factor is not correct.
-
-    Returns:
-        Tuple of downsampled point cloud and color image.
+        point_cloud: Zivid point cloud
     """
+    xyz = point_cloud.copy_data("xyz")
+    rgb = point_cloud.copy_data("rgba")[:, :, 0:3]
 
-    # Checking if downsampling_factor is ok
-    if fmod(rgb.shape[0], downsampling_factor) or fmod(rgb.shape[1], downsampling_factor):
-        raise ValueError("Downsampling factor has to be a factor of point cloud width (1920) and height (1200).")
+    mid_point = _get_mid_point(xyz)
 
-    rgb_new = np.zeros(
-        (
-            int(rgb.shape[0] / downsampling_factor),
-            int(rgb.shape[1] / downsampling_factor),
-            3,
-        ),
-        dtype=np.uint8,
-    )
-    for i in range(3):
-        rgb_new[:, :, i] = (
-            (np.transpose(_gridsum(rgb[:, :, i], downsampling_factor))) / (downsampling_factor * downsampling_factor)
-        ).astype(np.uint8)
+    # Setting nans to zeros
+    xyz[np.isnan(xyz[:, :, 2])] = 0
 
-    snr[np.isnan(xyz[:, :, 2])] = 0
-    snr_weight = _gridsum(snr, downsampling_factor)
-
-    x_initial = xyz[:, :, 0]
-    y_initial = xyz[:, :, 1]
-    z_initial = xyz[:, :, 2]
-
-    x_new = np.transpose(np.divide(_gridsum((np.multiply(x_initial, snr)), downsampling_factor), snr_weight,))
-    y_new = np.transpose(np.divide(_gridsum((np.multiply(y_initial, snr)), downsampling_factor), snr_weight,))
-    z_new = np.transpose(np.divide(_gridsum((np.multiply(z_initial, snr)), downsampling_factor), snr_weight,))
-
-    xyz_new = np.dstack([x_new, y_new, z_new])
-
-    return xyz_new, rgb_new
+    viewer = pptk.viewer(xyz)
+    viewer.attributes(rgb.reshape(-1, 3) / 255.0)
+    viewer.set(lookat=mid_point)
+    viewer.set(phi=-math.pi / 2, theta=-math.pi / 2, r=mid_point[2])
 
 
 def _main():
@@ -110,40 +70,17 @@ def _main():
 
     # Getting the point cloud
     point_cloud = frame.point_cloud()
-    xyz = point_cloud.copy_data("xyz")
-    rgba = point_cloud.copy_data("rgba")
-    snr = frame.point_cloud().copy_data("snr")
+
+    print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
+
+    _visualize_point_cloud(point_cloud)
 
     # Downsampling the point cloud
-    downsampling_factor = 4
-    [xyz_new, rgb_new] = _downsample(xyz, rgba[:,:,0:3], snr, downsampling_factor)
+    point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)    
+    
+    print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-    # Getting the point cloud
-    point_cloud = np.dstack([xyz_new, rgb_new])
-
-    # Flattening the point cloud
-    flattened_point_cloud = point_cloud.reshape(-1, 6)
-
-    # Displaying the RGB image
-    plt.figure()
-    plt.imshow(rgb_new)
-    plt.title("RGB image")
-    plt.show()
-
-    # Displaying the Depth map
-    plt.figure()
-    plt.imshow(
-        xyz_new[:, :, 2],
-        vmin=np.nanmin(xyz_new[:, :, 2]),
-        vmax=np.nanmax(xyz_new[:, :, 2]),
-        cmap="jet",
-    )
-    plt.colorbar()
-    plt.title("Depth map")
-    plt.show()
-
-    # Displaying the point cloud
-    plotxyzrgb(flattened_point_cloud)
+    _visualize_point_cloud(point_cloud)
 
     input("Press Enter to close...")
 
