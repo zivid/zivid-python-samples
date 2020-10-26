@@ -1,7 +1,7 @@
 """
-Import ZDF point cloud and visualize it.
-Note: Zivid Sample Data files must be downloaded, see
-https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+This example shows how to read point cloud data from a ZDF file and visualize it.
+
+The ZDF file for this sample can be found under the main instructions for Zivid samples.
 """
 
 import math
@@ -43,7 +43,7 @@ def _display_depthmap(xyz):
         xyz[:, :, 2],
         vmin=np.nanmin(xyz[:, :, 2]),
         vmax=np.nanmax(xyz[:, :, 2]),
-        cmap="jet",
+        cmap="viridis",
     )
     plt.colorbar()
     plt.title("Depth map")
@@ -110,11 +110,11 @@ def _main():
     xyz = point_cloud.copy_data("xyz")
     rgba = point_cloud.copy_data("rgba")
 
-    _display_rgb(rgba[:,:,0:3])
+    _display_rgb(rgba[:, :, 0:3])
 
     _display_depthmap(xyz)
 
-    _display_pointcloud(rgba[:,:,0:3], xyz)
+    _display_pointcloud(rgba[:, :, 0:3], xyz)
 
     input("Press Enter to close...")
 
