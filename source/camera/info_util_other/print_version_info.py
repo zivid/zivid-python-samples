@@ -1,4 +1,7 @@
-"""Print version information for Python, zivid-python and Zivid SDK."""
+"""
+This example shows how to print version information for Python, zivid-python and Zivid SDK.
+"""
+
 import platform
 import zivid
 

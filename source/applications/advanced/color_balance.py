@@ -1,5 +1,5 @@
 """
-Balance color for RGB image.
+This example shows how to balance color of 2D image.
 """
 
 import datetime
@@ -30,7 +30,7 @@ def _display_rgb(rgb, title):
     """Display RGB image.
 
     Args:
-        rgb: RGB image
+        rgb: RGB image (HxWx3 darray)
         title: Image title
 
     Returns None
@@ -46,8 +46,8 @@ def _compute_mean_rgb(rgb, pixels):
     """Compute mean RGB values.
 
     Args:
-        rgb: RGB image
-        pixels: Number of central pixels for computation
+        rgb: RGB image (HxWx3 darray)
+        pixels: Number of central pixels (^2) for computation
 
     Returns:
         mean_color: RGB channel mean values
@@ -219,12 +219,13 @@ def _main():
 
     app = zivid.Application()
 
+    print("Connecting to camera")
     camera = app.connect_camera()
 
     settings_2d = _auto_settings_configuration(camera)
 
     rgba = camera.capture(settings_2d).image_rgba().copy_data()
-    _display_rgb(rgba[:,:,0:3], "RGB image before color balance")
+    _display_rgb(rgba[:, :, 0:3], "RGB image before color balance")
 
     [red_balance, green_balance, blue_balance] = _color_balance_calibration(camera, settings_2d)
 
@@ -234,7 +235,7 @@ def _main():
     settings_2d.processing.color.balance.blue = blue_balance
     rgba_balanced = camera.capture(settings_2d).image_rgba().copy_data()
 
-    _display_rgb(rgba_balanced[:,:,0:3], "RGB image after color balance")
+    _display_rgb(rgba_balanced[:, :, 0:3], "RGB image after color balance")
     input("Press Enter to close...")
 
 

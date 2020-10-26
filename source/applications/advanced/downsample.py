@@ -1,7 +1,7 @@
 """
-Import ZDF point cloud and downsample it.
-Note: Zivid Sample Data files must be downloaded, see
-https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+This example shows how to downsample point cloud from a ZDF file.
+
+The ZDF files for this sample can be found under the main instructions for Zivid samples.
 """
 
 import math
@@ -64,20 +64,19 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
-    print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(filename_zdf)
+    data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+    print(f"Reading ZDF frame from file: {data_file}")
+    frame = zivid.Frame(data_file)
 
-    # Getting the point cloud
     point_cloud = frame.point_cloud()
 
     print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
     _visualize_point_cloud(point_cloud)
 
-    # Downsampling the point cloud
-    point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)    
-    
+    print("Downsampling point cloud")
+    point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
+
     print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
     _visualize_point_cloud(point_cloud)

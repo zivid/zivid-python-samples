@@ -1,4 +1,5 @@
-"""Convert ZDF point cloud to the available formats.
+"""
+This exampe shows how to convert point cloud data from a ZDF file to your preferred format.
 
 Example: $ python convert_zdf.py --ply Zivid3D.zdf
 
@@ -67,6 +68,8 @@ def _convert_2_ply(frame, file_name: str):
         frame: A frame captured by a Zivid camera.
         file_name: File name without extension
 
+    Returns None
+
     """
     print(f"Saving the frame to {file_name}.ply")
     frame.save(f"{file_name}.ply")
@@ -79,6 +82,8 @@ def _convert_2_csv(point_cloud, file_name: str):
         point_cloud: a handle to point cloud in the GPU memory
         file_name: File name with extension
 
+    Returns None
+
     """
     print(f"Saving the frame to {file_name}")
     np.savetxt(file_name, _flatten_point_cloud(point_cloud), delimiter=",", fmt="%.3f")
@@ -90,6 +95,8 @@ def _convert_2_2d(point_cloud, file_name: str):
     Args:
         point_cloud: a handle to point cloud in the GPU memory
         file_name: File name without extension
+
+    Returns None
 
     """
     print(f"Saving the frame to {file_name}")
@@ -107,7 +114,7 @@ def _main():
 
     app = zivid.Application()
 
-    print(f"Reading {user_options.filename} point cloud")
+    print(f"Reading point cloud from file: {user_options.filename}")
     frame = zivid.Frame(user_options.filename)
 
     point_cloud = frame.point_cloud()

@@ -1,8 +1,7 @@
 """
-This example shows how to import, display and iterate over a Zivid point cloud from a .ZDF
-file.
-Note: Zivid Sample Data files must be downloaded, see
-https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+This example shows how to read point cloud data from a ZDF file, iterate through it, and extract individual points.
+
+The ZDF file for this sample can be found under the main instructions for Zivid samples.
 """
 
 from pathlib import Path
@@ -15,11 +14,11 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
-    print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(filename_zdf)
+    data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+    print(f"Reading point cloud from file: {data_file}")
+    frame = zivid.Frame(data_file)
 
-    # Extracting point cloud from the frame
+    print("Getting point cloud from frame")
     point_cloud = frame.point_cloud()
     xyz = point_cloud.copy_data("xyz")
     rgba = point_cloud.copy_data("rgba")
@@ -32,9 +31,11 @@ def _main():
     print(f"Number of points: {height * width}")
     print(f"Height: {height}, Width: {width}")
 
-    # Iterating over the point cloud and displaying X, Y, Z, R, G, B, and SNR
-    # for central 10 x 10 pixels
     pixels_to_display = 10
+    print(
+        "Iterating over point cloud and extracting X, Y, Z, R, G, B, and SNR "
+        f"for central {pixels_to_display} x {pixels_to_display} pixels"
+    )
     for i in range(int((height - pixels_to_display) / 2), int((height + pixels_to_display) / 2)):
         for j in range(int((width - pixels_to_display) / 2), int((width + pixels_to_display) / 2)):
             print(

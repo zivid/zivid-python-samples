@@ -8,7 +8,7 @@ This tutorial shows how few API calls are required to capture a point cloud with
 
 ### Prerequisites
 
-You should have installed Zivid SDK and C++ samples. For more details see [Instructions][installation-instructions-url].
+You should have installed Zivid SDK and Python samples. For more details see [Instructions][installation-instructions-url].
 
 Before calling any of the APIs in the Zivid SDK, we have to start up the Zivid Application. This is done through a simple instantiation of the application ([go to source][start_app-url]).
 ```python
@@ -41,7 +41,7 @@ frame = camera.capture(settings)
 
 We can now save our results. By default the 3D point cloud is saved in Zivid format `.zdf` ([go to source][save-url]).
 ```python
-frame.save("Result.zdf")
+frame.save("Frame.zdf")
 ```
 
 ## Conclusion
