@@ -1,13 +1,11 @@
 """
-Example to show conversions to/from Transformation Matrix.
+This example shows how to convert to/from transformation matrix (rotation matrix + translation vector).
 
-Zivid primarily operate with a (4x4) Transformation Matrix (Rotation Matrix + Translation Vector).
-This example shows how to use Eigen to convert to and from:
-  AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion
+Zivid primarily operate with a (4x4) transformation matrix. This example shows how to use Eigen to convert to and from:
+AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion.
 
- It provides convenience functions that can be reused in applicable applications.
-Note: Zivid Sample Data files must be downloaded, see
-https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+The convenience functions from this example can be reused in applicable applications. The YAML files for this sample
+can be found under the main instructions for Zivid samples.
 """
 
 import enum

@@ -1,10 +1,9 @@
 """
-Import ZDF point cloud and downsample it.
-Note: Zivid Sample Data files must be downloaded, see
-https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
+This example shows how to downsample point cloud from a ZDF file.
+
+The ZDF files for this sample can be found under the main instructions for Zivid samples.
 """
 
-from math import fmod
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,30 +18,35 @@ def _visualize_point_cloud(point_cloud):
 
     Args:
         point_cloud: Zivid point cloud
+
+    Returns None
+
     """
 
+    # Getting point cloud data
     xyz = point_cloud.copy_data("xyz")
     rgba = point_cloud.copy_data("rgba")
-
-    # Getting the point cloud
     xyzrgba = np.dstack([xyz, rgba])
 
-    # Flattening the point cloud
+    # Flattening point cloud data
     flattened_xyzrgba = xyzrgba.reshape(-1, 6)
 
-    # Displaying the point cloud
+    print("Visualizing point cloud")
     plotxyzrgb(flattened_xyzrgba)
 
-    # Displaying the RGB image
+    print("Visualizing RGB image")
     plt.figure()
     plt.imshow(rgba[:, :, 0:3])
     plt.title("RGB image")
     plt.show()
 
-    # Displaying the Depth map
+    print("Visualizing Depth map")
     plt.figure()
     plt.imshow(
-        xyz[:, :, 2], vmin=np.nanmin(xyz[:, :, 2]), vmax=np.nanmax(xyz[:, :, 2]), cmap="jet",
+        xyz[:, :, 2],
+        vmin=np.nanmin(xyz[:, :, 2]),
+        vmax=np.nanmax(xyz[:, :, 2]),
+        cmap="jet",
     )
     plt.colorbar()
     plt.title("Depth map")
@@ -53,20 +57,19 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = Path() / get_sample_data_path() / "Zivid3D.zdf"
-    print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(filename_zdf)
+    data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+    print(f"Reading ZDF frame from file: {data_file}")
+    frame = zivid.Frame(data_file)
 
-    # Getting the point cloud
     point_cloud = frame.point_cloud()
 
     print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
     _visualize_point_cloud(point_cloud)
 
-    # Downsampling the point cloud
-    point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)    
-    
+    print("Downsampling point cloud")
+    point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
+
     print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
     _visualize_point_cloud(point_cloud)

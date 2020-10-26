@@ -61,7 +61,8 @@ for cam in cameras:
 
 You may want to experiment with the SDK, without access to a physical camera. Minor changes are required to keep the sample working ([go to source][filecamera-url]).
 ```python
-camera = app.create_file_camera((Path() / get_sample_data_path() / "FileCameraZividOne.zfc")
+camera_file = Path() / get_sample_data_path() / "FileCameraZividOne.zfc"
+camera = app.create_file_camera(camera_file)
 ```
 
 ---
@@ -104,9 +105,9 @@ There are only two parameters to configure with Capture Assistant:
 
 We may choose to configure settings manually. For more information about what each settings does, please see [Zivid One+ Camera Settings][kb-camera_settings-url].
 
-#### Single Frame
+#### Single Acquisition
 
-We can configure settings for an individual frame directly to the camera ([go to source][settings-url]).
+We can create settings for a single capture ([go to source][settings-url]).
 ```python
 settings = zivid.Settings()
 settings.acquisitions.append(zivid.Settings.Acquisition())
@@ -120,32 +121,22 @@ settings.processing.filters.outlier.removal.threshold = 5.0
 
 We may also create settings to be used in an HDR capture ([go to source][settings-hdr-url]).
 ```python
-settings = zivid.Settings(
-    acquisitions=[
-        zivid.Settings.Acquisition(
-            exposure_time=datetime.timedelta(microseconds=10000),
-        ),
-        zivid.Settings.Acquisition(
-            exposure_time=datetime.timedelta(microseconds=40000),
-        ),
-    ],
-)
+settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (11.31, 5.66, 2.83)])
 ```
 
 #### 2D Settings
 
 It is possible to only capture a 2D image. This is faster than a 3D capture. 2D settings are configured as follows ([go to source][settings2d-url]).
 ```python
-settings = zivid.Settings2D(
-    acquisitions=[
-        zivid.Settings2D.Acquisition(
-            aperture=2.83,
-            exposure_time=datetime.timedelta(microseconds=10000),
-            brightness=1,
-            gain=1,
-        )
-    ],
-)
+settings_2d = zivid.Settings2D()
+settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
+settings_2d.acquisitions[0].exposure_time = datetime.timedelta(microseconds=10000)
+settings_2d.acquisitions[0].aperture = 2.83
+settings_2d.acquisitions[0].gain = 1.0
+settings_2d.acquisitions[0].brightness = 1.0
+settings_2d.processing.color.balance.red = 1.0
+settings_2d.processing.color.balance.green = 1.0
+settings_2d.processing.color.balance.blue = 1.0
 ```
 
 ### From File
@@ -154,9 +145,7 @@ Zivid Studio can store the current settings to .yml files. These can be read and
 ```python
 from sample_utils.paths import get_sample_data_path
 from sample_utils.settings_from_file import get_settings_from_yaml
-settings = get_settings_from_yaml(
-            Path() / get_sample_data_path() / f"Settings/Settings{hdr_index:02d}.yml"
-        )
+settings = get_settings_from_yaml("Settings.yml")
 ```
 
 ## Capture
@@ -177,7 +166,7 @@ frame_2d = camera.capture(settings_2d)
 
 We can now save our results ([go to source][save-url]).
 ```python
-frame.save("Result.zdf")
+frame.save("Frame.zdf")
 ```
 The API detects which format to use. See [Point Cloud][kb-point_cloud-url] for a list of supported formats.
 
@@ -185,7 +174,7 @@ The API detects which format to use. See [Point Cloud][kb-point_cloud-url] for a
 
 If we captured a 2D image, we can save it ([go to source][save2d-url]).
 ```python
-frame_2d.image_rgba().save("Result.png")
+frame_2d.image_rgba().save("Image.png")
 ```
 
 ## Conclusion

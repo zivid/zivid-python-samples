@@ -168,7 +168,10 @@ def _camera_settings() -> zivid.Settings:
     return zivid.Settings(
         acquisitions=[
             zivid.Settings.Acquisition(
-                aperture=8.0, exposure_time=datetime.timedelta(microseconds=10000), brightness=1.0, gain=1,
+                aperture=8.0,
+                exposure_time=datetime.timedelta(microseconds=10000),
+                brightness=1.0,
+                gain=1,
             )
         ],
         processing=zivid.Settings.Processing(
@@ -349,7 +352,13 @@ def _generate_dataset(con: rtde, input_data):
                 if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
                     print(f"Capture image {_image_count(robot_state)}")
                     _capture_one_frame_and_robot_pose(
-                        con, camera, settings, save_dir, input_data, images_captured, ready_to_capture,
+                        con,
+                        camera,
+                        settings,
+                        save_dir,
+                        input_data,
+                        images_captured,
+                        ready_to_capture,
                     )
                     images_captured += 1
 
