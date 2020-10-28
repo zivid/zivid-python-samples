@@ -4,17 +4,44 @@ This example shows how to downsample point cloud from a ZDF file.
 The ZDF files for this sample can be found under the main instructions for Zivid samples.
 """
 
+import math
 from pathlib import Path
 import numpy as np
-import matplotlib.pyplot as plt
-
-from vtk_visualizer import plotxyzrgb
+import pptk
 import zivid
 from sample_utils.paths import get_sample_data_path
 
 
+def _get_mid_point(xyz):
+    """Calculate mid point from average of the 100 centermost points.
+
+    Args:
+        xyz: X, Y and Z images (point cloud co-ordinates)
+
+    Returns:
+        mid_point: Calculated mid point
+
+    """
+    offset = 5
+    xyz_center_cube = xyz[
+        int(xyz.shape[0] / 2 - offset) : int(xyz.shape[0] / 2 + offset),
+        int(xyz.shape[1] / 2 - offset) : int(xyz.shape[1] / 2 + offset),
+        :,
+    ]
+    return (
+        np.nanmedian(xyz_center_cube[:, :, 0]),
+        np.nanmedian(xyz_center_cube[:, :, 1]),
+        np.nanmedian(xyz_center_cube[:, :, 2]),
+    )
+
+
 def _visualize_point_cloud(point_cloud):
-    """Visualize point cloud, rgb image, and depth map.
+    """Visualize point cloud.
+
+    Visualize the provided point cloud `xyz`, and color it with `rgb`.
+
+    We take the centermost co-ordinate as 'lookat' point. We assume that camera location is at azimuth -pi/2 and
+    elevation -pi/2 relative to the 'lookat' point.
 
     Args:
         point_cloud: Zivid point cloud
@@ -22,35 +49,18 @@ def _visualize_point_cloud(point_cloud):
     Returns None
 
     """
-
-    # Getting point cloud data
     xyz = point_cloud.copy_data("xyz")
-    rgba = point_cloud.copy_data("rgba")
-    xyzrgba = np.dstack([xyz, rgba])
+    rgb = point_cloud.copy_data("rgba")[:, :, 0:3]
 
-    # Flattening point cloud data
-    flattened_xyzrgba = xyzrgba.reshape(-1, 6)
+    mid_point = _get_mid_point(xyz)
 
-    print("Visualizing point cloud")
-    plotxyzrgb(flattened_xyzrgba)
+    # Setting nans to zeros
+    xyz[np.isnan(xyz[:, :, 2])] = 0
 
-    print("Visualizing RGB image")
-    plt.figure()
-    plt.imshow(rgba[:, :, 0:3])
-    plt.title("RGB image")
-    plt.show()
-
-    print("Visualizing Depth map")
-    plt.figure()
-    plt.imshow(
-        xyz[:, :, 2],
-        vmin=np.nanmin(xyz[:, :, 2]),
-        vmax=np.nanmax(xyz[:, :, 2]),
-        cmap="jet",
-    )
-    plt.colorbar()
-    plt.title("Depth map")
-    plt.show()
+    viewer = pptk.viewer(xyz)
+    viewer.attributes(rgb.reshape(-1, 3) / 255.0)
+    viewer.set(lookat=mid_point)
+    viewer.set(phi=-math.pi / 2, theta=-math.pi / 2, r=mid_point[2])
 
 
 def _main():
