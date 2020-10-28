@@ -251,7 +251,7 @@ def save_transformation_matrix_to_yaml(transformation_matrix, path: Path):
     Returns None
 
     """
-    file_storage_out = cv2.FileStorage(path, cv2.FILE_STORAGE_WRITE)
+    file_storage_out = cv2.FileStorage(str(path), cv2.FILE_STORAGE_WRITE)
     file_storage_out.write("TransformationMatrixFromQuaternion", transformation_matrix)
     file_storage_out.release()
 
@@ -266,7 +266,7 @@ def get_transformation_matrix_from_yaml(path: Path):
         4x4 Transformation Matrix
 
     """
-    file_storage_in = cv2.FileStorage(path, cv2.FILE_STORAGE_READ)
+    file_storage_in = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
     transformation_matrix = file_storage_in.getNode("PoseState").mat()
     file_storage_in.release()
     return transformation_matrix
