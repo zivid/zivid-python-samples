@@ -76,7 +76,7 @@ def _initialize_robot_sync(host: str):
         RuntimeError: if synchronization is not possible
     """
 
-    conf = rtde_config.ConfigFile(Path(Path.cwd() / "robot_communication_file.xml"))
+    conf = rtde_config.ConfigFile(Path(Path.cwd() / "universal_robots_communication_file.xml"))
     output_names, output_types = conf.get_recipe("out")
     input_names, input_types = conf.get_recipe("in")
 
