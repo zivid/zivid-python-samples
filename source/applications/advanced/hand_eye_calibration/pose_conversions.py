@@ -256,7 +256,7 @@ def save_transformation_matrix_to_yaml(transformation_matrix, path: Path):
     file_storage_out.release()
 
 
-def get_transformation_matrix_from_yaml(path: Path):
+def get_transformation_matrix_from_yaml(path):
     """Get Transformation Matrix from YAML. Uses OpenCV to maintain yaml format.
 
     Args:
