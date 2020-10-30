@@ -14,6 +14,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**capture_2d**][capture_2d-url] - Capture 2D images from the Zivid camera.
     - [**capture_assistant**][capture_assistant-url] - Use Capture Assistant to capture point clouds, with color, from the Zivid camera.
     - [**capture_from_file**][capture_from_file-url] - Capture point clouds, with color, from the Zivid file camera.
+    - [**capture_with_settings_from_yml**][capture_with_settings_from_yml-url] -  Capture point clouds, with color, from the Zivid camera, with settings from YML file.
     - [**capture_hdr**][capture_hdr-url] - Capture HDR point clouds, with color, from the Zivid camera.
     - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - Capture point clouds, with color, from the Zivid camera with fully configured settings.
   - **info_util_other**
@@ -87,6 +88,7 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 [capture_2d-url]: source/camera/basic/capture_2d.py
 [capture_assistant-url]: source/camera/basic/capture_assistant.py
 [capture_from_file-url]: source/camera/basic/capture_from_file.py
+[capture_with_settings_from_yml-url]: source/camera/basic/capture_with_settings_from_yml.py
 [capture_hdr-url]: source/camera/basic/capture_hdr.py
 [capture_hdr_complete_settings-url]: source/camera/basic/capture_hdr_complete_settings.py
 [print_version_info-url]: source/camera/info_util_other/print_version_info.py
