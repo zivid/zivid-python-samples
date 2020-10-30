@@ -10,6 +10,7 @@ generated-members=cv2.*
 max-args=7
 max-locals=16
 max-returns=9
+max-bool-expr=6
 
 [FORMAT]
 max-line-length=119
