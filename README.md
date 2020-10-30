@@ -17,12 +17,13 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**capture_with_settings_from_yml**][capture_with_settings_from_yml-url] -  Capture point clouds, with color, from the Zivid camera, with settings from YML file.
     - [**capture_hdr**][capture_hdr-url] - Capture HDR point clouds, with color, from the Zivid camera.
     - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - Capture point clouds, with color, from the Zivid camera with fully configured settings.
+  - **advanced**
+    - [**capture_hdr_loop**][capture_hdr_loop-url] - Cover the same dynamic range in a scene with different acquisition settings to optimize for quality, speed, or to find a compromise.
   - **info_util_other**
     - [**print_version_info**][print_version_info-url] - Print version info about connected Zivid cameras and the installed Zivid SDK.
 
 - **applications**
   - **basic**
-    - [**capture_hdr_loop**][capture_hdr_loop-url] - Cover the same dynamic range in a scene with different acquisition settings to optimize for quality, speed, or to find a compromise.
     - **visualization**
       - [**read_zdf_vis_3d**][read_zdf_vis_3d-url] - Read point cloud data from a ZDF file and visualize it.
     - **file_formats**
