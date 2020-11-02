@@ -26,31 +26,58 @@ There are two main categories of samples: **camera** and **applications**. The s
   - **basic**
     - **visualization**
       - [**read_zdf_vis_3d**][read_zdf_vis_3d-url] - Read point cloud data from a ZDF file and visualize it.
+        - **Dependencies:**
+          - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
+          - [numpy](https://numpy.org/) version 1.19.2 or newer
+          - [matplotlib](https://matplotlib.org/) version 3.3.2 or newer
     - **file_formats**
       - [**convert_zdf**][convert_zdf-url] - Convert point cloud data from a ZDF file to your preferred format (.ply, .csv, .txt, .png, .jpg, .bmp, .tiff).
+        - **Dependencies:**
+          - [numpy](https://numpy.org/) version 1.19.2 or newer
+          - [OpenCV](https://opencv.org/) version 4.0.1 or newer.
       - [**read_iterate_zdf**][read_iterate_zdf-url] - Read point cloud data from a ZDF file, iterate through it, and extract individual points.
   - **advanced**
     - [**hand_eye_calibration**][hand_eye_calibration-url]
       - [**calibrate_eye_to_hand**][calibrate_eye_to_hand-url] - Perform Eye-to-Hand calibration.
+        - **Dependencies:**
+          - [numpy](https://numpy.org/) version 1.19.2 or newer
       - [**utilize_eye_in_hand_calibration**][utilize_eye_in_hand_calibration-url] - Transform a single data point or entire point cloud from the camera frame to the robot base frame using the Eye-in-Hand calibration matrix.
+        - **Dependencies:**
+          - [numpy](https://numpy.org/) version 1.19.2 or newer
+          - [OpenCV](https://opencv.org/) version 4.0.1 or newer.
       - [**pose_conversions**][pose_conversions-url] - Convert to/from Transformation Matrix (Rotation Matrix + Translation Vector).
+        - **Dependencies:**
+          - [numpy](https://numpy.org/) version 1.19.2 or newer
+          - [OpenCV](https://opencv.org/) version 4.0.1 or newer.
+          - [Scipy](https://www.scipy.org/) version 1.4.0 or newer.
       - **universal_robots_hand_eye_calibration**
         - [**universal_robots_perform_hand_eye_calibration**][ur_perform_hand_eye_calibration-url] - Generate dataset and perform Hand-Eye calibration on the generated dataset.
-        - **Dependencies:**
-          - [OpenCV](https://opencv.org/) version 4.0.1 or newer.
-          - [RTDE][rtde_guide-url] version 1.0 or newer.
-          - [Scipy](https://www.scipy.org/) version 1.4.0 or newer.
+          - **Dependencies:**
+            - [numpy](https://numpy.org/) version 1.19.2 or newer
+            - [OpenCV](https://opencv.org/) version 4.0.1 or newer.
+            - [RTDE][rtde_guide-url] version 1.0 or newer.
+            - [Scipy](https://www.scipy.org/) version 1.4.0 or newer.
     - [**downsample**][downsample-url]  - Downsample point cloud from a ZDF file.
       - **Dependencies:**
-        - [Eigen](http://eigen.tuxfamily.org/) version 3.3.7 or newer
+        - [numpy](https://numpy.org/) version 1.19.2 or newer
+        - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
     - [**create_depth_map**][create_depth_map-url] - Read point cloud data from a ZDF file, convert it to OpenCV format, then extract and visualize depth map.
+      - **Dependencies:**
+        - [numpy](https://numpy.org/) version 1.19.2 or newer
+        - [OpenCV](https://opencv.org/) version 4.0.1 or newer
     - [**mask_point_cloud**][mask_point_cloud-url] - Read point cloud data from a ZDF file, apply a binary mask, and visualize it.
       - **Dependencies:**
-        - [OpenCV](https://opencv.org/) version 4.0.1 or newer
+        - [numpy](https://numpy.org/) version 1.19.2 or newer
+        - [matplotlib](https://matplotlib.org/) version 3.3.2 or newer
+        - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
     - [**gamma_correction**][gamma_correction-url] - Modify gamma of 2D image.
       - **Dependencies:**
+        - [numpy](https://numpy.org/) version 1.19.2 or newer
         - [OpenCV](https://opencv.org/) version 4.0.1 or newer
     - [**color_balance**][color_balance-url] - Balance color of 2D image.
+      - **Dependencies:**
+        - [numpy](https://numpy.org/) version 1.19.2 or newer
+        - [matplotlib](https://matplotlib.org/) version 3.3.2 or newer
 
 ## Instructions
 
@@ -58,6 +85,7 @@ There are two main categories of samples: **camera** and **applications**. The s
 Note: The version tested with Zivid cameras is 2.1.0.
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
+Note: The version tested with Zivid cameras is 3.7.7.
 
 3. [**Download Zivid Sample Data**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data).
 
