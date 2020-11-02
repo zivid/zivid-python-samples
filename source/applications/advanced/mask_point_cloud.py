@@ -1,4 +1,8 @@
-"""Import ZDF point cloud, apply a binary mask, and visualize it."""
+"""
+This example shows how to read point cloud data from a ZDF file, apply a binary mask, and visualize it.
+
+The ZDF file for this sample can be found under the main instructions for Zivid samples.
+"""
 
 import math
 from pathlib import Path
@@ -7,17 +11,22 @@ import matplotlib.pyplot as plt
 import pptk
 import zivid
 
+from sample_utils.paths import get_sample_data_path
 
-def _display_rgb(rgb):
+
+def _display_rgb(rgb, title):
     """Display RGB image.
 
     Args:
-        rgb: RGB image
+        rgb: RGB image (HxWx3 darray)
+        title: Image title
+
+    Returns None
 
     """
     plt.figure()
     plt.imshow(rgb)
-    plt.title("RGB image")
+    plt.title(title)
     plt.show(block=False)
 
 
@@ -27,13 +36,15 @@ def _display_depthmap(xyz):
     Args:
         xyz: X, Y and Z images (point cloud co-ordinates)
 
+    Returns None
+
     """
     plt.figure()
     plt.imshow(
         xyz[:, :, 2],
         vmin=np.nanmin(xyz[:, :, 2]),
         vmax=np.nanmax(xyz[:, :, 2]),
-        cmap="jet",
+        cmap="viridis",
     )
     plt.colorbar()
     plt.title("Depth map")
@@ -76,6 +87,8 @@ def _display_pointcloud(rgb, xyz):
         rgb: RGB image
         xyz: X, Y and Z images (point cloud co-ordinates)
 
+    Returns None
+
     """
     mid_point = _get_mid_point(xyz)
     point_cloud_to_view = xyz
@@ -90,40 +103,37 @@ def _main():
 
     app = zivid.Application()
 
-    filename_zdf = "Zivid3D.zdf"
+    data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+    print(f"Reading ZDF frame from file: {data_file}")
+    frame = zivid.Frame(data_file)
 
-    print(f"Reading {filename_zdf} point cloud")
-    frame = zivid.Frame(Path() / f"{str(zivid.environment.data_path())}/{filename_zdf}")
-
-    point_cloud = frame.get_point_cloud().to_array()
-    xyz = np.dstack([point_cloud["x"], point_cloud["y"], point_cloud["z"]])
-    rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
+    point_cloud = frame.point_cloud()
+    xyz = point_cloud.copy_data("xyz")
+    rgba = point_cloud.copy_data("rgba")
 
     pixels_to_display = 300
-    print(
-        f"Generating a binary mask of central {pixels_to_display} x {pixels_to_display} pixels"
-    )
-    mask = np.zeros((rgb.shape[0], rgb.shape[1]), np.bool)
-    height = frame.get_point_cloud().height
-    width = frame.get_point_cloud().width
+    print(f"Generating binary mask of central {pixels_to_display} x {pixels_to_display} pixels")
+    mask = np.zeros((rgba.shape[0], rgba.shape[1]), np.bool)
+    height = frame.point_cloud().height
+    width = frame.point_cloud().width
     h_min = int((height - pixels_to_display) / 2)
     h_max = int((height + pixels_to_display) / 2)
     w_min = int((width - pixels_to_display) / 2)
     w_max = int((width + pixels_to_display) / 2)
     mask[h_min:h_max, w_min:w_max] = 1
 
-    print("Masking the point cloud")
+    _display_rgb(rgba[:, :, 0:3], "RGB image")
+
+    _display_depthmap(xyz)
+    _display_pointcloud(rgba[:, :, 0:3], xyz)
+    input("Press Enter to continue...")
+
+    print("Masking point cloud")
     xyz_masked = xyz.copy()
     xyz_masked[mask == 0] = np.nan
 
-    _display_rgb(rgb)
-
-    _display_depthmap(xyz)
-    _display_pointcloud(rgb, xyz)
-    input("Press Enter to continue...")
-
     _display_depthmap(xyz_masked)
-    _display_pointcloud(rgb, xyz_masked)
+    _display_pointcloud(rgba[:, :, 0:3], xyz_masked)
     input("Press Enter to close...")
 
 

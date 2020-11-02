@@ -8,7 +8,7 @@ pythonFiles=$(find "$SOURCE_DIR" -name '*.py' -not -path "*/ur_hand_eye_calibrat
 
 echo Running black on:
 echo "$pythonFiles"
-black --check --diff $pythonFiles || exit $?
+black --config="$ROOT_DIR/pyproject.toml" --check --diff $pythonFiles || exit $?
 
 echo Running flake8 on:
 echo "$pythonFiles"

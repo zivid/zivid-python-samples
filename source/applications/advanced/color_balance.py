@@ -1,5 +1,5 @@
 """
-Balance color for RGB image.
+This example shows how to balance color of 2D image.
 """
 
 import datetime
@@ -21,16 +21,16 @@ class MeanColor:
 
     """
 
-    red: np.array
-    green: np.array
-    blue: np.array
+    red: np.float64
+    green: np.float64
+    blue: np.float64
 
 
 def _display_rgb(rgb, title):
     """Display RGB image.
 
     Args:
-        rgb: RGB image
+        rgb: RGB image (HxWx3 darray)
         title: Image title
 
     Returns None
@@ -42,67 +42,12 @@ def _display_rgb(rgb, title):
     plt.show(block=False)
 
 
-def _set_settings(dimension, iris, exposure_time, brightness, gain):
-    """Set settings for capture (3D or 2D).
-
-    Args:
-        dimension: '3d' or '2d'
-        iris: Iris
-        exposure_time: Exposure time
-        brightness: Projector brightness
-        gain: Gain
-
-    Returns:
-        settings: Capture settings (3D or 2D)
-
-    Raises:
-        ValueError: If dimension is not '3d' or '2d'
-
-    """
-    if dimension == "3d":
-        settings = zivid.Settings()
-        settings.iris = iris
-        settings.exposure_time = datetime.timedelta(microseconds=exposure_time)
-        settings.brightness = brightness
-        settings.gain = gain
-    elif dimension == "2d":
-        settings = zivid.Settings2D()
-        settings.iris = iris
-        settings.exposure_time = datetime.timedelta(microseconds=exposure_time)
-        settings.brightness = brightness
-        settings.gain = gain
-    else:
-        raise ValueError(
-            f"The dimension value should be '3d' or '2d', got: '{dimension}'"
-        )
-
-    return settings
-
-
-def _capture_rgb(camera, settings_2d):
-    """Capture 2D RGB image.
-
-    Args:
-        camera: Zivid camera
-        settings_2d: 2D capture settings
-
-    Returns:
-        rgb: RGB image
-
-    """
-    frame_2d = camera.capture_2d(settings_2d)
-    image = frame_2d.image().to_array()
-    rgb = np.dstack([image["r"], image["g"], image["b"], image["a"]])
-
-    return rgb
-
-
 def _compute_mean_rgb(rgb, pixels):
     """Compute mean RGB values.
 
     Args:
-        rgb: RGB image
-        pixels: Number of central pixels for computation
+        rgb: RGB image (HxWx3 darray)
+        pixels: Number of central pixels (^2) for computation
 
     Returns:
         mean_color: RGB channel mean values
@@ -132,106 +77,165 @@ def _compute_mean_rgb(rgb, pixels):
     mean_red = np.mean(np.reshape(red, -1), dtype=np.float64)
     mean_green = np.mean(np.reshape(green, -1), dtype=np.float64)
     mean_blue = np.mean(np.reshape(blue, -1), dtype=np.float64)
-    mean_color = MeanColor(red=mean_red, green=mean_green, blue=mean_blue)
 
-    return mean_color
+    return MeanColor(red=mean_red, green=mean_green, blue=mean_blue)
 
 
-def _apply_color_balance(rgb, red_balance, blue_balance):
-    """Apply color balance to RGB image.
+def _auto_settings_configuration(camera):
+    """Automatically configure 2D capture settings by taking images in a loop while tunning gain, exposure time, and
+    aperture. The goal is that the maximum of mean RGB values reaches the value within defined limits.
 
     Args:
-        rgb: Input RGB image
-        red_balance: Red balance
-        blue_balance: Blue balance
+        camera: Camera
 
     Returns:
-        corrected_image: RGB image after color balance
+        settings_2d: 2D capture settings
 
     """
-    default_red_balance = zivid.Settings().red_balance
-    default_blue_balance = zivid.Settings().blue_balance
-    corrected_rgb = np.copy(rgb)
-    corrected_rgb[:, :, 0] = rgb[:, :, 0] * red_balance / default_red_balance
-    corrected_rgb[:, :, 2] = rgb[:, :, 2] * blue_balance / default_blue_balance
+    print("Starting auto settings configuration")
+    desired_color_range = [200, 225]
+    settings_2d = zivid.Settings2D(
+        acquisitions=[
+            zivid.Settings2D.Acquisition(
+                aperture=8,
+                exposure_time=datetime.timedelta(microseconds=20000),
+                brightness=0.0,
+                gain=2.0,
+            )
+        ],
+    )
+    fnums = [11.31, 8, 5.6, 4, 2.8, 2]
+    setting_tunning_index = 1
+    cnt = 0
+    timeout_cnt = 25
+    timeout_break = False
 
-    return corrected_rgb
+    while True:
+        rgba = camera.capture(settings_2d).image_rgba().copy_data()
+        mean_color = _compute_mean_rgb(rgba[:, :, 0:3], 100)
+        max_mean_color = max(mean_color.red, mean_color.green, mean_color.blue)
+        print(f"Iteration: {cnt+1}")
+        print(f" Max mean color: {max_mean_color} ")
+        print(f" Desired color range: [{desired_color_range[0]},{desired_color_range[1]}]")
+
+        # Breaking on timeout the first time 2D image is not saturated
+        if timeout_break is True and max_mean_color < 255:
+            break
+
+        if max_mean_color <= desired_color_range[0] or max_mean_color >= desired_color_range[1]:
+            color_ratio = np.mean(desired_color_range) / max_mean_color
+            if setting_tunning_index == 1:
+                settings_2d.acquisitions[0].gain = np.clip(settings_2d.acquisitions[0].gain * color_ratio, 1, 16)
+                print(f" New gain: {settings_2d.acquisitions[0].gain}")
+                setting_tunning_index = 2
+            elif setting_tunning_index == 2:
+                new_exp = settings_2d.acquisitions[0].exposure_time.microseconds * color_ratio
+                settings_2d.acquisitions[0].exposure_time = datetime.timedelta(
+                    microseconds=np.clip(new_exp, 6500, 100000)
+                )
+                print(f" New exposure time: {settings_2d.acquisitions[0].exposure_time.microseconds}")
+                setting_tunning_index = 3
+            elif setting_tunning_index == 3:
+                fnum_index = fnums.index(settings_2d.acquisitions[0].aperture)
+                if color_ratio > 1:
+                    settings_2d.acquisitions[0].aperture = np.clip(fnums[fnum_index + 1], fnums[-1], fnums[0])
+                if color_ratio < 1:
+                    settings_2d.acquisitions[0].aperture = np.clip(fnums[fnum_index - 1], fnums[-1], fnums[0])
+                setting_tunning_index = 1
+                print(f" New aperture: {settings_2d.acquisitions[0].aperture}")
+            cnt = cnt + 1
+        else:
+            print("Auto settings configuration sucessful")
+            break
+        if cnt >= timeout_cnt:
+            timeout_break = True
+    print("Settings:")
+    print(settings_2d.acquisitions[0])
+    return settings_2d
 
 
-def _color_balance_calibration(camera, settings_3d):
+def _color_balance_calibration(camera, settings_2d):
     """Balance color for RGB image by taking images of white surface (piece of paper, wall, etc.) in a loop.
 
     Args:
         camera: Zivid camera
-        settings_3d: 3D capture settings
+        settings_2d: 2D capture settings
 
     Returns:
         corrected_red_balance: Corrected red balance
+        corrected_green_balance: Corrected green balance
         corrected_blue_balance: Corrected blue balance
 
     """
     print("Starting color balance calibration")
-    corrected_red_balance = 1.0
-    corrected_blue_balance = 1.0
-    settings_list = [settings_3d]
-    first_iteration = True
-    while True:
-        settings_3d.red_balance = corrected_red_balance
-        settings_3d.blue_balance = corrected_blue_balance
-        frame = zivid.hdr.capture(camera, settings_list)
-        point_cloud = frame.get_point_cloud().to_array()
-        rgb = np.dstack([point_cloud["r"], point_cloud["g"], point_cloud["b"]])
-        if first_iteration:
-            _display_rgb(rgb, "RGB image before color balance (3D capture)")
-            first_iteration = False
-        mean_color = _compute_mean_rgb(rgb, 100)
-        print(
-            (
-                "Mean color values: R = "
-                f"{int(mean_color.red)} "
-                "G = "
-                f"{int(mean_color.green)} "
-                "B = "
-                f"{int(mean_color.blue)} "
-            )
-        )
-        if int(mean_color.green) == int(mean_color.red) and int(
-            mean_color.green
-        ) == int(mean_color.blue):
-            break
-        corrected_red_balance = (
-            camera.settings.red_balance * mean_color.green / mean_color.red
-        )
-        corrected_blue_balance = (
-            camera.settings.blue_balance * mean_color.green / mean_color.blue
-        )
-    _display_rgb(rgb, "RGB image after color balance (3D capture)")
 
-    return (corrected_red_balance, corrected_blue_balance)
+    corrected_red_balance = 1.0
+    corrected_green_balance = 1.0
+    corrected_blue_balance = 1.0
+
+    saturated = False
+
+    while True:
+        settings_2d.processing.color.balance.red = corrected_red_balance
+        settings_2d.processing.color.balance.green = corrected_green_balance
+        settings_2d.processing.color.balance.blue = corrected_blue_balance
+        rgba = camera.capture(settings_2d).image_rgba().copy_data()
+        mean_color = _compute_mean_rgb(rgba[:, :, 0:3], 100)
+        print(" Mean color values:")
+        print(f"  R: {int(mean_color.red)}")
+        print(f"  G: {int(mean_color.green)}")
+        print(f"  B: {int(mean_color.blue)}")
+        if int(mean_color.green) == int(mean_color.red) and int(mean_color.green) == int(mean_color.blue):
+            print("Color balance successful")
+            break
+        if saturated is True:
+            print("Color balance incomplete - the range limits of color balance parameters have been reached")
+            break
+        max_color = max(mean_color.red, mean_color.green, mean_color.blue)
+        corrected_red_balance = np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 2)
+        corrected_green_balance = np.clip(
+            settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 2
+        )
+        corrected_blue_balance = np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 2)
+
+        if (
+            corrected_red_balance == 1.0
+            or corrected_red_balance == 2.0
+            or corrected_green_balance == 1.0
+            or corrected_green_balance == 2.0
+            or corrected_blue_balance == 1.0
+            or corrected_blue_balance == 2.0
+        ):
+            saturated = True
+    print("Color balance:")
+    print(f" Red: {corrected_red_balance}")
+    print(f" Green: {corrected_green_balance}")
+    print(f" Blue: {corrected_blue_balance}")
+
+    return (corrected_red_balance, corrected_green_balance, corrected_blue_balance)
 
 
 def _main():
 
     app = zivid.Application()
 
+    print("Connecting to camera")
     camera = app.connect_camera()
 
-    iris = 21
-    exposure_time = 10000
-    brightness = 0.0
-    gain = 16.0
+    settings_2d = _auto_settings_configuration(camera)
 
-    settings_3d = _set_settings("3d", iris, exposure_time, brightness, gain)
-    settings_2d = _set_settings("2d", iris, exposure_time, brightness, gain)
+    rgba = camera.capture(settings_2d).image_rgba().copy_data()
+    _display_rgb(rgba[:, :, 0:3], "RGB image before color balance")
 
-    [red_balance, blue_balance] = _color_balance_calibration(camera, settings_3d)
+    [red_balance, green_balance, blue_balance] = _color_balance_calibration(camera, settings_2d)
 
     print("Applying color balance on 2D image")
-    rgb = _capture_rgb(camera, settings_2d)
-    rgb_balanced = _apply_color_balance(rgb, red_balance, blue_balance)
+    settings_2d.processing.color.balance.red = red_balance
+    settings_2d.processing.color.balance.green = green_balance
+    settings_2d.processing.color.balance.blue = blue_balance
+    rgba_balanced = camera.capture(settings_2d).image_rgba().copy_data()
 
-    _display_rgb(rgb, "RGB image before color balance (2D capture)")
-    _display_rgb(rgb_balanced, "RGB image after color balance (2D capture)")
+    _display_rgb(rgba_balanced[:, :, 0:3], "RGB image after color balance")
     input("Press Enter to close...")
 
 

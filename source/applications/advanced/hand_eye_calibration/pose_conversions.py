@@ -1,10 +1,11 @@
-"""Example to show conversions to/from Transformation Matrix.
+"""
+This example shows how to convert to/from transformation matrix (rotation matrix + translation vector).
 
-Zivid primarily operate with a (4x4) Transformation Matrix (Rotation Matrix + Translation Vector).
-This example shows how to use Eigen to convert to and from:
-  AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion
+Zivid primarily operate with a (4x4) transformation matrix. This example shows how to use Eigen to convert to and from:
+AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion.
 
- It provides convenience functions that can be reused in applicable applications.
+The convenience functions from this example can be reused in applicable applications. The YAML files for this sample
+can be found under the main instructions for Zivid samples.
 """
 
 import enum
@@ -12,8 +13,9 @@ from pathlib import Path
 from dataclasses import dataclass, field
 import numpy as np
 import cv2
-import zivid
 from scipy.spatial.transform import Rotation as R
+
+from sample_utils.paths import get_sample_data_path
 
 
 def _main():
@@ -21,7 +23,7 @@ def _main():
     print_header("This example shows conversions to/from Transformation Matrix")
 
     transformation_matrix = get_transformation_matrix_from_yaml(
-        f"{str(zivid.environment.data_path())}/RobotTransform.yaml"
+        Path() / get_sample_data_path() / "RobotTransform.yaml"
     )
     print(f"Transformation Matrix:\n{transformation_matrix}")
 
@@ -232,12 +234,8 @@ def roll_pitch_yaw_to_rotation_matrix(rpy_list):
 
     """
     for rotation in rpy_list:
-        rotation_matrix = R.from_euler(
-            rotation["convention"].value, rotation["roll_pitch_yaw"]
-        ).as_matrix()
-        print(
-            f"Rotation Matrix from Roll-Pitch-Yaw angles ({rotation['convention'].name}):"
-        )
+        rotation_matrix = R.from_euler(rotation["convention"].value, rotation["roll_pitch_yaw"]).as_matrix()
+        print(f"Rotation Matrix from Roll-Pitch-Yaw angles ({rotation['convention'].name}):")
         print(f"{rotation_matrix}")
 
 
@@ -251,12 +249,12 @@ def save_transformation_matrix_to_yaml(transformation_matrix, path: Path):
     Returns None
 
     """
-    file_storage_out = cv2.FileStorage(path, cv2.FILE_STORAGE_WRITE)
+    file_storage_out = cv2.FileStorage(str(path), cv2.FILE_STORAGE_WRITE)
     file_storage_out.write("TransformationMatrixFromQuaternion", transformation_matrix)
     file_storage_out.release()
 
 
-def get_transformation_matrix_from_yaml(path: Path):
+def get_transformation_matrix_from_yaml(path):
     """Get Transformation Matrix from YAML. Uses OpenCV to maintain yaml format.
 
     Args:
@@ -266,7 +264,7 @@ def get_transformation_matrix_from_yaml(path: Path):
         4x4 Transformation Matrix
 
     """
-    file_storage_in = cv2.FileStorage(path, cv2.FILE_STORAGE_READ)
+    file_storage_in = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
     transformation_matrix = file_storage_in.getNode("PoseState").mat()
     file_storage_in.release()
     return transformation_matrix

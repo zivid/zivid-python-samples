@@ -1,36 +1,58 @@
-"""Hand-eye calibration sample."""
+"""
+This example shows how to perform Eye-to-Hand calibration.
+"""
+
 import datetime
 import code
 
 import numpy as np
-import zivid.hand_eye
+import zivid
 
 
 def _acquire_checkerboard_frame(camera):
-    print("Capturing checkerboard image... ")
-    with camera.update_settings() as updater:
-        updater.settings.iris = 17
-        updater.settings.gain = 1.0
-        updater.settings.exposure_time = datetime.timedelta(microseconds=20000)
-        updater.settings.filters.gaussian.enabled = True
-    print("OK")
-    return camera.capture()
+    """Acquire checkerboard frame.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        frame: Zivid frame
+
+    """
+    print("Configuring settings")
+    settings = zivid.Settings()
+    settings.acquisitions.append(zivid.Settings.Acquisition())
+    settings.acquisitions[0].aperture = 8.0
+    settings.acquisitions[0].exposure_time = datetime.timedelta(microseconds=20000)
+    settings.processing.filters.smoothing.gaussian.enabled = True
+    print("Capturing checkerboard image")
+    return camera.capture(settings)
 
 
 def _enter_robot_pose(index):
+    """Robot pose user input.
+
+    Args:
+        index: Robot pose ID
+
+    Returns:
+        robot_pose: Robot pose
+
+    """
     inputted = input(
-        f"Enter pose with id={index} (a line with 16 space separated values"
-        " describing 4x4 row-major matrix):"
+        f"Enter pose with id={index} (a line with 16 space separated values describing 4x4 row-major matrix):"
     )
     elements = inputted.split(maxsplit=15)
     data = np.array(elements, dtype=np.float64).reshape((4, 4))
-    robot_pose = zivid.hand_eye.Pose(data)
+    robot_pose = zivid.calibration.Pose(data)
     print(f"The following pose was entered:\n{robot_pose}")
     return robot_pose
 
 
 def _main():
     app = zivid.Application()
+
+    print("Connecting to camera")
     camera = app.connect_camera()
 
     current_pose_id = 0
@@ -38,22 +60,19 @@ def _main():
     calibrate = False
 
     while not calibrate:
-        command = input(
-            "Enter command, p (to add robot pose) or c (to perform calibration):"
-        ).strip()
+        command = input("Enter command, p (to add robot pose) or c (to perform calibration):").strip()
         if command == "p":
             try:
                 robot_pose = _enter_robot_pose(current_pose_id)
 
                 frame = _acquire_checkerboard_frame(camera)
 
-                print("Detecting checkerboard square centers... ")
-                result = zivid.hand_eye.detect_feature_points(frame.get_point_cloud())
+                print("Detecting checkerboard in point cloud")
+                detection_result = zivid.calibration.detect_feature_points(frame.point_cloud())
 
-                if result:
+                if detection_result:
                     print("OK")
-                    res = zivid.hand_eye.CalibrationInput(robot_pose, result)
-                    calibration_inputs.append(res)
+                    calibration_inputs.append(zivid.calibration.HandEyeInput(robot_pose, detection_result))
                     current_pose_id += 1
                 else:
                     print("FAILED")
@@ -64,14 +83,14 @@ def _main():
         else:
             print(f"Unknown command '{command}'")
 
-    print("Performing hand-eye calibration...")
-    calibration_result = zivid.hand_eye.calibrate_eye_to_hand(calibration_inputs)
+    print("Performing Eye-to-Hand calibration")
+    calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
     code.interact(local=locals())
     if calibration_result:
-        print("OK")
+        print("Eye-to-Hand calibration OK")
         print(f"Result:\n{calibration_result}")
     else:
-        print("FAILED")
+        print("Eye-to-Hand calibration FAILED")
 
 
 if __name__ == "__main__":
