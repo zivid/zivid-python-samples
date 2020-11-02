@@ -6,7 +6,6 @@ https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data.
 """
 
 from pathlib import Path
-import numpy as np
 import zivid
 
 from sample_utils.paths import get_sample_data_path
