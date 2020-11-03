@@ -82,10 +82,10 @@ There are two main categories of samples: **camera** and **applications**. The s
 ## Instructions
 
 1. [**Install Zivid Software**](https://www.zivid.com/downloads).
-Note: The version tested with Zivid cameras is 2.1.0.
+Note: The samples require Zivid SDK v2 (minor version 2.1 or newer).
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
-Note: The version tested with Zivid cameras is 3.7.7.
+Note: The recommended Python version for these samples is 3.7.
 
 3. [**Download Zivid Sample Data**](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450363393/Sample+Data).
 
