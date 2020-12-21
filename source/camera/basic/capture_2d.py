@@ -22,6 +22,7 @@ def _main():
     settings_2d.processing.color.balance.red = 1.0
     settings_2d.processing.color.balance.green = 1.0
     settings_2d.processing.color.balance.blue = 1.0
+    settings_2d.processing.color.gamma = 1.0
 
     print("Capturing 2D frame")
     with camera.capture(settings_2d) as frame_2d:

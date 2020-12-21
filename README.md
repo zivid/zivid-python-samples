@@ -70,7 +70,7 @@ There are two main categories of samples: **camera** and **applications**. The s
         - [numpy](https://numpy.org/) version 1.19.2 or newer
         - [matplotlib](https://matplotlib.org/) version 3.3.2 or newer
         - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
-    - [**gamma_correction**][gamma_correction-url] - Modify gamma of 2D image.
+    - [**gamma_correction**][gamma_correction-url] - Capture 2D image with gamma correction.
       - **Dependencies:**
         - [numpy](https://numpy.org/) version 1.19.2 or newer
         - [OpenCV](https://opencv.org/) version 4.0.1 or newer
@@ -82,7 +82,7 @@ There are two main categories of samples: **camera** and **applications**. The s
 ## Instructions
 
 1. [**Install Zivid Software**](https://www.zivid.com/downloads).
-Note: The samples require Zivid SDK v2 (minor version 2.1 or newer).
+Note: The samples require Zivid SDK v2 (minor version 2.2 or newer).
 
 2. [**Install Zivid Python**](https://github.com/zivid/zivid-python).
 Note: The recommended Python version for these samples is 3.7.
