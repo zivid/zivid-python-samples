@@ -109,8 +109,8 @@ If you need assistance with using Zivid cameras, visit our Knowledge Base at [ht
 ## Licence
 Zivid Samples are distributed under the [BSD license](source/LICENSE).
 
-[ci-badge]: https://img.shields.io/azure-devops/build/zivid-devops/701a6042-3865-4412-9f7f-78b846c1a406/3
-[ci-url]: https://dev.azure.com/zivid-devops/python-samples/_build/latest?definitionId=3&branchName=master
+[ci-badge]: https://img.shields.io/github/workflow/status/zivid/zivid-python-samples/Main%20CI%20workflow/master
+[ci-url]: https://github.com/zivid/zivid-python-samples/actions?query=workflow%3A%22Main+CI+workflow%22+branch%3Amaster
 [QuickCaptureTutorial-url]: source/camera/basic/QuickCaptureTutorial.md
 [CompleteCaptureTutorial-url]: source/camera/basic/CaptureTutorial.md
 [capture-url]: source/camera/basic/capture.py
