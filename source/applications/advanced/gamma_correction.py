@@ -1,5 +1,5 @@
 """
-This example shows how to capture a 2D image and apply a configurable gamma correction.
+This example shows how to capture a 2D image with a configurable gamma correction.
 """
 
 import argparse
@@ -16,38 +16,21 @@ def _options():
 
     """
     parser = argparse.ArgumentParser(
-        description=("Capture 2D image and apply gamma correction\n" "Example:\n\t $ python gamma_correction.py 2"),
+        description=(
+            "Capture 2D image with gamma correction (0.25 to 1.5)\n" "Example:\n\t $ python gamma_correction.py 0.6"
+        ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("gamma", type=float, help="Gamma correction value")
     return parser.parse_args()
 
 
-def adjust_gamma(image, gamma: float):
-    """Adjust gamma on image.
-
-    Copied from : https://www.pyimagesearch.com/2015/10/05/opencv-gamma-correction/
-
-    Args:
-        image: BGR image (HxWx3 darray) to be corrected
-        gamma: Gamma setting to be applied
-
-    Returns:
-        Gamma adjusted BGR image (HxWx3 darray)
-
-    """
-    # Building a lookup table mapping the pixel values [0, 255] to their adjusted gamma values
-    inv_gamma = 1.0 / gamma
-    table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
-    # Applying gamma correction using the lookup table
-    return cv2.LUT(image, table)
-
-
-def _capture_bgr_image(camera):
+def _capture_bgr_image(camera, gamma):
     """Capture and extract 2D image, then convert from RGBA and return BGR.
 
     Args:
         camera: Zivid Camera handle
+        gamma: Gamma correction value
 
     Returns:
         BGR image (HxWx3 darray)
@@ -57,6 +40,8 @@ def _capture_bgr_image(camera):
     settings_2d = zivid.Settings2D(
         acquisitions=[zivid.Settings2D.Acquisition()],
     )
+    settings_2d.processing.color.gamma = gamma
+
     print("Capturing 2D frame")
     with camera.capture(settings_2d) as frame_2d:
         image = frame_2d.image_rgba()
@@ -73,11 +58,12 @@ def _main():
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    bgr_original = _capture_bgr_image(camera)
+    print("Capturing without gamma correction")
+    bgr_original = _capture_bgr_image(camera, 1.0)
     cv2.imwrite("Original.jpg", bgr_original)
 
-    print(f"Applying gamma correction: {user_options.gamma}")
-    bgr_adjusted = adjust_gamma(bgr_original, user_options.gamma)
+    print(f"Capturing with gamma correction: {user_options.gamma}")
+    bgr_adjusted = _capture_bgr_image(camera, user_options.gamma)
     cv2.imwrite("Adjusted.jpg", bgr_adjusted)
 
     width = (int)(bgr_original.shape[1] / 2)

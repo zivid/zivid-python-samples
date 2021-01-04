@@ -55,10 +55,11 @@ def _main():
     filters.experimental.contrast_distortion.correction.strength = 0.4
     filters.experimental.contrast_distortion.removal.enabled = False
     filters.experimental.contrast_distortion.removal.threshold = 0.5
-    balance = settings.processing.color.balance
-    balance.red = 1.0
-    balance.blue = 1.0
-    balance.green = 1.0
+    color = settings.processing.color
+    color.balance.red = 1.0
+    color.balance.blue = 1.0
+    color.balance.green = 1.0
+    color.gamma = 1.0
     print(settings.processing)
 
     print("Capturing frame (HDR)")
