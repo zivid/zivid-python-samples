@@ -2,7 +2,6 @@
 disable=bad-continuation,         ######## Disabled because of conflicts with black ########
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
-        too-many-statements,
 [TYPE CHECK]
 generated-members=cv2.*
 
