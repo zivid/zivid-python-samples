@@ -4,6 +4,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
 SOURCE_DIR=$(realpath "$ROOT_DIR/source")
 
+python3 -m pip install --requirement "$SCRIPT_DIR/requirements.txt" || exit $?
+
 pythonFiles=$(find "$SOURCE_DIR" -name '*.py' -not -path "*/ur_hand_eye_calibration/3rdParty*")
 
 echo Running black on:
