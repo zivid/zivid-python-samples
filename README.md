@@ -50,7 +50,7 @@ There are two main categories of samples: **camera** and **applications**. The s
       - [**read_iterate_zdf**][read_iterate_zdf-url] - Read point cloud data from a ZDF file, iterate through it, and extract individual points.
   - **advanced**
     - [**hand_eye_calibration**][hand_eye_calibration-url]
-      - [**calibrate_eye_to_hand**][calibrate_eye_to_hand-url] - Perform Eye-to-Hand calibration.
+      - [**calibrate_hand_eye**][calibrate_hand_eye-url] - Perform Hand-Eye calibration.
         - **Dependencies:**
           - [numpy][numpy-url] version 1.19.2 or newer
       - [**utilize_eye_in_hand_calibration**][utilize_eye_in_hand_calibration-url] - Transform a single data point or entire point cloud from the camera frame to the robot base frame using the Eye-in-Hand calibration matrix.
@@ -142,7 +142,7 @@ Zivid Samples are distributed under the [BSD license](LICENSE).
 [convert_zdf-url]: source/applications/basic/file_formats/convert_zdf.py
 [read_iterate_zdf-url]: source/applications/basic/file_formats/read_iterate_zdf.py
 [hand_eye_calibration-url]: source/applications/advanced/hand_eye_calibration
-[calibrate_eye_to_hand-url]: source/applications/advanced/hand_eye_calibration/calibrate_eye_to_hand.py
+[calibrate_hand_eye-url]: source/applications/advanced/hand_eye_calibration/calibrate_hand_eye.py
 [utilize_eye_in_hand_calibration-url]: source/applications/advanced/hand_eye_calibration/utilize_eye_in_hand_calibration.py
 [pose_conversions-url]: source/applications/advanced/hand_eye_calibration/pose_conversions.py
 [ur_perform_hand_eye_calibration-url]: source/applications/advanced/hand_eye_calibration/ur_hand_eye_calibration/universal_robots_perform_hand_eye_calibration.py
