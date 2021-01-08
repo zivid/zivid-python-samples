@@ -232,7 +232,7 @@ def _save_hand_eye_results(save_dir: Path, transform: np.array, residuals: list)
     file_storage_residuals = cv2.FileStorage(str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE)
     residual_list = []
     for res in residuals:
-        tmp = list([res.translation, res.translation])
+        tmp = list([res.translation(), res.translation()])
         residual_list.append(tmp)
 
     file_storage_residuals.write(
@@ -404,7 +404,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
             point_cloud = zivid.Frame(frame_file).point_cloud()
             detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
-            if not detection_result:
+            if not detection_result.valid():
                 raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
 
             print(f"Read robot pose from pos{idata:02d}.yaml")
@@ -426,8 +426,8 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
     else:
         raise ValueError(f"Invalid calibration mode: {mode}")
 
-    transform = calibration_result.transform
-    residuals = calibration_result.residuals
+    transform = calibration_result.transform()
+    residuals = calibration_result.residuals()
 
     print("\n\nTransform: \n")
     np.set_printoptions(precision=5, suppress=True)
@@ -435,7 +435,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
 
     print("\n\nResiduals: \n")
     for res in residuals:
-        print(f"Rotation: {res.rotation:.6f}   Translation: {res.translation:.6f}")
+        print(f"Rotation: {res.rotation():.6f}   Translation: {res.translation():.6f}")
 
     return transform, residuals
 
