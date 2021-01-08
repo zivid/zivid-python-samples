@@ -63,24 +63,47 @@ def _main():
 
     np.set_printoptions(precision=2)
 
-    # Defining (picking) point in camera frame
-    point_in_camera_frame = np.array([81.2, 18.0, 594.6, 1])
+    while True:
+        calibration_type = input("Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):").strip()
+        if calibration_type.lower() == "eth":
+
+            # Defining (picking) point in camera frame
+            point_in_camera_frame = np.array([37.8, -145.5, 1227.1, 1])
+
+            eye_to_hand_transform_file = Path() / get_sample_data_path() / "EyeToHandTransform.yaml"
+            # Checking if YAML files are valid
+            _assert_valid_matrix(eye_to_hand_transform_file)
+
+            print("Reading camera pose in robot base frame (result of eye-to-hand calibration)")
+            transform_base_to_camera = _read_transform(eye_to_hand_transform_file)
+
+            break
+
+        if calibration_type.lower() == "eih":
+
+            # Defining (picking) point in camera frame
+            point_in_camera_frame = np.array([81.2, 18.0, 594.6, 1])
+
+            eye_in_hand_transform_file = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
+            robot_transform_file = Path() / get_sample_data_path() / "RobotTransform.yaml"
+            # Checking if YAML files are valid
+            _assert_valid_matrix(eye_in_hand_transform_file)
+            _assert_valid_matrix(robot_transform_file)
+
+            print("Reading camera pose in end-effector frame (result of eye-in-hand calibration)")
+            transform_end_effector_to_camera = _read_transform(eye_in_hand_transform_file)
+
+            print("Reading end-effector pose in robot base frame")
+            transform_base_to_end_effector = _read_transform(robot_transform_file)
+
+            print("Computing camera pose in robot base frame")
+            transform_base_to_camera = np.matmul(transform_base_to_end_effector, transform_end_effector_to_camera)
+
+            break
+
+        print("Entered unknown method")
+
     print(f"Point coordinates in camera frame: {point_in_camera_frame[0:3]}")
-
-    eye_in_hand_transform_file = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
-    robot_transform_file = Path() / get_sample_data_path() / "RobotTransform.yaml"
-    # Checking if YAML files are valid
-    _assert_valid_matrix(eye_in_hand_transform_file)
-    _assert_valid_matrix(robot_transform_file)
-
-    print("Reading camera pose in end-effector frame (result of eye-in-hand calibration)")
-    transform_end_effector_to_camera = _read_transform(eye_in_hand_transform_file)
-
-    print("Reading end-effector pose in robot base frame")
-    transform_base_to_end_effector = _read_transform(robot_transform_file)
-
-    print("Computing camera pose in robot base frame")
-    transform_base_to_camera = np.matmul(transform_base_to_end_effector, transform_end_effector_to_camera)
 
     print("Transforming (picking) point from camera to robot base frame")
     point_in_base_frame = np.matmul(transform_base_to_camera, point_in_camera_frame)
