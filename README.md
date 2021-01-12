@@ -1,8 +1,9 @@
 # python-samples
 
-[![Build Status][ci-badge]][ci-url]
-
 This repository contains **Python** code samples for **Zivid**.
+
+[![Build Status][ci-badge]][ci-url]
+![Zivid Image][header-image]
 
 ## Samples list
 
@@ -111,6 +112,7 @@ Zivid Samples are distributed under the [BSD license](source/LICENSE).
 
 [ci-badge]: https://img.shields.io/github/workflow/status/zivid/zivid-python-samples/Main%20CI%20workflow/master
 [ci-url]: https://github.com/zivid/zivid-python-samples/actions?query=workflow%3A%22Main+CI+workflow%22+branch%3Amaster
+[header-image]: https://www.zivid.com/hubfs/softwarefiles/images/zivid-generic-github-header.png
 [QuickCaptureTutorial-url]: source/camera/basic/QuickCaptureTutorial.md
 [CompleteCaptureTutorial-url]: source/camera/basic/CaptureTutorial.md
 [capture-url]: source/camera/basic/capture.py
