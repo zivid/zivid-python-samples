@@ -5,6 +5,16 @@ This repository contains **Python** code samples for **Zivid**.
 [![Build Status][ci-badge]][ci-url]
 ![Zivid Image][header-image]
 
+---
+
+*Contents:*
+[**Samples**](#Samples-list) |
+[**Instructions**](#Instructions) |
+[**Support**](#Support) |
+[**Licence**](#Licence)
+
+---
+
 ## Samples list
 
 There are two main categories of samples: **camera** and **applications**. The samples in the **camera** category focus only on how to use the camera. The samples in the **applications** category demonstrate practical use of the output data from the camera, such as 3D point clouds or 2D images.
