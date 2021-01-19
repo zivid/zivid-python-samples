@@ -51,6 +51,7 @@ def _color_from_yaml(from_yaml):
     color.balance.red = from_yaml["Balance"]["Red"]
     color.balance.blue = from_yaml["Balance"]["Blue"]
     color.balance.green = from_yaml["Balance"]["Green"]
+    color.gamma = from_yaml["Gamma"]
     return color
 
 

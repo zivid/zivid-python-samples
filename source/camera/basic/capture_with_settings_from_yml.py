@@ -17,7 +17,7 @@ def _main():
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    settings_file = Path() / get_sample_data_path() / "Settings/Settings01.yml"
+    settings_file = Path() / get_sample_data_path() / "Settings/Zivid One/Settings01.yml"
     print(f"Configuring settings from file: {settings_file}")
     settings = get_settings_from_yaml(settings_file)
 
