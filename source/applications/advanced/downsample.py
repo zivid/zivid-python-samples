@@ -4,60 +4,41 @@ This example shows how to downsample point cloud from a ZDF file.
 The ZDF files for this sample can be found under the main instructions for Zivid samples.
 """
 
-import math
 from pathlib import Path
 import numpy as np
-import pptk
+import open3d as o3d
 import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _get_mid_point(xyz):
-    """Calculate mid point from average of the 100 centermost points.
+def _display_pointcloud(xyz, rgb):
+    """Display point cloud.
 
     Args:
+        rgb: RGB image
         xyz: X, Y and Z images (point cloud co-ordinates)
 
-    Returns:
-        mid_point: Calculated mid point
+    Returns None
 
     """
-    offset = 5
-    xyz_center_cube = xyz[
-        int(xyz.shape[0] / 2 - offset) : int(xyz.shape[0] / 2 + offset),
-        int(xyz.shape[1] / 2 - offset) : int(xyz.shape[1] / 2 + offset),
-        :,
-    ]
-    return (
-        np.nanmedian(xyz_center_cube[:, :, 0]),
-        np.nanmedian(xyz_center_cube[:, :, 1]),
-        np.nanmedian(xyz_center_cube[:, :, 2]),
-    )
+    xyz = np.nan_to_num(xyz).reshape(-1, 3)
+    rgb = rgb.reshape(-1, 3)
 
+    point_cloud_open3d = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
+    point_cloud_open3d.colors = o3d.utility.Vector3dVector(rgb / 255)
 
-def _visualize_point_cloud(point_cloud):
-    """Visualize point cloud.
+    visualizer = o3d.visualization.Visualizer()  # pylint: disable=no-member
+    visualizer.create_window()
+    visualizer.add_geometry(point_cloud_open3d)
 
-    Visualize the provided point cloud `xyz`, and color it with `rgb`.
+    visualizer.get_render_option().background_color = (0, 0, 0)
+    visualizer.get_render_option().point_size = 1
+    visualizer.get_render_option().show_coordinate_frame = True
+    visualizer.get_view_control().set_front([0, 0, -1])
+    visualizer.get_view_control().set_up([0, -1, 0])
 
-    We take the centermost co-ordinate as 'lookat' point. We assume that camera location is at azimuth -pi/2 and
-    elevation -pi/2 relative to the 'lookat' point.
-
-    Args:
-        point_cloud: Zivid point cloud
-    """
-    xyz = point_cloud.copy_data("xyz")
-    rgb = point_cloud.copy_data("rgba")[:, :, 0:3]
-
-    mid_point = _get_mid_point(xyz)
-
-    # Setting nans to zeros
-    xyz[np.isnan(xyz[:, :, 2])] = 0
-
-    viewer = pptk.viewer(xyz)
-    viewer.attributes(rgb.reshape(-1, 3) / 255.0)
-    viewer.set(lookat=mid_point)
-    viewer.set(phi=-math.pi / 2, theta=-math.pi / 2, r=mid_point[2])
+    visualizer.run()
+    visualizer.destroy_window()
 
 
 def _main():
@@ -69,17 +50,21 @@ def _main():
     frame = zivid.Frame(data_file)
 
     point_cloud = frame.point_cloud()
+    xyz = point_cloud.copy_data("xyz")
+    rgba = point_cloud.copy_data("rgba")
 
     print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-    _visualize_point_cloud(point_cloud)
+    _display_pointcloud(xyz, rgba[:, :, 0:3])
 
     print("Downsampling point cloud")
     point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
+    xyz_donwsampled = point_cloud.copy_data("xyz")
+    rgba_downsampled = point_cloud.copy_data("rgba")
 
     print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-    _visualize_point_cloud(point_cloud)
+    _display_pointcloud(xyz_donwsampled, rgba_downsampled[:, :, 0:3])
 
     input("Press Enter to close...")
 
