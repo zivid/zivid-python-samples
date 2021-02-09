@@ -38,7 +38,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - **visualization**
       - [**read_zdf_vis_3d**][read_zdf_vis_3d-url] - Read point cloud data from a ZDF file and visualize it.
         - **Dependencies:**
-          - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
+          - [Open3D](http://www.open3d.org/) version 0.12.0 or newer
           - [numpy](https://numpy.org/) version 1.19.2 or newer
           - [matplotlib](https://matplotlib.org/) version 3.3.2 or newer
     - **file_formats**
@@ -71,7 +71,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**downsample**][downsample-url]  - Downsample point cloud from a ZDF file.
       - **Dependencies:**
         - [numpy](https://numpy.org/) version 1.19.2 or newer
-        - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
+        - [Open3D](http://www.open3d.org/) version 0.12.0 or newer
     - [**create_depth_map**][create_depth_map-url] - Read point cloud data from a ZDF file, convert it to OpenCV format, then extract and visualize depth map.
       - **Dependencies:**
         - [numpy](https://numpy.org/) version 1.19.2 or newer
@@ -80,7 +80,7 @@ There are two main categories of samples: **camera** and **applications**. The s
       - **Dependencies:**
         - [numpy](https://numpy.org/) version 1.19.2 or newer
         - [matplotlib](https://matplotlib.org/) version 3.3.2 or newer
-        - [pptk](https://github.com/heremaps/pptk) version 0.1.0 or newer
+        - [Open3D](http://www.open3d.org/) version 0.12.0 or newer
     - [**gamma_correction**][gamma_correction-url] - Capture 2D image with gamma correction.
       - **Dependencies:**
         - [numpy](https://numpy.org/) version 1.19.2 or newer
