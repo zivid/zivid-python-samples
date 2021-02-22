@@ -64,10 +64,10 @@ def _main():
 class RotationConvention(enum.Enum):
     """Convenience enum class to list rotation conventions for Roll Pitch Yaw."""
 
-    ZYX_Intrinsic = "ZYX"
-    XYZ_Extrinsic = "xyz"
-    XYZ_Intrinsic = "XYZ"
-    ZYX_Extrinsic = "zyx"
+    ZYX_INTRINSIC = "ZYX"
+    XYZ_EXTRINSIC = "xyz"
+    XYZ_INTRINSIC = "XYZ"
+    ZYX_EXTRINSIC = "zyx"
 
 
 class AxisAngle:
