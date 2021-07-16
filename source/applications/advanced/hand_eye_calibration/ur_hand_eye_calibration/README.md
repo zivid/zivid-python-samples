@@ -1,6 +1,6 @@
 # Hand Eye Calibration
 
-To fully understand Hand-Eye Calibration, please see the [tutorial](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/72450049) in our Knowledge Base.
+To fully understand Hand-Eye Calibration, please see the [tutorial](https://support.zivid.com/latest/academy/applications/hand-eye.html) in our Knowledge Base.
 
 -----------------
  
@@ -11,5 +11,5 @@ Before running the sample, install the runtime requirements using IDE or command
 
 
 ## Support
-If you need help with the sample, visit our Knowledge Base article that explaining the sample [here](https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/103481384/).
+If you need help with the sample, visit our Knowledge Base article that explaining the sample [here](https://support.zivid.com/latest/academy/applications/hand-eye/ur5-robot-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html).
 
