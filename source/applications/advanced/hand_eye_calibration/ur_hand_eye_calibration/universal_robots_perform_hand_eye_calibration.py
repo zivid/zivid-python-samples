@@ -13,7 +13,7 @@ and robot_communication_file.xml in the same repo as this sample. Each robot pos
 must be modified to your scene. This is done in universal_robots_hand_eye_script.urp on the robot.
 
 Further explanation of this sample is found in our knowledge base:
-https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/103481384/
+https://support.zivid.com/latest/academy/applications/hand-eye/ur5-robot-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
 """
 import argparse
 from pathlib import Path
@@ -24,8 +24,8 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 import zivid
-import rtde.rtde as rtde
-import rtde.rtde_config as rtde_config
+from rtde import rtde
+from rtde import rtde_config
 
 
 def _options():

@@ -190,12 +190,12 @@ This tutorial shows how to use the Zivid SDK and Zivid Python to connect to, con
 [captureassistant-url]: capture_assistant.py#L15-L21
 [settings-url]: capture.py#L16-L21
 [settings-hdr-url]: capture_hdr.py#L17
-[kb-camera_settings-url]: https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/450265335/Settings
+[kb-camera_settings-url]: https://support.zivid.com/latest/academy/camera/settings.html
 [capture-url]: capture.py#L24
 [capture2d-url]: capture_2d.py#L28
 [settings2d-url]: capture_2d.py#L16-L25
 [save-url]: capture.py#L25-L27
 [save2d-url]: capture_2d.py#L38-L40
 [settings_from_file-url]: capture_with_settings_from_yml.py#L20-L22
-[kb-point_cloud-url]: https://zivid.atlassian.net/wiki/spaces/ZividKB/pages/520061383/Point+Cloud
+[kb-point_cloud-url]: https://support.zivid.com/latest/reference-articles/zivid-3d-camera-technology/point-cloud-structure-and-output-formats.html
 [filecamera-url]: capture_from_file.py#L18
