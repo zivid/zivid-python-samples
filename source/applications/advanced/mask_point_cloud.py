@@ -94,7 +94,7 @@ def _main():
 
     pixels_to_display = 300
     print(f"Generating binary mask of central {pixels_to_display} x {pixels_to_display} pixels")
-    mask = np.zeros((rgba.shape[0], rgba.shape[1]), np.bool)
+    mask = np.zeros((rgba.shape[0], rgba.shape[1]), bool)
     height = frame.point_cloud().height
     width = frame.point_cloud().width
     h_min = int((height - pixels_to_display) / 2)
