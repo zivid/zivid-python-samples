@@ -1,7 +1,5 @@
 numpy
 matplotlib
-vtk
-vtk_visualizer
 opencv-python
 open3d
 pyyaml
