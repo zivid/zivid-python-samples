@@ -408,7 +408,7 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
                 raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
 
             print(f"Read robot pose from pos{idata:02d}.yaml")
-            with open(pose_file) as file:
+            with open(pose_file, encoding="utf-8") as file:
                 pose = pose_from_datastring(file.read())
 
             calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
