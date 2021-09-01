@@ -78,7 +78,7 @@ def _main():
     camera = app.connect_camera()
 
     current_pose_id = 0
-    hand_eye_input = list()
+    hand_eye_input = []
     calibrate = False
 
     while not calibrate:

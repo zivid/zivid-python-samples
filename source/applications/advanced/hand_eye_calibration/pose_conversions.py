@@ -175,7 +175,7 @@ def rotation_matrix_to_roll_pitch_yaw(rotation_matrix):
         list of Roll Pitch Yaw angles in radians
 
     """
-    rpy_list = list()
+    rpy_list = []
     rotation = R.from_matrix(rotation_matrix)
     for convention in RotationConvention:
         roll_pitch_yaw = rotation.as_euler(convention.value)
