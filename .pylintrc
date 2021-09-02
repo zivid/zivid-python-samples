@@ -2,6 +2,7 @@
 disable=bad-continuation,         ######## Disabled because of conflicts with black ########
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
+        duplicate-code
 [TYPE CHECK]
 generated-members=cv2.*
 
@@ -13,8 +14,3 @@ max-bool-expr=6
 
 [FORMAT]
 max-line-length=119
-
-[SIMILARITIES]
-min-similarity-lines=4
-ignore-comments=yes
-ignore-docstrings=yes
