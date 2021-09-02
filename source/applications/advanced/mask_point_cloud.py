@@ -13,7 +13,7 @@ import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _display_rgb(rgb, title):
+def _display_rgb(rgb, title="RGB image"):
     """Display RGB image.
 
     Args:

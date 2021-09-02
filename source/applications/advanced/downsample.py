@@ -12,7 +12,7 @@ from sample_utils.paths import get_sample_data_path
 
 
 def _display_pointcloud(xyz, rgb):
-    """Display point cloud.
+    """Display point cloud provided from 'xyz' with colors from 'rgb'.
 
     Args:
         rgb: RGB image

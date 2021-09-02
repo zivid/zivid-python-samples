@@ -13,18 +13,19 @@ import open3d as o3d
 from sample_utils.paths import get_sample_data_path
 
 
-def _display_rgb(rgb):
+def _display_rgb(rgb, title="RGB image"):
     """Display RGB image.
 
     Args:
-        rgb: RGB image
+        rgb: RGB image (HxWx3 darray)
+        title: Image title
 
     Returns None
 
     """
     plt.figure()
     plt.imshow(rgb)
-    plt.title("RGB image")
+    plt.title(title)
     plt.show(block=False)
 
 
