@@ -47,7 +47,7 @@ def _main():
         remaining_time = warmup_time - (datetime.now() - before_warmup)
         remaining_time_minutes = remaining_time.seconds // 60
         remaining_time_seconds = remaining_time.seconds % 60
-        print(f"Remaining time is {remaining_time_minutes} minutes and {remaining_time_seconds} seconds.")
+        print(f"Remaining time: {remaining_time_minutes} minutes, {remaining_time_seconds} seconds.")
 
     print("Warm up completed")
 
