@@ -30,6 +30,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - Capture point clouds, with color, from the Zivid camera with fully configured settings.
   - **advanced**
     - [**capture_hdr_loop**][capture_hdr_loop-url] - Cover the same dynamic range in a scene with different acquisition settings to optimize for quality, speed, or to find a compromise.
+    - [**capture_hdr_print_normals**][capture_hdr_print_normals-url] - Capture Zivid point clouds, compute normals and print a subset.
   - **info_util_other**
     - [**print_version_info**][print_version_info-url] - Print version info about connected Zivid cameras and the installed Zivid SDK.
     - [**warm up**][warm_up_sample_url] - Short example of a basic way to warm up the camera with specified time and capture cycle.
@@ -37,6 +38,7 @@ There are two main categories of samples: **camera** and **applications**. The s
 - **applications**
   - **basic**
     - **visualization**
+      - [**capture_hdr_vis_normals**][capture_hdr_vis_normals-url] - Capture Zivid point clouds, compute normals and convert to color map and display.
       - [**read_zdf_vis_3d**][read_zdf_vis_3d-url] - Read point cloud data from a ZDF file and visualize it.
         - **Dependencies:**
           - [Open3D][open-3d-url] version 0.12.0 or newer
@@ -135,9 +137,11 @@ Zivid Samples are distributed under the [BSD license](LICENSE).
 [capture_hdr-url]: source/camera/basic/capture_hdr.py
 [capture_hdr_complete_settings-url]: source/camera/basic/capture_hdr_complete_settings.py
 [capture_hdr_loop-url]: source/camera/advanced/capture_hdr_loop.py
+[capture_hdr_print_normals-url]: source/camera/advanced/capture_hdr_print_normals.py
 [print_version_info-url]: source/camera/info_util_other/print_version_info.py
 [warm_up_sample_url]: source/camera/info_util_other/warm-up-sample.py
 
+[capture_hdr_vis_normals-url]: source/applications/basic/visualization/capture_hdr_vis_normals.py
 [read_zdf_vis_3d-url]: source/applications/basic/visualization/read_zdf_vis_3d.py
 [convert_zdf-url]: source/applications/basic/file_formats/convert_zdf.py
 [read_iterate_zdf-url]: source/applications/basic/file_formats/read_iterate_zdf.py
