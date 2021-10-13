@@ -2,8 +2,8 @@
 This example shows how to warm up the camera.
 """
 
-from time import sleep
 from datetime import datetime, timedelta
+from time import sleep
 
 import zivid
 
