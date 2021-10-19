@@ -110,6 +110,7 @@ We may choose to configure settings manually. For more information about what ea
 We can create settings for a single capture ([go to source][settings-url]).
 ```python
 settings = zivid.Settings()
+settings.experimental.engine = "phase"
 settings.acquisitions.append(zivid.Settings.Acquisition())
 settings.acquisitions[0].aperture = 5.66
 settings.acquisitions[0].exposure_time = datetime.timedelta(microseconds=8333)
