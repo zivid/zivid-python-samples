@@ -144,9 +144,7 @@ settings_2d.processing.color.gamma = 1.0
 
 Zivid Studio can store the current settings to .yml files. These can be read and applied in the API. You may find it easier to modify the settings in these (human-readable) yaml-files in your preferred editor ([go to source][settings_from_file-url]).
 ```python
-from sample_utils.paths import get_sample_data_path
-from sample_utils.settings_from_file import get_settings_from_yaml
-settings = get_settings_from_yaml("Settings.yml")
+settings = zivid.Settings.load("Settings.yml")
 ```
 
 ## Capture
@@ -196,6 +194,6 @@ This tutorial shows how to use the Zivid SDK and Zivid Python to connect to, con
 [settings2d-url]: capture_2d.py#L16-L25
 [save-url]: capture.py#L25-L27
 [save2d-url]: capture_2d.py#L38-L40
-[settings_from_file-url]: capture_with_settings_from_yml.py#L20-L22
+[settings_from_file-url]: capture_with_settings_from_yml.py#L19-L21
 [kb-point_cloud-url]: https://support.zivid.com/latest/reference-articles/zivid-3d-camera-technology/point-cloud-structure-and-output-formats.html
 [filecamera-url]: capture_from_file.py#L18
