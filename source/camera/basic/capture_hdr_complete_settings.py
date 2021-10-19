@@ -60,6 +60,7 @@ def _main():
     color.balance.blue = 1.0
     color.balance.green = 1.0
     color.gamma = 1.0
+    settings.processing.color.experimental.tone_mapping.enabled = "hdrOnly"
     print(settings.processing)
 
     print("Capturing frame (HDR)")
