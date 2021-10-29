@@ -43,6 +43,7 @@ def _main():
         print(acquisition)
 
     print("Configuring global processing settings")
+    settings.experimental.engine = "phase"
     filters = settings.processing.filters
     filters.smoothing.gaussian.enabled = True
     filters.smoothing.gaussian.sigma = 1.5
