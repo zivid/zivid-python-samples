@@ -19,7 +19,10 @@ def _main():
     camera = app.connect_camera()
 
     for i in range(1, 4):
-        settings_file = Path() / get_sample_data_path() / f"Settings/Zivid One/Settings0{i :01d}.yml"
+        camera_model = camera.info.model_name
+        camera_path = "Settings/" + camera_model[0:9] + f"/Settings0{i :01d}.yml"
+        settings_file = Path() / get_sample_data_path() / camera_path
+
         print(f"Configuring settings from file: {settings_file}")
         settings = zivid.Settings.load(settings_file)
 
