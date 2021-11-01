@@ -20,8 +20,9 @@ def _main():
 
     for i in range(1, 4):
         camera_model = camera.info.model_name
-        camera_path = "Settings/" + camera_model[0:9] + f"/Settings0{i :01d}.yml"
-        settings_file = Path() / get_sample_data_path() / camera_path
+        settings_file = (
+            Path() / get_sample_data_path() / Path("Settings/" + camera_model[0:9] + f"/Settings0{i :01d}.yml")
+        )
 
         print(f"Configuring settings from file: {settings_file}")
         settings = zivid.Settings.load(settings_file)
