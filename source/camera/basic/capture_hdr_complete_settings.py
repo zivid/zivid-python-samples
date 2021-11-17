@@ -10,6 +10,25 @@ import datetime
 import zivid
 
 
+def _get_exposure_values(camera):
+    if (
+        camera.info.model is zivid.CameraInfo.Model.zividOnePlusLarge
+        or camera.info.model is zivid.CameraInfo.Model.zividOnePlusMedium
+        or camera.info.model is zivid.CameraInfo.Model.zividOnePlusSmall
+    ):
+        aperture = (8.0, 4.0, 4.0)
+        gain = (1.0, 1.0, 2.0)
+        exposure_time = (10000, 10000, 20000)
+    elif camera.info.model is zivid.CameraInfo.Model.zividTwo:
+        aperture = (5.66, 2.38, 1.8)
+        gain = (1.0, 1.0, 1.0)
+        exposure_time = (1677, 5000, 100000)
+    else:
+        raise Exception("Unknown camera model")
+
+    return zip(aperture, gain, exposure_time)
+
+
 def _main():
     app = zivid.Application()
 
@@ -17,58 +36,17 @@ def _main():
     camera = app.connect_camera()
 
     print("Configuring acquisition settings different for all HDR acquisitions")
-    if (
-        camera.info.model is zivid.CameraInfo.Model.zividOnePlusLarge
-        or camera.info.model is zivid.CameraInfo.Model.zividOnePlusMedium
-        or camera.info.model is zivid.CameraInfo.Model.zividOnePlusSmall
-    ):
-        settings = zivid.Settings(
-            acquisitions=[
-                zivid.Settings.Acquisition(
-                    aperture=8.0,
-                    exposure_time=datetime.timedelta(microseconds=10000),
-                    brightness=1.8,
-                    gain=1.0,
-                ),
-                zivid.Settings.Acquisition(
-                    aperture=4.0,
-                    exposure_time=datetime.timedelta(microseconds=10000),
-                    brightness=1.8,
-                    gain=1.0,
-                ),
-                zivid.Settings.Acquisition(
-                    aperture=4.0,
-                    exposure_time=datetime.timedelta(microseconds=40000),
-                    brightness=1.8,
-                    gain=2.0,
-                ),
-            ],
+    exposure_values = _get_exposure_values(camera)
+    settings = zivid.Settings()
+    for (aperture, gain, exposure_time) in exposure_values:
+        settings.acquisitions.append(
+            zivid.Settings.Acquisition(
+                aperture=aperture,
+                exposure_time=datetime.timedelta(microseconds=exposure_time),
+                brightness=1.8,
+                gain=gain,
+            )
         )
-    elif camera.info.model is zivid.CameraInfo.Model.zividTwo:
-        settings = zivid.Settings(
-            acquisitions=[
-                zivid.Settings.Acquisition(
-                    aperture=5.66,
-                    exposure_time=datetime.timedelta(microseconds=1677),
-                    brightness=1.8,
-                    gain=1.0,
-                ),
-                zivid.Settings.Acquisition(
-                    aperture=2.38,
-                    exposure_time=datetime.timedelta(microseconds=5000),
-                    brightness=1.8,
-                    gain=1.0,
-                ),
-                zivid.Settings.Acquisition(
-                    aperture=4.0,
-                    exposure_time=datetime.timedelta(microseconds=10000),
-                    brightness=1.8,
-                    gain=2.0,
-                ),
-            ],
-        )
-    else:
-        raise Exception("Unknown camera model")
 
     for acquisition in settings.acquisitions:
         print(acquisition)
