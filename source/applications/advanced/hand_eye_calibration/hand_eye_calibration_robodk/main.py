@@ -1,7 +1,9 @@
 """
-Script to generate a dataset and perform hand-eye calibration using the Robodk interface.
-The script communicates with the robot through High speed ethernet server using roboDK.
-Each robot pose must be modified to your scene. This is done in roboDK.
+This script will generate a dataset and perform hand-eye calibration using the Robodk interface.
+This script communicates with the robot through high speed ethernet server using roboDK.
+Each robot pose must be modified to your scene. This is done in the RoboDK gui interface for this example.
+
+Make sure to launch the RDK file associated with this sample and connect to your robot before running main.py
 """
 from robolink import Robolink, ITEM_TYPE_ROBOT, RUNMODE_RUN_ROBOT
 from robodk import *

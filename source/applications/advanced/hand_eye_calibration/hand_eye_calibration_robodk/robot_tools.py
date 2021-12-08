@@ -2,13 +2,10 @@
 # Robot Control Module
 This module interfaces with the python API for RoboDK and the RoboDK software.
 It can be used to connect to the specified robot, get a list of targets and set robot speeds.
-
-
 """
 
 from robolink import Robolink, ITEM_TYPE_ROBOT, RUNMODE_RUN_ROBOT
-import robodk
-from typing import Callable, List
+from robodk import *
 
 
 def connect_to_robot(robot_ip: str):

@@ -1,10 +1,11 @@
 """
-Script to generate a dataset and perform hand-eye calibration using the RoboDK virtual interface and robot control
+This script will generate a dataset and perform hand-eye calibration using the RoboDK interface and robot control
 The script communicates with the robot over TCP through the RoboDK interface
+
 More information about RoboDK:
 https://robodk.com/doc/en/Getting-Started.html
 
-The entire sample also has two additional filess:
+This sample also has two additional files:
     - an .rdk sample environment using a UR5
     - a robot model file of a UR5
 
@@ -13,6 +14,8 @@ Each pose will need to be created or modified to fit your scene. This is done us
 
 Further explanation of this sample is found in our knowledge base:
 (Will add replacement link)
+
+Launch your RDK file and connect to robot before in Robodk prior to running this script.
 """
 
 import argparse
