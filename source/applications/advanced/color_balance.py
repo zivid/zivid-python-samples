@@ -193,15 +193,15 @@ def _color_balance_calibration(camera, settings_2d):
             print("Color balance incomplete - the range limits of color balance parameters have been reached")
             break
         max_color = max(mean_color.red, mean_color.green, mean_color.blue)
-        corrected_red_balance = np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 2)
+        corrected_red_balance = np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 8)
         corrected_green_balance = np.clip(
-            settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 2
+            settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 8
         )
-        corrected_blue_balance = np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 2)
+        corrected_blue_balance = np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 8)
 
         corrected_values = [corrected_red_balance, corrected_green_balance, corrected_blue_balance]
 
-        if 1.0 in corrected_values or 2.0 in corrected_values:
+        if 1.0 in corrected_values or 8.0 in corrected_values:
             saturated = True
     print("Color balance:")
     print(f" Red: {corrected_red_balance}")
