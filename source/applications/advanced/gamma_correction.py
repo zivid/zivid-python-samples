@@ -1,10 +1,11 @@
 """
-This example shows how to capture a 2D image with a configurable gamma correction.
+Capture 2D image with gamma correction.
 """
 
 import argparse
-import numpy as np
+
 import cv2
+import numpy as np
 import zivid
 
 

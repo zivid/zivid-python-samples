@@ -1,5 +1,5 @@
 """
-This example shows how to perform Hand-Eye calibration.
+Perform Hand-Eye calibration.
 """
 
 import datetime

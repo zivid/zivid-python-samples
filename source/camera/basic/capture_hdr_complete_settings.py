@@ -1,12 +1,16 @@
 """
-This example shows how to capture point clouds, with color, from the Zivid camera.
+Capture point clouds, with color, from the Zivid camera with fully configured settings.
 
-For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud. This example shows how
-to fully configure settings for each acquisition. In general, capturing an HDR point cloud is a lot simpler than this.
+For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud.
+This example shows how to fully configure settings for each acquisition.
+In general, capturing an HDR point cloud is a lot simpler than this.
 The purpose of this example is to demonstrate how to configure all the settings.
+
+Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 """
 
 import datetime
+
 import zivid
 
 
@@ -16,17 +20,17 @@ def _get_exposure_values(camera):
         or camera.info.model is zivid.CameraInfo.Model.zividOnePlusMedium
         or camera.info.model is zivid.CameraInfo.Model.zividOnePlusSmall
     ):
-        aperture = (8.0, 4.0, 4.0)
-        gain = (1.0, 1.0, 2.0)
-        exposure_time = (10000, 10000, 20000)
+        apertures = (8.0, 4.0, 4.0)
+        gains = (1.0, 1.0, 2.0)
+        exposure_times = (10000, 10000, 40000)
     elif camera.info.model is zivid.CameraInfo.Model.zividTwo:
-        aperture = (5.66, 2.38, 1.8)
-        gain = (1.0, 1.0, 1.0)
-        exposure_time = (1677, 5000, 100000)
+        apertures = (5.66, 2.38, 1.8)
+        gains = (1.0, 1.0, 1.0)
+        exposure_times = (1677, 5000, 100000)
     else:
         raise Exception("Unknown camera model")
 
-    return zip(aperture, gain, exposure_time)
+    return zip(apertures, gains, exposure_times)
 
 
 def _main():

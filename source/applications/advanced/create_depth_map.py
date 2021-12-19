@@ -1,15 +1,14 @@
 """
-This example shows how to read point cloud data from a ZDF file, convert it to OpenCV format, then extract and
-visualize depth map.
+Read point cloud data from a ZDF file, convert it to OpenCV format, then extract and visualize depth map.
 
 The ZDF files for this sample can be found under the main instructions for Zivid samples.
 """
 
 from pathlib import Path
-import numpy as np
-import cv2
-import zivid
 
+import cv2
+import numpy as np
+import zivid
 from sample_utils.paths import get_sample_data_path
 
 
@@ -24,9 +23,9 @@ def _point_cloud_to_cv_z(point_cloud):
 
     """
     depth_map = point_cloud.copy_data("z")
-    depth_map_uint8 = (
-        (depth_map - np.nanmin(depth_map)) / (np.nanmax(depth_map) - np.nanmin(depth_map)) * 255
-    ).astype(np.uint8)
+    depth_map_uint8 = ((depth_map - np.nanmin(depth_map)) / (np.nanmax(depth_map) - np.nanmin(depth_map)) * 255).astype(
+        np.uint8
+    )
 
     depth_map_color_map = cv2.applyColorMap(depth_map_uint8, cv2.COLORMAP_VIRIDIS)
 
@@ -74,26 +73,26 @@ def _visualize_and_save_image(image, image_file, window_name):
 
 def _main():
 
-    app = zivid.Application()
+    with zivid.Application():
 
-    data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
-    print(f"Reading ZDF frame from file: {data_file}")
-    frame = zivid.Frame(data_file)
-    point_cloud = frame.point_cloud()
+        data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+        print(f"Reading ZDF frame from file: {data_file}")
+        frame = zivid.Frame(data_file)
+        point_cloud = frame.point_cloud()
 
-    print("Converting to BGR image in OpenCV format")
-    bgr = _point_cloud_to_cv_bgr(point_cloud)
+        print("Converting to BGR image in OpenCV format")
+        bgr = _point_cloud_to_cv_bgr(point_cloud)
 
-    bgr_image_file = "ImageRGB.png"
-    print(f"Visualizing and saving BGR image to file: {bgr_image_file}")
-    _visualize_and_save_image(bgr, bgr_image_file, "BGR image")
+        bgr_image_file = "ImageRGB.png"
+        print(f"Visualizing and saving BGR image to file: {bgr_image_file}")
+        _visualize_and_save_image(bgr, bgr_image_file, "BGR image")
 
-    print("Converting to Depth map in OpenCV format")
-    z_color_map = _point_cloud_to_cv_z(point_cloud)
+        print("Converting to Depth map in OpenCV format")
+        z_color_map = _point_cloud_to_cv_z(point_cloud)
 
-    depth_map_file = "DepthMap.png"
-    print(f"Visualizing and saving Depth map to file: {depth_map_file}")
-    _visualize_and_save_image(z_color_map, depth_map_file, "Depth map")
+        depth_map_file = "DepthMap.png"
+        print(f"Visualizing and saving Depth map to file: {depth_map_file}")
+        _visualize_and_save_image(z_color_map, depth_map_file, "Depth map")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """
-This exampe shows how to convert point cloud data from a ZDF file to your preferred format.
+Convert point cloud data from a ZDF file to your preferred format (.ply, .csv, .txt, .png, .jpg, .bmp, .tiff).
 
 Example: $ python convert_zdf.py --ply Zivid3D.zdf
 
@@ -11,8 +11,9 @@ Available formats:
 
 import argparse
 from pathlib import Path
-import numpy as np
+
 import cv2
+import numpy as np
 import zivid
 
 
@@ -51,9 +52,7 @@ def _flatten_point_cloud(point_cloud):
 
     """
     # Convert to numpy 3D array
-    point_cloud = np.dstack(
-        [point_cloud.copy_data("xyz"), point_cloud.copy_data("rgba"), point_cloud.copy_data("snr")]
-    )
+    point_cloud = np.dstack([point_cloud.copy_data("xyz"), point_cloud.copy_data("rgba"), point_cloud.copy_data("snr")])
     # Flattening the point cloud
     flattened_point_cloud = point_cloud.reshape(-1, 8)
 
@@ -112,33 +111,33 @@ def _main():
     if not file_path.exists():
         raise FileNotFoundError(f"{user_options.filename} does not exist")
 
-    app = zivid.Application()
+    with zivid.Application():
 
-    print(f"Reading point cloud from file: {user_options.filename}")
-    frame = zivid.Frame(user_options.filename)
+        print(f"Reading point cloud from file: {user_options.filename}")
+        frame = zivid.Frame(user_options.filename)
 
-    point_cloud = frame.point_cloud()
+        point_cloud = frame.point_cloud()
 
-    if user_options.ply:
-        _convert_2_ply(frame, file_path.stem)
+        if user_options.ply:
+            _convert_2_ply(frame, file_path.stem)
 
-    elif user_options.csv:
-        _convert_2_csv(point_cloud, file_path.stem + ".csv")
+        elif user_options.csv:
+            _convert_2_csv(point_cloud, file_path.stem + ".csv")
 
-    elif user_options.txt:
-        _convert_2_csv(point_cloud, file_path.stem + ".txt")
+        elif user_options.txt:
+            _convert_2_csv(point_cloud, file_path.stem + ".txt")
 
-    elif user_options.png:
-        _convert_2_2d(point_cloud, file_path.stem + ".png")
+        elif user_options.png:
+            _convert_2_2d(point_cloud, file_path.stem + ".png")
 
-    elif user_options.jpg:
-        _convert_2_2d(point_cloud, file_path.stem + ".jpg")
+        elif user_options.jpg:
+            _convert_2_2d(point_cloud, file_path.stem + ".jpg")
 
-    elif user_options.bmp:
-        _convert_2_2d(point_cloud, file_path.stem + ".bmp")
+        elif user_options.bmp:
+            _convert_2_2d(point_cloud, file_path.stem + ".bmp")
 
-    elif user_options.tiff:
-        _convert_2_2d(point_cloud, file_path.stem + ".tiff")
+        elif user_options.tiff:
+            _convert_2_2d(point_cloud, file_path.stem + ".tiff")
 
 
 if __name__ == "__main__":

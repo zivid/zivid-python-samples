@@ -16,16 +16,15 @@ Further explanation of this sample is found in our knowledge base:
 https://support.zivid.com/latest/academy/applications/hand-eye/ur5-robot-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
 """
 import argparse
-from pathlib import Path
-import time
 import datetime
+import time
+from pathlib import Path
 
 import cv2
 import numpy as np
-from scipy.spatial.transform import Rotation
 import zivid
-from rtde import rtde
-from rtde import rtde_config
+from rtde import rtde, rtde_config
+from scipy.spatial.transform import Rotation
 
 
 def _options():
@@ -101,7 +100,7 @@ def _initialize_robot_sync(host: str):
     return con, robot_input_data
 
 
-def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.array):
+def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.ndarray):
     """Save data to folder
 
     Args:
@@ -119,10 +118,10 @@ def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, trans
 
 
 def _generate_folder():
-    """Generate folder where dataset weill be stored
+    """Generate folder where the dataset will be stored
 
     Returns:
-        Directory to where data will be saved
+        Directory to where the data will be saved
     """
 
     location_dir = Path.cwd() / "datasets" / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -212,11 +211,11 @@ def pose_from_datastring(datastring: str):
     """
 
     string = datastring.split("data:")[-1].strip().strip("[").strip("]")
-    pose_matrix = np.fromstring(string, dtype=np.float, count=16, sep=",").reshape((4, 4))
+    pose_matrix = np.fromstring(string, dtype=np.float64, count=16, sep=",").reshape((4, 4))
     return zivid.calibration.Pose(pose_matrix)
 
 
-def _save_hand_eye_results(save_dir: Path, transform: np.array, residuals: list):
+def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: list):
     """Save transformation and residuals to folder
 
     Args:
@@ -390,52 +389,52 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
         ValueError: If calibration mode is invalid
     """
     # setup zivid
-    app = zivid.Application()
+    with zivid.Application():
 
-    calibration_inputs = []
-    idata = 1
-    while True:
-        frame_file = data_dir / f"img{idata:02d}.zdf"
-        pose_file = data_dir / f"pos{idata:02d}.yaml"
+        calibration_inputs = []
+        idata = 1
+        while True:
+            frame_file = data_dir / f"img{idata:02d}.zdf"
+            pose_file = data_dir / f"pos{idata:02d}.yaml"
 
-        if frame_file.is_file() and pose_file.is_file():
+            if frame_file.is_file() and pose_file.is_file():
 
-            print(f"Detect feature points from img{idata:02d}.zdf")
-            point_cloud = zivid.Frame(frame_file).point_cloud()
-            detection_result = zivid.calibration.detect_feature_points(point_cloud)
+                print(f"Detect feature points from img{idata:02d}.zdf")
+                point_cloud = zivid.Frame(frame_file).point_cloud()
+                detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
-            if not detection_result.valid():
-                raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
+                if not detection_result.valid():
+                    raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
 
-            print(f"Read robot pose from pos{idata:02d}.yaml")
-            with open(pose_file, encoding="utf-8") as file:
-                pose = pose_from_datastring(file.read())
+                print(f"Read robot pose from pos{idata:02d}.yaml")
+                with open(pose_file, encoding="utf-8") as file:
+                    pose = pose_from_datastring(file.read())
 
-            calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
+                calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
+            else:
+                break
+
+            idata += 1
+
+        print(f"\nPerform {mode} calibration")
+
+        if mode == "eye-in-hand":
+            calibration_result = zivid.calibration.calibrate_eye_in_hand(calibration_inputs)
+        elif mode == "eye-to-hand":
+            calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
         else:
-            break
+            raise ValueError(f"Invalid calibration mode: {mode}")
 
-        idata += 1
+        transform = calibration_result.transform()
+        residuals = calibration_result.residuals()
 
-    print(f"\nPerform {mode} calibration")
+        print("\n\nTransform: \n")
+        np.set_printoptions(precision=5, suppress=True)
+        print(transform)
 
-    if mode == "eye-in-hand":
-        calibration_result = zivid.calibration.calibrate_eye_in_hand(calibration_inputs)
-    elif mode == "eye-to-hand":
-        calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
-    else:
-        raise ValueError(f"Invalid calibration mode: {mode}")
-
-    transform = calibration_result.transform()
-    residuals = calibration_result.residuals()
-
-    print("\n\nTransform: \n")
-    np.set_printoptions(precision=5, suppress=True)
-    print(transform)
-
-    print("\n\nResiduals: \n")
-    for res in residuals:
-        print(f"Rotation: {res.rotation():.6f}   Translation: {res.translation():.6f}")
+        print("\n\nResiduals: \n")
+        for res in residuals:
+            print(f"Rotation: {res.rotation():.6f}   Translation: {res.translation():.6f}")
 
     return transform, residuals
 

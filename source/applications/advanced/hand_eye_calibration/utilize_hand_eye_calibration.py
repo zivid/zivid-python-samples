@@ -1,4 +1,6 @@
 """
+Transform a single data point or entire point cloud from the camera frame to the robot base frame using the Hand-Eye calibration matrix.
+
 This example shows how to utilize the result of Eye-in-Hand calibration to transform either a (picking) point
 coordinates or the entire point cloud from the camera frame to the robot base frame.
 
@@ -6,9 +8,9 @@ The YAML files for this sample can be found under the main instructions for Zivi
 """
 
 from pathlib import Path
-import numpy as np
-import cv2
 
+import cv2
+import numpy as np
 from sample_utils.paths import get_sample_data_path
 
 
