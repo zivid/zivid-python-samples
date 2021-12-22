@@ -1,14 +1,13 @@
 """
-This example shows how to cover the same dynamic range in a scene with different acquisition settings.
+Cover the same dynamic range in a scene with different acquisition settings to optimize for quality, speed, or to find a compromise.
 
-This possibility allows to optimize settings for quality, speed, or to find a compromise. The camera captures multi
-acquisition HDR point clouds in a loop, with settings from YML files. The YML files for this sample can be found under
-the main instructions for Zivid samples.
+The camera captures multi-acquisition HDR point clouds in a loop, with settings from YML files.
+The YML files for this sample can be found under the main instructions for Zivid samples.
 """
 
 from pathlib import Path
-import zivid
 
+import zivid
 from sample_utils.paths import get_sample_data_path
 
 
@@ -23,7 +22,6 @@ def _main():
         settings_file = (
             Path() / get_sample_data_path() / Path("Settings/" + camera_model[0:9] + f"/Settings0{i :01d}.yml")
         )
-
         print(f"Configuring settings from file: {settings_file}")
         settings = zivid.Settings.load(settings_file)
 

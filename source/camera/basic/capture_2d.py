@@ -1,8 +1,9 @@
 """
-This example shows how to capture 2D images from the Zivid camera.
+Capture 2D images from the Zivid camera.
 """
 
 import datetime
+
 import zivid
 
 
@@ -13,6 +14,7 @@ def _main():
     camera = app.connect_camera()
 
     print("Configuring 2D settings")
+    # Note: The Zivid SDK supports 2D captures with a single acquisition only
     settings_2d = zivid.Settings2D()
     settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
     settings_2d.acquisitions[0].exposure_time = datetime.timedelta(microseconds=30000)

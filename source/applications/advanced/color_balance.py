@@ -1,11 +1,12 @@
 """
-This example shows how to balance color of 2D image.
+Balance color of 2D image.
 """
 
 import datetime
 from dataclasses import dataclass
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import zivid
 
 
@@ -145,7 +146,7 @@ def _auto_settings_configuration(camera):
                 print(f" New aperture: {settings_2d.acquisitions[0].aperture}")
             cnt = cnt + 1
         else:
-            print("Auto settings configuration sucessful")
+            print("Auto settings configuration successful")
             break
         if cnt >= timeout_cnt:
             timeout_break = True
@@ -192,20 +193,15 @@ def _color_balance_calibration(camera, settings_2d):
             print("Color balance incomplete - the range limits of color balance parameters have been reached")
             break
         max_color = max(mean_color.red, mean_color.green, mean_color.blue)
-        corrected_red_balance = np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 2)
+        corrected_red_balance = np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 8)
         corrected_green_balance = np.clip(
-            settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 2
+            settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 8
         )
-        corrected_blue_balance = np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 2)
+        corrected_blue_balance = np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 8)
 
-        if (
-            corrected_red_balance == 1.0
-            or corrected_red_balance == 2.0
-            or corrected_green_balance == 1.0
-            or corrected_green_balance == 2.0
-            or corrected_blue_balance == 1.0
-            or corrected_blue_balance == 2.0
-        ):
+        corrected_values = [corrected_red_balance, corrected_green_balance, corrected_blue_balance]
+
+        if 1.0 in corrected_values or 8.0 in corrected_values:
             saturated = True
     print("Color balance:")
     print(f" Red: {corrected_red_balance}")

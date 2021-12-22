@@ -2,10 +2,9 @@
 Display relevant data for Zivid Samples.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import open3d as o3d
-
 from zivid import PointCloud
 
 

@@ -1,13 +1,13 @@
 """
-This example shows how to capture point clouds, with color, from the Zivid file camera.
+Capture point clouds, with color, from the Zivid file camera.
 
-This example can be used without access to a physical camera. The ZFC files for this sample can be found under the main
-instructions for Zivid samples.
+This example can be used without access to a physical camera.
+The ZFC files for this sample can be found under the main instructions for Zivid samples.
 """
 
 from pathlib import Path
-import zivid
 
+import zivid
 from sample_utils.paths import get_sample_data_path
 
 

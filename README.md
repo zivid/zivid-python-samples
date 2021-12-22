@@ -24,7 +24,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**capture**][capture-url] - Capture point clouds, with color, from the Zivid camera.
     - [**capture_2d**][capture_2d-url] - Capture 2D images from the Zivid camera.
     - [**capture_assistant**][capture_assistant-url] - Use Capture Assistant to capture point clouds, with color, from the Zivid camera.
-    - [**capture_from_file**][capture_from_file-url] - Capture point clouds, with color, from the Zivid file camera.
+    - [**capture_from_file_camera**][capture_from_file_camera-url] - Capture point clouds, with color, from the Zivid file camera.
     - [**capture_with_settings_from_yml**][capture_with_settings_from_yml-url] -  Capture point clouds, with color, from the Zivid camera, with settings from YML file.
     - [**capture_hdr**][capture_hdr-url] - Capture HDR point clouds, with color, from the Zivid camera.
     - [**capture_hdr_complete_settings**][capture_hdr_complete_settings-url] - Capture point clouds, with color, from the Zivid camera with fully configured settings.
@@ -33,7 +33,7 @@ There are two main categories of samples: **camera** and **applications**. The s
     - [**capture_hdr_print_normals**][capture_hdr_print_normals-url] - Capture Zivid point clouds, compute normals and print a subset.
   - **info_util_other**
     - [**print_version_info**][print_version_info-url] - Print version info about connected Zivid cameras and the installed Zivid SDK.
-    - [**warm up**][warm_up_sample_url] - Short example of a basic way to warm up the camera with specified time and capture cycle.
+    - [**warmup**][warmup_url] - Short example of a basic way to warm up the camera with specified time and capture cycle.
 
 - **applications**
   - **basic**
@@ -132,14 +132,14 @@ Zivid Samples are distributed under the [BSD license](LICENSE).
 [capture-url]: source/camera/basic/capture.py
 [capture_2d-url]: source/camera/basic/capture_2d.py
 [capture_assistant-url]: source/camera/basic/capture_assistant.py
-[capture_from_file-url]: source/camera/basic/capture_from_file.py
+[capture_from_file_camera-url]: source/camera/basic/capture_from_file_camera.py
 [capture_with_settings_from_yml-url]: source/camera/basic/capture_with_settings_from_yml.py
 [capture_hdr-url]: source/camera/basic/capture_hdr.py
 [capture_hdr_complete_settings-url]: source/camera/basic/capture_hdr_complete_settings.py
 [capture_hdr_loop-url]: source/camera/advanced/capture_hdr_loop.py
 [capture_hdr_print_normals-url]: source/camera/advanced/capture_hdr_print_normals.py
 [print_version_info-url]: source/camera/info_util_other/print_version_info.py
-[warm_up_sample_url]: source/camera/info_util_other/warm-up-sample.py
+[warmup_url]: source/camera/info_util_other/warmup.py
 
 [capture_hdr_vis_normals-url]: source/applications/basic/visualization/capture_hdr_vis_normals.py
 [read_zdf_vis_3d-url]: source/applications/basic/visualization/read_zdf_vis_3d.py
