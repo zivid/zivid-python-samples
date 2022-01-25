@@ -38,7 +38,7 @@ def _main():
         print(f"Color at pixel ({pixel_row},{pixel_col}): R:{pixel[0]} G:{pixel[1]} B:{pixel[2]} A:{pixel[3]}")
 
         image_file = "Image.png"
-        print(f"Saving image to file: {image_file}")
+        print(f"Saving 2D color image to file: {image_file}")
         image.save(image_file)
 
 

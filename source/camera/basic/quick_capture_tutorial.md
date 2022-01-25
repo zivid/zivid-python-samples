@@ -7,10 +7,10 @@
 *Contents:*
 1. [Introduction](#Introduction)
 2. [Initialize](#Initialize)
-3. [Connect](#Connect)
-4. [Configure](#Configure)
-5. [Capture](#Capture)
-6. [Save](#Save)
+3. [Connect](#connect)
+4. [Configure](#configure)
+5. [Capture](#capture)
+6. [Save](#save)
 
 ---
 
