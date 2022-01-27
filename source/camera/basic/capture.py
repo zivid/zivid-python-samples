@@ -28,6 +28,10 @@ def _main():
         print(f"Saving frame to file: {data_file}")
         frame.save(data_file)
 
+        data_file_ply = "PointCloud.ply"
+        print(f"Exporting point cloud to file: {data_file_ply}")
+        frame.save(data_file_ply)
+
 
 if __name__ == "__main__":
     _main()

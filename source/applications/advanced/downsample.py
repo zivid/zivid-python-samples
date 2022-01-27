@@ -28,7 +28,16 @@ def _main():
         display_pointcloud(xyz, rgba[:, :, 0:3])
 
         print("Downsampling point cloud")
+        print("This does not modify the current point cloud but returns")
+        print("the downsampled point cloud as a new point cloud instance.")
+        downsampled_point_cloud = point_cloud.downsampled(zivid.PointCloud.Downsampling.by2x2)
+
+        print(f"After downsampling: {downsampled_point_cloud.width * downsampled_point_cloud.height} point cloud")
+
+        print("Downsampling point cloud (in-place)")
+        print("This modifies the current point cloud.")
         point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
+
         xyz_donwsampled = point_cloud.copy_data("xyz")
         rgba_downsampled = point_cloud.copy_data("rgba")
 

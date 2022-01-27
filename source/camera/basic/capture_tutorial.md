@@ -5,22 +5,26 @@
 ---
 
 *Contents:*
-1. [Initialize](#initialize)
-2. [Connect](#connect)
-   1. [Specific Camera](#connect---specific-camera)
-   2. [File Camera](#connect---file-camera)
-3. [Configure](#configure)
-   1. [Capture Assistant](#capture-assistant)
-   2. [Manual Configuration](#manual-configuration)
-      1. [Single](#single-frame)
-      2. [HDR](#hdr-frame)
-      3. [2D](#2d-settings)
-   3. [From File](#from-file)
-4. [Capture](#capture)
-    1. [2D](#capture-2d)
-5. [Save](#save)
-    1. [2D](#save-2d)
-6. [Conclusion](#Conclusion)
+1. [Introduction](#Introduction)
+2. [Initialize](#initialize)
+3. [Connect](#Connect)
+   1. [Specific Camera](#Specific-Camera)
+   2. [File Camera](#File-Camera)
+3. [Configure](#Configure)
+   1. [Capture Assistant](#Capture-Assistant)
+   2. [Manual configuration](#Manual-configuration)
+      1. [Single](#Single-Acquisition)
+      2. [HDR](#Multi-Acquisition-HDR)
+      3. [2D](#2d-Settings)
+   3. [Load](#Load-Settings)
+   4. [Save](#Save-Settings)
+5. [Capture](#capture)
+    1. [Load](#Load)
+	2. [2D](#capture-2d)
+6. [Save](#Save)
+    1. [Export](#Export)
+	2. [2D](#save-2d)
+7. [Conclusion](#Conclusion)
 
 ---
 ## Introduction
@@ -70,7 +74,7 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera
 camera = app.connect_camera()
 ```
 
-### Connect - Specific Camera
+### Specific Camera
 
 Sometimes multiple cameras are connected to the same computer, but it
 might be necessary to work with a specific camera in the code. This can
@@ -100,7 +104,7 @@ for camera in cameras:
 	print(f"Camera Info:  {camera}")
 ```
 
-### Connect - File Camera
+### File Camera
 
 You may want to experiment with the SDK, without access to a physical
 camera. Minor changes are required to keep the sample working.
@@ -117,7 +121,7 @@ camera = app.create_file_camera(file_camera)
 
 Note:
 
-The quality of the point cloud you get from FileCameraZividOne.zfc is
+The quality of the point cloud you get from `FileCameraZividOne.zfc` is
 not representative of the Zivid 3D cameras.
 
 -----
@@ -199,6 +203,47 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera
 settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (11.31, 5.66, 2.83)])
 ```
 
+Fully configured settings are demonstrated below.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L42-L77))
+
+``` sourceCode python
+print("Configuring processing settings for capture:")
+settings = zivid.Settings()
+settings.experimental.engine = "phase"
+filters = settings.processing.filters
+filters.smoothing.gaussian.enabled = True
+filters.smoothing.gaussian.sigma = 1.5
+filters.noise.removal.enabled = True
+filters.noise.removal.threshold = 7.0
+filters.outlier.removal.enabled = True
+filters.outlier.removal.threshold = 5.0
+filters.reflection.removal.enabled = True
+filters.experimental.contrast_distortion.correction.enabled = True
+filters.experimental.contrast_distortion.correction.strength = 0.4
+filters.experimental.contrast_distortion.removal.enabled = False
+filters.experimental.contrast_distortion.removal.threshold = 0.5
+color = settings.processing.color
+color.balance.red = 1.0
+color.balance.blue = 1.0
+color.balance.green = 1.0
+color.gamma = 1.0
+settings.processing.color.experimental.tone_mapping.enabled = "hdrOnly"
+print(settings.processing)
+print("Configuring acquisition settings different for all HDR acquisitions")
+exposure_values = _get_exposure_values(camera)
+for (aperture, gain, exposure_time) in exposure_values:
+	settings.acquisitions.append(
+		zivid.Settings.Acquisition(
+			aperture=aperture,
+			exposure_time=datetime.timedelta(microseconds=exposure_time),
+			brightness=1.8,
+			gain=gain,
+		)
+	)
+```
+
 #### 2D Settings
 
 It is possible to only capture a 2D image. This is faster than a 3D
@@ -220,16 +265,32 @@ settings_2d.processing.color.balance.blue = 1.0
 settings_2d.processing.color.gamma = 1.0
 ```
 
-### From File
+### Load Settings
 
 Zivid Studio can store the current settings to .yml files. These can be
 read and applied in the API. You may find it easier to modify the
 settings in these (human-readable) yaml-files in your preferred editor.
 
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L90-L97))
+
 ``` sourceCode python
-from sample_utils.paths import get_sample_data_path
-from sample_utils.settings_from_file import get_settings_from_yaml
-settings = get_settings_from_yaml("Settings.yml")
+settings_file = "Settings.yml"
+print(f"Loading settings from file: {settings_file}")
+settings_from_file = zivid.Settings.load(settings_file)
+```
+
+### Save Settings
+
+You can also save settings to .yml file.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L90-L93))
+
+``` sourceCode python
+settings_file = "Settings.yml"
+print(f"Saving settings to file: {settings_file}")
+settings.save(settings_file)
 ```
 
 -----
@@ -251,7 +312,25 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera
 with camera.capture(settings) as frame:
 ```
 
-### Capture2D
+The `zivid.Frame` contains the point cloud and color image (stored on
+compute device memory) and the capture and camera information.
+
+### Load
+
+Once saved, the frame can be loaded from a ZDF file.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L17-L19))
+
+``` sourceCode python
+data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+print(f"Reading point cloud from file: {data_file}")
+frame = zivid.Frame(data_file)
+```
+
+Saving to a ZDF file is addressed later in the tutorial.
+
+### Capture 2D
 
 If we only want to capture a 2D image, which is faster than 3D, we can
 do so via the 2D API.
@@ -284,10 +363,6 @@ data_file = "Frame.zdf"
 frame.save(data_file)
 ```
 
-The API detects which format to use. See [Point
-Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html)
-for a list of supported formats.
-
 -----
 
 Tip:
@@ -295,17 +370,43 @@ Tip:
 You can open and view `Frame.zdf` file in [Zivid
 Studio](https://support.zivid.com/latest//getting-started/studio-guide.html).
 
-### Save 2D
+### Export
 
-If we capture a 2D image, we can save it.
+The API detects which format to use. See [Point
+Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html)
+for a list of supported formats. For example, we can export the point
+cloud to .ply format.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L34-L45))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L37-L40))
+
+``` sourceCode python
+data_file_ply = "PointCloud.ply"
+frame.save(data_file_ply)
+```
+
+### Save 2D
+
+We can get 2D color image from a 3D capture.
+
+No source available for {language\_name} 2D captures also produce 2D
+color images.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L34))
 
 ``` sourceCode python
 image = frame_2d.image_rgba()
+```
+
+Then, we can save the 2D image.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L43-L45))
+
+``` sourceCode python
 image_file = "Image.png"
-print(f"Saving image to file: {image_file}")
+print(f"Saving 2D color image to file: {image_file}")
 image.save(image_file)
 ```
 

@@ -19,7 +19,7 @@ import zivid
 
 def _options():
     parser = argparse.ArgumentParser(
-        description="Convert from ZDF to your preferred format\
+        description="Convert from a ZDF to your preferred format\
             \nExample:\n\t $ python convert_zdf.py --ply Zivid3D.zdf",
         formatter_class=argparse.RawTextHelpFormatter,
     )

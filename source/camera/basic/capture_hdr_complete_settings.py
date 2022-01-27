@@ -39,23 +39,8 @@ def _main():
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    print("Configuring acquisition settings different for all HDR acquisitions")
-    exposure_values = _get_exposure_values(camera)
+    print("Configuring processing settings for capture:")
     settings = zivid.Settings()
-    for (aperture, gain, exposure_time) in exposure_values:
-        settings.acquisitions.append(
-            zivid.Settings.Acquisition(
-                aperture=aperture,
-                exposure_time=datetime.timedelta(microseconds=exposure_time),
-                brightness=1.8,
-                gain=gain,
-            )
-        )
-
-    for acquisition in settings.acquisitions:
-        print(acquisition)
-
-    print("Configuring global processing settings")
     settings.experimental.engine = "phase"
     filters = settings.processing.filters
     filters.smoothing.gaussian.enabled = True
@@ -77,6 +62,20 @@ def _main():
     settings.processing.color.experimental.tone_mapping.enabled = "hdrOnly"
     print(settings.processing)
 
+    print("Configuring acquisition settings different for all HDR acquisitions")
+    exposure_values = _get_exposure_values(camera)
+    for (aperture, gain, exposure_time) in exposure_values:
+        settings.acquisitions.append(
+            zivid.Settings.Acquisition(
+                aperture=aperture,
+                exposure_time=datetime.timedelta(microseconds=exposure_time),
+                brightness=1.8,
+                gain=gain,
+            )
+        )
+
+    for acquisition in settings.acquisitions:
+        print(acquisition)
     print("Capturing frame (HDR)")
     with camera.capture(settings) as frame:
         print("Complete settings used:")
@@ -84,6 +83,14 @@ def _main():
         data_file = "Frame.zdf"
         print(f"Saving frame to file: {data_file}")
         frame.save(data_file)
+
+    settings_file = "Settings.yml"
+    print(f"Saving settings to file: {settings_file}")
+    settings.save(settings_file)
+
+    print(f"Loading settings from file: {settings_file}")
+    settings_from_file = zivid.Settings.load(settings_file)
+    print(settings_from_file)
 
 
 if __name__ == "__main__":
