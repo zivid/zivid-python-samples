@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains Python code samples for Zivid SDK v2.6.0. For
+This repository contains Python code samples for Zivid SDK v2.6.1. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
