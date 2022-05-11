@@ -1,32 +1,25 @@
 # Capture Tutorial
 
+Note\! This tutorial has been generated for use on Github. For original
+tutorial see:
+[capture\_tutorial](https://support.zivid.com/latest/rst/academy/camera/capture-tutorial.html)
+
 
 
 ---
 
 *Contents:*
-1. [Introduction](#Introduction)
-2. [Initialize](#initialize)
-3. [Connect](#Connect)
-   1. [Specific Camera](#Specific-Camera)
-   2. [File Camera](#File-Camera)
-3. [Configure](#Configure)
-   1. [Capture Assistant](#Capture-Assistant)
-   2. [Manual configuration](#Manual-configuration)
-      1. [Single](#Single-Acquisition)
-      2. [HDR](#Multi-Acquisition-HDR)
-      3. [2D](#2d-Settings)
-   3. [Load](#Load-Settings)
-   4. [Save](#Save-Settings)
-5. [Capture](#capture)
-    1. [Load](#Load)
-	2. [2D](#capture-2d)
-6. [Save](#Save)
-    1. [Export](#Export)
-	2. [2D](#save-2d)
-7. [Conclusion](#Conclusion)
+[**Introduction**](#Introduction) |
+[**Initialize**](#Initialize) |
+[**Connect**](#Connect) |
+[**Configure**](#Configure) |
+[**Capture**](#Capture) |
+[**Conclusion**](#Conclusion)
 
 ---
+
+
+
 ## Introduction
 
 This tutorial describes how to use the Zivid SDK to capture point clouds
@@ -35,7 +28,15 @@ and 2D images.
 For MATLAB see [Zivid Capture Tutorial for
 MATLAB](https://github.com/zivid/zivid-matlab-samples/blob/master/source/Camera/Basic/CaptureTutorial.md).
 
-**Prerequisites**
+-----
+
+Tip:
+
+If you prefer watching a video, our webinar [Making 3D captures easy - A
+tour of Zivid Studio and Zivid
+SDK](https://www.zivid.com/webinars-page?wchannelid=ffpqbqc7sg&wmediaid=ce68dbjldk)
+covers the same content as the Capture Tutorial. .. rubric::
+Prerequisites
 
   - Install [Zivid
     Software](https://support.zivid.com/latest//getting-started/software-installation.html).
@@ -265,7 +266,7 @@ settings_2d.processing.color.balance.blue = 1.0
 settings_2d.processing.color.gamma = 1.0
 ```
 
-### Load Settings
+### Load
 
 Zivid Studio can store the current settings to .yml files. These can be
 read and applied in the API. You may find it easier to modify the
@@ -280,7 +281,7 @@ print(f"Loading settings from file: {settings_file}")
 settings_from_file = zivid.Settings.load(settings_file)
 ```
 
-### Save Settings
+### Save
 
 You can also save settings to .yml file.
 
@@ -297,7 +298,7 @@ settings.save(settings_file)
 
 Caution\!:
 
-Zivid settings files must use .yml file extension ( not .yaml).
+> Zivid settings files must use .yml file extension ( not .yaml).
 
 ## Capture
 
@@ -346,12 +347,12 @@ with camera.capture(settings_2d) as frame_2d:
 
 Caution\!:
 
-  - Zivid One+ camera has a time penalty when changing the capture mode
-    (2D and 3D) if the 2D capture settings use brightness \> 0.  
-    You can read more about it in [2D and 3D switching
-    limitation](https://support.zivid.com/latest//support/2d-3d-switching-limitation.html).
+> Zivid One+ camera has a time penalty when changing the capture mode
+> (2D and 3D) if the 2D capture settings use brightness \> 0.
 
-## Save
+You can read more about it in [2D and 3D switching
+limitation](https://support.zivid.com/latest//support/2d-3d-switching-limitation.html).
+Save ----
 
 We can now save our results.
 
@@ -369,8 +370,7 @@ Tip:
 
 You can open and view `Frame.zdf` file in [Zivid
 Studio](https://support.zivid.com/latest//getting-started/studio-guide.html).
-
-### Export
+Export ^^^^^^
 
 The API detects which format to use. See [Point
 Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html)

@@ -24,6 +24,8 @@ def display_rgb(rgb, title="RGB image"):
     plt.show(block=False)
 
 
+
+
 def display_depthmap(xyz):
     """Create and display depthmap.
 
@@ -43,6 +45,8 @@ def display_depthmap(xyz):
     plt.colorbar()
     plt.title("Depth map")
     plt.show(block=False)
+
+
 
 
 def display_pointcloud(xyz, rgb, normals=None):
@@ -85,6 +89,8 @@ def display_pointcloud(xyz, rgb, normals=None):
     visualizer.destroy_window()
 
 
+
+
 def display_pointcloud_with_downsampled_normals(point_cloud: PointCloud, downsampling: PointCloud.Downsampling):
     """Display point cloud with downsampled normals
 
@@ -101,3 +107,5 @@ def display_pointcloud_with_downsampled_normals(point_cloud: PointCloud, downsam
     normals = point_cloud.copy_data("normals")
 
     display_pointcloud(xyz=xyz, rgb=rgb, normals=normals)
+
+
