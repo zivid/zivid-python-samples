@@ -1,18 +1,24 @@
 # Quick Capture Tutorial
 
+Note\! This tutorial has been generated for use on Github. For original
+tutorial see:
+[quick\_capture\_tutorial](https://support.zivid.com/latest/rst/getting-started/quick-capture-tutorial.html)
+
 
 
 ---
 
 *Contents:*
-1. [Introduction](#Introduction)
-2. [Initialize](#Initialize)
-3. [Connect](#connect)
-4. [Configure](#configure)
-5. [Capture](#capture)
-6. [Save](#save)
+[**Introduction**](#Introduction) |
+[**Initialize**](#Initialize) |
+[**Connect**](#Connect) |
+[**Configure**](#Configure) |
+[**Capture**](#Capture) |
+[**Save**](#Save)
 
 ---
+
+
 
 ## Introduction
 
@@ -93,11 +99,10 @@ Tip:
 
 You can open and view `Frame.zdf` file in [Zivid
 Studio](https://support.zivid.com/latest//getting-started/studio-guide.html).
-
-**Conclusion**
+.. rubric:: Conclusion
 
 This tutorial shows the most basic way to use the Zivid SDK to connect
 to, capture, and save from the Zivid camera.
 
 For a more in-depth tutorial check out the complete
-[capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/Camera/Basic/capture_tutorial).
+[capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/Camera/Basic/capture_tutorial.md).
