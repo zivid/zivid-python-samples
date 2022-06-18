@@ -158,29 +158,23 @@ def _get_frame_and_transform_matrix(con: rtde, camera: zivid.Camera, settings: z
     return frame, transform
 
 
-def _camera_settings() -> zivid.Settings:
+def _camera_settings(camera) -> zivid.Settings:
     """Set camera settings
+
+    Args:
+        camera: Zivid camera
 
     Returns:
         Zivid Settings
     """
-    return zivid.Settings(
-        acquisitions=[
-            zivid.Settings.Acquisition(
-                aperture=8.0,
-                exposure_time=datetime.timedelta(microseconds=10000),
-                brightness=1.0,
-                gain=1,
-            )
-        ],
-        processing=zivid.Settings.Processing(
-            filters=zivid.Settings.Processing.Filters(
-                smoothing=zivid.Settings.Processing.Filters.Smoothing(
-                    gaussian=zivid.Settings.Processing.Filters.Smoothing.Gaussian(enabled=True)
-                )
-            )
-        ),
+    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
+        max_capture_time=datetime.timedelta(milliseconds=1200),
+        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
     )
+
+    settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+
+    return settings
 
 
 def _read_robot_state(con: rtde):
@@ -231,7 +225,7 @@ def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: lis
     file_storage_residuals = cv2.FileStorage(str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE)
     residual_list = []
     for res in residuals:
-        tmp = list([res.translation(), res.translation()])
+        tmp = list([res.rotation(), res.translation()])
         residual_list.append(tmp)
 
     file_storage_residuals.write(
@@ -276,9 +270,9 @@ def _verify_good_capture(frame: zivid.Frame):
     """
 
     point_cloud = frame.point_cloud()
-    detected_features = zivid.calibration.detect_feature_points(point_cloud)
+    detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
-    if not detected_features:
+    if not detection_result.valid():
         raise RuntimeError("Failed to detect feature points from captured frame.")
 
 
@@ -329,7 +323,7 @@ def _generate_dataset(con: rtde, input_data):
     with zivid.Application() as app:
         with app.connect_camera() as camera:
 
-            settings = _camera_settings()
+            settings = _camera_settings(camera)
             save_dir = _generate_folder()
 
             # Signal robot that camera is ready

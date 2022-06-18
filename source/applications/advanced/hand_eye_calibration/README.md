@@ -34,8 +34,23 @@ The following applications assume that a **Transformation Matrix** has been foun
 * Zivid primarily operate with a (4x4) Transformation Matrix (Rotation Matrix + Translation Vector). This example shows how to use Eigen to convert to and from:
   * AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion
 
+[**VerifyHandEyeWithVisualization**][VerifyHandEyeWithVisualization-url]:
+
+Visually demonstrates the hand-eye calibration accuracy by overlapping transformed points clouds.
+* The application asks the user for the hand-eye calibration type (manual entry).
+* After loading the hand-eye dataset (point clouds and robot poses) and the hand-eye output (transformation matrix), the application repeats the following process for all data pairs:
+   1. Transforms the point cloud
+   2. Finds cartesian coordinates of the checkerboard centroid
+   3. Creates a region of interest around the checkerboard and filters out points outside the region of interest
+   4. Saves the point cloud to a PLY file
+   5. Appends the point cloud to a list (overlapped point clouds)
+This application ends by displaying all point clouds from the list.
+
+
+
 [HandEyeCalibration-url]: hand_eye_calibration.py
 [UtilizeHandEyeCalibration-url]: utilize_hand_eye_calibration.py
+[VerifyHandEyeWithVisualization-url]: verify_hand_eye_with_visualization.py
 [ZividHandEyeCalibration-url]: https://support.zivid.com/latest/academy/applications/hand-eye/hand-eye-calibration-process.html
 [Tutorial-url]: https://support.zivid.com/latest/academy/applications/hand-eye.html
 [PoseConversions-url]: pose_conversions.py
