@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains Python code samples for Zivid SDK v2.6.1. For
+This repository contains python code samples for Zivid SDK v2.7.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -12,6 +12,7 @@ releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releas
 ---
 
 *Contents:*
+[**Tutorials**](#Tutorials-list) |
 [**Samples**](#Samples-list) |
 [**Installation**](#Installation) |
 [**Support**](#Support) |
@@ -20,6 +21,12 @@ releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releas
 ---
 
 
+
+## Tutorials list
+
+  - [quick\_capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/quick_capture_tutorial.md)
+  - [capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_tutorial.md)
+  - [point\_cloud\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/point_cloud_tutorial.md)
 
 ## Samples list
 
@@ -60,6 +67,10 @@ from the camera can be used.
             connected camera.
           - [warmup](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/warmup.py) - A basic warm-up method for a Zivid camera with specified
             time and capture cycle.
+      - **maintenance**
+          - [correct\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/correct_camera_in_field.py) - Correct the dimension trueness of a Zivid camera.
+          - [reset\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/reset_camera_in_field.py) - Reset in-field correction on a camera.
+          - [verify\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/verify_camera_in_field.py) - Check the dimension trueness of a Zivid camera.
   - **applications**
       - **basic**
           - **visualization**
@@ -81,6 +92,8 @@ from the camera can be used.
             OpenCV format, then extract and visualize depth map.
           - [downsample](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py) - Downsample point cloud from a ZDF file.
           - [gamma\_correction](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/gamma_correction.py) - Capture 2D image with gamma correction.
+          - [get\_checkerboard\_pose\_from\_zdf](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/get_checkerboard_pose_from_zdf.py) - Read point cloud data of a Zivid calibration board from a
+            ZDF file, estimate the
           - [hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/hand_eye_calibration.py) - Perform Hand-Eye calibration.
           - [mask\_point\_cloud](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/mask_point_cloud.py) - Read point cloud data from a ZDF file, apply a binary
             mask, and visualize it.
@@ -90,6 +103,8 @@ from the camera can be used.
               - [utilize\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py) - Transform single data point or entire point cloud from
                 camera frame to robot base frame using Hand-Eye
                 calibration
+              - [verify\_hand\_eye\_with\_visualization](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/verify_hand_eye_with_visualization.py) - Verify hand-eye calibration by transforming all
+                dataset point clouds and
               - **ur\_hand\_eye\_calibration**
                   - [universal\_robots\_perform\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/ur_hand_eye_calibration/universal_robots_perform_hand_eye_calibration.py) - Script to generate a dataset and perform hand-eye
                     calibration using a Universal Robot UR5e robot.
