@@ -105,4 +105,4 @@ This tutorial shows the most basic way to use the Zivid SDK to connect
 to, capture, and save from the Zivid camera.
 
 For a more in-depth tutorial check out the complete
-[capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/Camera/Basic/capture_tutorial.md).
+[capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_tutorial.md).

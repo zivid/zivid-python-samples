@@ -50,6 +50,7 @@ def _main():
     filters.outlier.removal.enabled = True
     filters.outlier.removal.threshold = 5.0
     filters.reflection.removal.enabled = True
+    filters.reflection.removal.experimental.mode = "global"
     filters.experimental.contrast_distortion.correction.enabled = True
     filters.experimental.contrast_distortion.correction.strength = 0.4
     filters.experimental.contrast_distortion.removal.enabled = False
@@ -59,7 +60,7 @@ def _main():
     color.balance.blue = 1.0
     color.balance.green = 1.0
     color.gamma = 1.0
-    settings.processing.color.experimental.tone_mapping.enabled = "hdrOnly"
+    settings.processing.color.experimental.mode = "automatic"
     print(settings.processing)
 
     print("Configuring acquisition settings different for all HDR acquisitions")

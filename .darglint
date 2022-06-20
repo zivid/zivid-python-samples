@@ -1,3 +1,4 @@
 [darglint]
 ignore=
-    I401, # -r TypeError
+    I401, # -r TypeError,
+    DAR401, # -r Exception

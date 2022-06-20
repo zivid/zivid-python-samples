@@ -58,7 +58,7 @@ with camera.capture(settings) as frame:
 ```
 
 Check
-[capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/Camera/Basic/capture_tutorial.md)
+[capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_tutorial.md)
 for detailed instructions on how to capture.
 
 ### Load

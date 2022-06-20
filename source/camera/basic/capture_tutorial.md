@@ -207,7 +207,7 @@ settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum
 Fully configured settings are demonstrated below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L42-L77))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L42-L78))
 
 ``` sourceCode python
 print("Configuring processing settings for capture:")
@@ -221,6 +221,7 @@ filters.noise.removal.threshold = 7.0
 filters.outlier.removal.enabled = True
 filters.outlier.removal.threshold = 5.0
 filters.reflection.removal.enabled = True
+filters.reflection.removal.experimental.mode = "global"
 filters.experimental.contrast_distortion.correction.enabled = True
 filters.experimental.contrast_distortion.correction.strength = 0.4
 filters.experimental.contrast_distortion.removal.enabled = False
@@ -230,7 +231,7 @@ color.balance.red = 1.0
 color.balance.blue = 1.0
 color.balance.green = 1.0
 color.gamma = 1.0
-settings.processing.color.experimental.tone_mapping.enabled = "hdrOnly"
+settings.processing.color.experimental.mode = "automatic"
 print(settings.processing)
 print("Configuring acquisition settings different for all HDR acquisitions")
 exposure_values = _get_exposure_values(camera)
@@ -273,7 +274,7 @@ read and applied in the API. You may find it easier to modify the
 settings in these (human-readable) yaml-files in your preferred editor.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L90-L97))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L91-L98))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -286,7 +287,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L90-L93))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L91-L94))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
