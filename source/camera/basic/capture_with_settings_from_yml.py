@@ -1,12 +1,12 @@
 """
-This example shows how to capture point clouds, with color, from the Zivid camera, with settings from YML file.
+Capture point clouds, with color, from the Zivid camera, with settings from YML file.
 
-The YML files for this sample can be found under the main instructions for Zivid samples.
+The YML files for this sample can be found under the main Zivid sample instructions.
 """
 
 from pathlib import Path
-import zivid
 
+import zivid
 from sample_utils.paths import get_sample_data_path
 
 
@@ -16,12 +16,9 @@ def _main():
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    print("Creating settings from file")
-
-    camera_model = camera.info.model_name
-    settings_file = Path() / get_sample_data_path() / Path("Settings/" + camera_model[0:9] + "/Settings01.yml")
-
-    print(f"Configuring settings from file: {settings_file}")
+    print("Loading settings from file")
+    camera_model = camera.info.model
+    settings_file = Path() / get_sample_data_path() / Path("Settings/" + camera_model[0:8] + "/Settings01.yml")
     settings = zivid.Settings.load(settings_file)
 
     print("Capturing frame")

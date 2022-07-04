@@ -1,5 +1,5 @@
 """
-This example shows how to capture point clouds, with color, from the Zivid camera.
+Capture point clouds, with color, from the Zivid camera.
 
 For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud.
 """

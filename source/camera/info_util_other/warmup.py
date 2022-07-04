@@ -1,5 +1,5 @@
 """
-This example shows how to warm up the camera.
+A basic warm-up method for a Zivid camera with specified time and capture cycle.
 """
 
 from datetime import datetime, timedelta

@@ -1,31 +1,11 @@
 """
-This example shows how to perform Hand-Eye calibration.
+Perform Hand-Eye calibration.
 """
 
 import datetime
 
 import numpy as np
 import zivid
-
-
-def _acquire_checkerboard_frame(camera):
-    """Acquire checkerboard frame.
-
-    Args:
-        camera: Zivid camera
-
-    Returns:
-        frame: Zivid frame
-
-    """
-    print("Configuring settings")
-    settings = zivid.Settings()
-    settings.acquisitions.append(zivid.Settings.Acquisition())
-    settings.acquisitions[0].aperture = 8.0
-    settings.acquisitions[0].exposure_time = datetime.timedelta(microseconds=20000)
-    settings.processing.filters.smoothing.gaussian.enabled = True
-    print("Capturing checkerboard image")
-    return camera.capture(settings)
 
 
 def _enter_robot_pose(index):
@@ -71,6 +51,25 @@ def _perform_calibration(hand_eye_input):
         print(f"Unknown calibration type: '{calibration_type}'")
 
 
+def _assisted_capture(camera):
+    """Acquire frame with capture assistant.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        frame: Zivid frame
+
+    """
+
+    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
+        max_capture_time=datetime.timedelta(milliseconds=800),
+        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
+    )
+    settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+    return camera.capture(settings)
+
+
 def _main():
     app = zivid.Application()
 
@@ -87,7 +86,7 @@ def _main():
             try:
                 robot_pose = _enter_robot_pose(current_pose_id)
 
-                frame = _acquire_checkerboard_frame(camera)
+                frame = _assisted_capture(camera)
 
                 print("Detecting checkerboard in point cloud")
                 detection_result = zivid.calibration.detect_feature_points(frame.point_cloud())

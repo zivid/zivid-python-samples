@@ -1,13 +1,13 @@
 """
-This example shows how to capture point clouds, with color, from the Zivid file camera.
+Capture point clouds, with color, from the Zivid file camera.
 
-This example can be used without access to a physical camera. The ZFC files for this sample can be found under the main
-instructions for Zivid samples.
+This example can be used without access to a physical camera.
+The ZFC files for this sample can be found under the main instructions for Zivid samples.
 """
 
 from pathlib import Path
-import zivid
 
+import zivid
 from sample_utils.paths import get_sample_data_path
 
 
@@ -26,6 +26,7 @@ def _main():
     settings.processing.filters.smoothing.gaussian.enabled = True
     settings.processing.filters.smoothing.gaussian.sigma = 1.5
     settings.processing.filters.reflection.removal.enabled = True
+    settings.processing.filters.reflection.removal.experimental.mode = "global"
     settings.processing.color.balance.red = 1.0
     settings.processing.color.balance.green = 1.0
     settings.processing.color.balance.blue = 1.0

@@ -2,15 +2,17 @@
 disable=bad-continuation,         ######## Disabled because of conflicts with black ########
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
+        missing-docstring,
         duplicate-code
 [TYPE CHECK]
 generated-members=cv2.*
 
 [DESIGN]
 max-args=7
-max-locals=16
+max-locals=20
 max-returns=9
 max-bool-expr=6
+max-statements=55
 
 [FORMAT]
-max-line-length=119
+max-line-length=225

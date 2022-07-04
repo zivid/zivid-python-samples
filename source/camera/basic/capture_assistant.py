@@ -1,8 +1,9 @@
 """
-This example shows how to use Capture Assistant to capture point clouds, with color, from the Zivid camera.
+Use Capture Assistant to capture point clouds, with color, from the Zivid camera.
 """
 
 import datetime
+
 import zivid
 
 
@@ -26,6 +27,7 @@ def _main():
 
     print("Manually configuring processing settings (Capture Assistant only suggests acquisition settings)")
     settings.processing.filters.reflection.removal.enabled = True
+    settings.processing.filters.reflection.removal.experimental.mode = "global"
     settings.processing.filters.smoothing.gaussian.enabled = True
     settings.processing.filters.smoothing.gaussian.sigma = 1.5
 

@@ -2,10 +2,9 @@
 Display relevant data for Zivid Samples.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import open3d as o3d
-
 from zivid import PointCloud
 
 
@@ -58,7 +57,8 @@ def display_pointcloud(xyz, rgb, normals=None):
 
     """
     xyz = np.nan_to_num(xyz).reshape(-1, 3)
-    normals = np.nan_to_num(normals).reshape(-1, 3)
+    if normals is not None:
+        normals = np.nan_to_num(normals).reshape(-1, 3)
     rgb = rgb.reshape(-1, 3)
 
     point_cloud_open3d = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))

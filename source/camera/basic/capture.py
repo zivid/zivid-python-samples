@@ -1,8 +1,9 @@
 """
-This example shows how to capture point clouds, with color, from the Zivid camera.
+Capture point clouds, with color, from the Zivid camera.
 """
 
 import datetime
+
 import zivid
 
 
@@ -26,6 +27,10 @@ def _main():
         data_file = "Frame.zdf"
         print(f"Saving frame to file: {data_file}")
         frame.save(data_file)
+
+        data_file_ply = "PointCloud.ply"
+        print(f"Exporting point cloud to file: {data_file_ply}")
+        frame.save(data_file_ply)
 
 
 if __name__ == "__main__":

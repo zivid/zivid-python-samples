@@ -1,8 +1,9 @@
 """
-This example shows how to print version information for Python, zivid-python and Zivid SDK.
+Print version information for Python, zivid-python and Zivid SDK, then list cameras and print camera info for each connected camera.
 """
 
 import platform
+
 import zivid
 
 
