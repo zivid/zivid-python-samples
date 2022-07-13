@@ -77,7 +77,7 @@ def _main():
 
     with zivid.Application():
 
-        data_file = Path() / get_sample_data_path() / "ArucoMarkerInCameraOrigin.zdf"
+        data_file = Path() / get_sample_data_path() / "CalibrationBoardInCameraOrigin.zdf"
         print(f"Reading ZDF frame from file: {data_file}")
         frame = zivid.Frame(data_file)
         point_cloud = frame.point_cloud()
