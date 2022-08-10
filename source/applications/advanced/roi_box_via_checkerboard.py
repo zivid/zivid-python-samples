@@ -5,7 +5,6 @@ The ZDF file for this sample can be found under the main instructions for Zivid 
 """
 
 from pathlib import Path
-from typing import Tuple
 
 import numpy as np
 import zivid
@@ -22,7 +21,7 @@ def roi_box_point_cloud(
     box_dimension_in_axis_x: float,
     box_dimension_in_axis_y: float,
     box_dimension_in_axis_z: float,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Filter point cloud based on ROI box by providing box location and dimensions.
 
     This function assumes that the point cloud is transformed to the checkerboard frame.

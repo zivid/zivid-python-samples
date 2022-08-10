@@ -51,6 +51,8 @@ def _capture_bgr_image(camera, gamma):
         return bgr
 
 
+
+
 def _main():
     app = zivid.Application()
 

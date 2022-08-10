@@ -35,6 +35,8 @@ def _point_cloud_to_cv_z(point_cloud):
     return depth_map_color_map
 
 
+
+
 def _point_cloud_to_cv_bgr(point_cloud):
     """Get bgr image from frame.
 
@@ -50,6 +52,7 @@ def _point_cloud_to_cv_bgr(point_cloud):
     bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
 
     return bgr
+
 
 
 def _visualize_and_save_image(image, image_file, window_name):
@@ -69,6 +72,8 @@ def _visualize_and_save_image(image, image_file, window_name):
     cv2.waitKey(0)
     cv2.destroyWindow(window_name)
     cv2.imwrite(image_file, image)
+
+
 
 
 def _main():
