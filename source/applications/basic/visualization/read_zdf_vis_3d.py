@@ -24,13 +24,11 @@ def _main():
         xyz = point_cloud.copy_data("xyz")
         rgba = point_cloud.copy_data("rgba")
 
-        display_rgb(rgba[:, :, 0:3])
+        display_rgb(rgba[:, :, 0:3], block=False)
 
-        display_depthmap(xyz)
+        display_depthmap(xyz, block=True)
 
         display_pointcloud(xyz, rgba[:, :, 0:3])
-
-        input("Press Enter to close...")
 
 
 if __name__ == "__main__":

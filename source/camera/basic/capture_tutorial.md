@@ -2,7 +2,7 @@
 
 Note\! This tutorial has been generated for use on Github. For original
 tutorial see:
-[capture\_tutorial](https://support.zivid.com/latest/rst/academy/camera/capture-tutorial.html)
+[capture\_tutorial](https://support.zivid.com/latest/academy/camera/capture-tutorial.html)
 
 
 
@@ -172,7 +172,7 @@ There are only two parameters to configure with Capture Assistant:
 
 Another option is to configure settings manually. For more information
 about what each settings does, please see [Camera
-Settings](https://support.zivid.com/latest/rst/reference-articles/camera-settings.html).
+Settings](https://support.zivid.com/latest/reference-articles/camera-settings.html).
 Note that Zivid Two has a set of [standard
 settings](https://support.zivid.com/latest//reference-articles/standard-acquisition-settings-zivid-two.html).
 

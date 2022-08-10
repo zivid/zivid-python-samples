@@ -5,9 +5,9 @@ Balance color of 2D image.
 import datetime
 from dataclasses import dataclass
 
-import matplotlib.pyplot as plt
 import numpy as np
 import zivid
+from sample_utils.display import display_rgb
 
 
 @dataclass
@@ -25,22 +25,6 @@ class MeanColor:
     red: np.float64
     green: np.float64
     blue: np.float64
-
-
-def _display_rgb(rgb, title):
-    """Display RGB image.
-
-    Args:
-        rgb: RGB image (HxWx3 darray)
-        title: Image title
-
-    Returns None
-
-    """
-    plt.figure()
-    plt.imshow(rgb)
-    plt.title(title)
-    plt.show(block=False)
 
 
 def _compute_mean_rgb(rgb, pixels):
@@ -221,7 +205,7 @@ def _main():
     settings_2d = _auto_settings_configuration(camera)
 
     rgba = camera.capture(settings_2d).image_rgba().copy_data()
-    _display_rgb(rgba[:, :, 0:3], "RGB image before color balance")
+    display_rgb(rgba[:, :, 0:3], title="RGB image before color balance", block=False)
 
     [red_balance, green_balance, blue_balance] = _color_balance_calibration(camera, settings_2d)
 
@@ -231,8 +215,7 @@ def _main():
     settings_2d.processing.color.balance.blue = blue_balance
     rgba_balanced = camera.capture(settings_2d).image_rgba().copy_data()
 
-    _display_rgb(rgba_balanced[:, :, 0:3], "RGB image after color balance")
-    input("Press Enter to close...")
+    display_rgb(rgba_balanced[:, :, 0:3], title="RGB image after color balance", block=True)
 
 
 if __name__ == "__main__":

@@ -35,11 +35,10 @@ def _main():
         w_max = int((width + pixels_to_display) / 2)
         mask[h_min:h_max, w_min:w_max] = 1
 
-        display_rgb(rgba[:, :, 0:3], "RGB image")
+        display_rgb(rgba[:, :, 0:3], title="RGB image")
 
         display_depthmap(xyz)
         display_pointcloud(xyz, rgba[:, :, 0:3])
-        input("Press Enter to continue...")
 
         print("Masking point cloud")
         xyz_masked = xyz.copy()
@@ -47,7 +46,6 @@ def _main():
 
         display_depthmap(xyz_masked)
         display_pointcloud(xyz_masked, rgba[:, :, 0:3])
-        input("Press Enter to close...")
 
 
 if __name__ == "__main__":

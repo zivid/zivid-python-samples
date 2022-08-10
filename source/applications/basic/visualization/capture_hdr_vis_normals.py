@@ -25,15 +25,11 @@ def _main():
         normals_colormap = 0.5 * (1 - normals)
 
         print("Visualizing normals in 2D")
-        display_rgb(rgb=rgba[:, :, :3], title="RGB image")
-        display_rgb(rgb=normals_colormap, title="Colormapped normals")
-
-        input("Press any key to continue...")
+        display_rgb(rgb=rgba[:, :, :3], title="RGB image", block=False)
+        display_rgb(rgb=normals_colormap, title="Colormapped normals", block=True)
 
         print("Visualizing normals in 3D")
         display_pointcloud_with_downsampled_normals(point_cloud, zivid.PointCloud.Downsampling.by4x4)
-
-    input("Press Enter to close...")
 
 
 if __name__ == "__main__":
