@@ -45,8 +45,6 @@ def _main():
 
         display_pointcloud(xyz_donwsampled, rgba_downsampled[:, :, 0:3])
 
-        input("Press Enter to close...")
-
 
 if __name__ == "__main__":
     # If running the script from Spyder IDE, first run '%gui qt'

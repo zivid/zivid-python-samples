@@ -3,7 +3,9 @@ disable=bad-continuation,         ######## Disabled because of conflicts with bl
         consider-using-enumerate, ######## Temporary disabled ########
         import-error,
         missing-docstring,
-        duplicate-code
+        no-member,
+        duplicate-code,
+
 [TYPE CHECK]
 generated-members=cv2.*
 

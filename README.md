@@ -60,6 +60,7 @@ from the camera can be used.
           - [camera\_user\_data](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/camera_user_data.py) - Store user data on the Zivid camera.
           - [capture\_with\_diagnostics](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/capture_with_diagnostics.py) - Capture point clouds, with color, from the Zivid camera,
             with settings from YML file and diagnostics enabled.
+          - [firmware\_updater](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/firmware_updater.py) - Update firmware on the Zivid camera.
           - [get\_camera\_intrinsics](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/get_camera_intrinsics.py) - Read intrinsic parameters from the Zivid camera (OpenCV
             model).
           - [print\_version\_info](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/print_version_info.py) - Print version information for Python, zivid-python and
@@ -97,9 +98,13 @@ from the camera can be used.
           - [hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/hand_eye_calibration.py) - Perform Hand-Eye calibration.
           - [mask\_point\_cloud](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/mask_point_cloud.py) - Read point cloud data from a ZDF file, apply a binary
             mask, and visualize it.
+          - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
+            to the Zivid Calibration Board.
           - **hand\_eye\_calibration**
               - [pose\_conversions](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/pose_conversions.py) - Convert to/from Transformation Matrix (Rotation Matrix
                 + Translation Vector).
+              - [robodk\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robodk_hand_eye_calibration.py) - Generate a dataset and perform hand-eye calibration
+                using the Robodk interface.
               - [utilize\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py) - Transform single data point or entire point cloud from
                 camera frame to robot base frame using Hand-Eye
                 calibration
@@ -111,43 +116,44 @@ from the camera can be used.
   - **sample\_utils**
       - [display](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/display.py) - Display relevant data for Zivid Samples.
       - [paths](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
+  - **applications**
+      - **advanced**
+          - **hand\_eye\_calibration**
+              - **robodk\_hand\_eye\_calibration**
+                  - [robot\_tools](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robot_tools.py) - Robot Control Module
 
 ## Installation
 
 1.  [Install Zivid
-    Software](https://support.zivid.com/latest//getting-started/software-installation.html)
+    Software](https://support.zivid.com/latest//getting-started/software-installation.html).
 
-2.  [Install Zivid Python](https://github.com/zivid/zivid-python). Note:
-    The recommended Python version for these samples is 3.8.
+2.  [Install Zivid
+    Python](https://github.com/zivid/zivid-python#installation).
 
 3.  [Download Zivid Sample
-    Data](https://support.zivid.com/latest//api-reference/samples/sample-data.html)
+    Data](https://support.zivid.com/latest//api-reference/samples/sample-data.html).
 
-4.  \[Optional\] Launch the Python IDE of your choice. Read our
-    instructions on [setting up
-    Python](https://support.zivid.com/latest//api-reference/samples/python/setting-up-python.html).
-
-5.  Install the runtime requirements using IDE or command line:
+4.  Install the runtime requirements using IDE or command line:
     
     ``` sourceCode 
     pip install -r requirements.txt
     ```
 
-6.  Add the directory source to PYTHONPATH. Navigate to the root of the
+5.  Add the directory source to PYTHONPATH. Navigate to the root of the
     repository and run:
 
 >   - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
 >   - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
 >   - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
 
-7.  Open and run one of the samples.
+6.  Open and run one of the samples.
 
 ## Support
 
 For more information about the Zivid cameras, please visit our
 [Knowledge Base](https://support.zivid.com/latest). If you run into any
 issues please check out
-[Troubleshooting](https://support.zivid.com/latest/rst/support/troubleshooting.html).
+[Troubleshooting](https://support.zivid.com/latest/support/troubleshooting.html).
 
 ## License
 

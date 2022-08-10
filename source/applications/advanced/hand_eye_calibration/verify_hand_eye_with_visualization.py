@@ -216,7 +216,7 @@ def _main():
 
     if data_pair_id > 1:
         print("Visualizing transformed point clouds\n")
-        o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)  # pylint: disable=no-member
+        o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
     else:
         raise Exception("Not enought data!")
 

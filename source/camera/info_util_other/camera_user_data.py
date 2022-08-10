@@ -24,7 +24,7 @@ def _args() -> argparse.Namespace:
         help="write",
     )
     parser_write.add_argument(
-        "user-data",
+        "--user-data",
         type=str,
         help="User data to be stored on the Zivid camera",
     )
@@ -38,7 +38,10 @@ def _check_user_data_support(camera):
 
 
 def _write(camera: zivid.Camera, string: str):
-    camera.write_user_data(str.encode(string))
+    try:
+        camera.write_user_data(str.encode(string))
+    except RuntimeError as ex:
+        raise RuntimeError("Camera must be rebooted to allow another write operation!") from ex
 
 
 def _clear(camera: zivid.Camera):
@@ -51,33 +54,28 @@ def _read(camera: zivid.Camera):
 
 
 def _main():
-    try:
+    args = _args()
+    mode = args.mode
 
-        args = _args()
-        mode = args.mode
+    app = zivid.Application()
 
-        app = zivid.Application()
+    print("Connecting to camera")
+    camera = app.connect_camera()
+    _check_user_data_support(camera)
 
-        print("Connecting to camera")
-        camera = app.connect_camera()
-        _check_user_data_support(camera)
+    if mode == "read":
+        print("Reading user data from camera")
+        print(f"Done. User data: '{_read(camera)}'")
 
-        if mode == "read":
-            print("Reading user data from camera")
-            print(f"Done. User data: '{_read(camera)}'")
+    if mode == "write":
+        print(f"Writing '{args.user_data}' to the camera")
+        _write(camera, args.user_data)
+        print("Done. Note! Camera must be rebooted to allow another write operation")
 
-        if mode == "write":
-            print(f"Writing '{args.user_data}' to the camera")
-            _write(camera, args.user_data)
-            print("Done. Note! Camera must be rebooted to allow another write operation")
-
-        if mode == "clear":
-            print("Clearing user data from camera")
-            _clear(camera)
-            print("Done. Note! Camera must be rebooted to allow another clear operation")
-
-    except ValueError as ex:
-        print(f"Error: {ex}")
+    if mode == "clear":
+        print("Clearing user data from camera")
+        _clear(camera)
+        print("Done. Note! Camera must be rebooted to allow another clear operation")
 
 
 if __name__ == "__main__":

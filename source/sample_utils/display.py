@@ -8,12 +8,13 @@ import open3d as o3d
 from zivid import PointCloud
 
 
-def display_rgb(rgb, title="RGB image"):
+def display_rgb(rgb, title="RGB image", block=True):
     """Display RGB image.
 
     Args:
         rgb: RGB image (HxWx3 darray)
         title: Image title
+        block: Whether to wait for the figure to be closed before returning
 
     Returns None
 
@@ -21,14 +22,15 @@ def display_rgb(rgb, title="RGB image"):
     plt.figure()
     plt.imshow(rgb)
     plt.title(title)
-    plt.show(block=False)
+    plt.show(block=block)
 
 
-def display_depthmap(xyz):
+def display_depthmap(xyz, block=True):
     """Create and display depthmap.
 
     Args:
         xyz: X, Y and Z images (point cloud co-ordinates)
+        block: Whether to wait for the figure to be closed before returning
 
     Returns None
 
@@ -42,7 +44,7 @@ def display_depthmap(xyz):
     )
     plt.colorbar()
     plt.title("Depth map")
-    plt.show(block=False)
+    plt.show(block=block)
 
 
 def display_pointcloud(xyz, rgb, normals=None):

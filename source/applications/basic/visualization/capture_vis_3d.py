@@ -27,8 +27,6 @@ def _main():
             print("Visualizing point cloud")
             display_pointcloud(xyz, rgba[:, :, 0:3])
 
-            input("Press Enter to close...")
-
 
 if __name__ == "__main__":
     _main()
