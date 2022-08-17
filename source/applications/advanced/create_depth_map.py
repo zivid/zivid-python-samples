@@ -6,23 +6,32 @@ The ZDF files for this sample can be found under the main instructions for Zivid
 
 from pathlib import Path
 
+import datetime
+
 import cv2
 import numpy as np
 import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _point_cloud_to_cv_z(point_cloud):
+def _point_cloud_to_cv_z(point_cloud, min_z = float('-inf'), max_z = float('inf')):
     """Get depth map from frame.
 
     Args:
         point_cloud: Zivid point cloud
+        min_z: Lower depth map limit in mm
+        max_z: Higher depth map limit in mm
 
     Returns:
         Depth map (HxWx1 darray)
 
     """
     depth_map = point_cloud.copy_data("z")
+
+    # Setting all points that are outside of range specified with lower limit min_z and higher limit max_z to nan
+    depth_map[depth_map > max_z] = np.nan
+    depth_map[depth_map < min_z] = np.nan
+
     depth_map_uint8 = ((depth_map - np.nanmin(depth_map)) / (np.nanmax(depth_map) - np.nanmin(depth_map)) * 255).astype(
         np.uint8
     )
@@ -73,11 +82,24 @@ def _visualize_and_save_image(image, image_file, window_name):
 
 def _main():
 
-    with zivid.Application():
+    with zivid.Application() as app:
 
-        data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
-        print(f"Reading ZDF frame from file: {data_file}")
-        frame = zivid.Frame(data_file)
+        #data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+        #print(f"Reading ZDF frame from file: {data_file}")
+        #frame = zivid.Frame(data_file)
+        #point_cloud = frame.point_cloud()
+
+        print("Connecting to camera")
+        camera = app.connect_camera()
+        suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
+            max_capture_time=datetime.timedelta(milliseconds=1200),
+            ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
+        )
+        print(f"Running Capture Assistant with parameters: {suggest_settings_parameters}")
+        settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+
+        print("Capturing frame")
+        frame = camera.capture(settings)
         point_cloud = frame.point_cloud()
 
         print("Converting to BGR image in OpenCV format")
@@ -88,7 +110,7 @@ def _main():
         _visualize_and_save_image(bgr, bgr_image_file, "BGR image")
 
         print("Converting to Depth map in OpenCV format")
-        z_color_map = _point_cloud_to_cv_z(point_cloud)
+        z_color_map = _point_cloud_to_cv_z(point_cloud, 600, 1500)
 
         depth_map_file = "DepthMap.png"
         print(f"Visualizing and saving Depth map to file: {depth_map_file}")
