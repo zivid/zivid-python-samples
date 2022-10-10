@@ -1,14 +1,18 @@
 """
 Perform Hand-Eye calibration.
+
 """
 
 import datetime
+from pathlib import Path
+from typing import List
 
 import numpy as np
 import zivid
+from sample_utils.save_load_matrix import assert_affine_matrix_and_save
 
 
-def _enter_robot_pose(index):
+def _enter_robot_pose(index: int) -> zivid.calibration.Pose:
     """Robot pose user input.
 
     Args:
@@ -28,7 +32,7 @@ def _enter_robot_pose(index):
     return robot_pose
 
 
-def _perform_calibration(hand_eye_input):
+def _perform_calibration(hand_eye_input: List[zivid.calibration.HandEyeInput]) -> zivid.calibration.HandEyeOutput:
     """Hand-Eye calibration type user input.
 
     Args:
@@ -51,7 +55,7 @@ def _perform_calibration(hand_eye_input):
         print(f"Unknown calibration type: '{calibration_type}'")
 
 
-def _assisted_capture(camera):
+def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
     """Acquire frame with capture assistant.
 
     Args:
@@ -61,7 +65,6 @@ def _assisted_capture(camera):
         frame: Zivid frame
 
     """
-
     suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
         max_capture_time=datetime.timedelta(milliseconds=800),
         ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
@@ -105,6 +108,10 @@ def _main():
             print(f"Unknown command '{command}'")
 
     calibration_result = _perform_calibration(hand_eye_input)
+    transform = calibration_result.transform()
+    transform_file_path = Path(Path(__file__).parent / "transform.yaml")
+    assert_affine_matrix_and_save(transform, transform_file_path)
+
     if calibration_result.valid():
         print("Hand-Eye calibration OK")
         print(f"Result:\n{calibration_result}")

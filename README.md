@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.7.0. For
+This repository contains python code samples for Zivid SDK v2.8.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -116,6 +116,7 @@ from the camera can be used.
   - **sample\_utils**
       - [display](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/display.py) - Display relevant data for Zivid Samples.
       - [paths](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
+      - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/save_load_matrix.py) - \# Checks if matrix is affine
   - **applications**
       - **advanced**
           - **hand\_eye\_calibration**
@@ -128,7 +129,8 @@ from the camera can be used.
     Software](https://support.zivid.com/latest//getting-started/software-installation.html).
 
 2.  [Install Zivid
-    Python](https://github.com/zivid/zivid-python#installation).
+    Python](https://github.com/zivid/zivid-python#installation). Note:
+    The recommended Python version for these samples is 3.6 - 3.9.
 
 3.  [Download Zivid Sample
     Data](https://support.zivid.com/latest//api-reference/samples/sample-data.html).

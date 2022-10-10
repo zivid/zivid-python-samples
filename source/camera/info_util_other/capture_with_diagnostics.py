@@ -6,6 +6,7 @@ Send zdf files with diagnostics enabled to the Zivid support team to allow more 
 Have in mind that enabling diagnostics increases the capture time and the RAM usage.
 
 The YML file for this sample can be found under the main instructions for Zivid samples.
+
 """
 
 from pathlib import Path

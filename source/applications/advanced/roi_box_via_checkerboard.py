@@ -2,6 +2,7 @@
 Filter the point cloud based on a ROI box given relative to the Zivid Calibration Board.
 
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
+
 """
 
 from pathlib import Path
@@ -37,7 +38,8 @@ def roi_box_point_cloud(
         box_dimension_in_axis_z: Bin dimension in Z axis of the checkerboard coordinate system
 
     Returns:
-        A tuple of masked numpy array of X, Y and Z point cloud coordinates and a masked RGB image (HxWx3 darray)
+        masked_xyz: A masked numpy array of X, Y and Z point cloud coordinates (HxWx3 ndarray)
+        masked_rgba: A masked masked RGB image (HxWx3 ndarray)
 
     """
     xyz = point_cloud.copy_data("xyz")

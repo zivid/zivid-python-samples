@@ -13,6 +13,7 @@ Each pose will need to be created or modified to fit your scene using the RoboDK
 For finding the best poses for hand-eye check out:
 https://support.zivid.com/latest/academy/applications/hand-eye/hand-eye-calibration-process.html
 Make sure to launch your RDK file and connect to robot through Robodk before running this script.
+
 """
 
 import argparse
@@ -26,11 +27,12 @@ import numpy as np
 import zivid
 from robolink import Item
 from robot_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
+from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from zivid.capture_assistant import SuggestSettingsParameters
 
 
 def _generate_directory() -> Path:
-    """Generate directory where dataset will be stored
+    """Generate directory where dataset will be stored.
 
     Returns:
         Directory to where data will be saved
@@ -47,15 +49,16 @@ def _generate_directory() -> Path:
 
 
 def _get_frame_and_transform(robot: Item, camera: zivid.Camera) -> Tuple[zivid.Frame, np.ndarray]:
-    """Capture image with Zivid camera and read robot pose
+    """Capture image with Zivid camera and read robot pose.
 
     Args:
-        robot: robot item in open RoboDK rdk file
+        robot: Robot item in open RoboDK rdk file
         camera: Zivid camera
 
     Returns:
         Zivid frame
         4x4 transformation matrix
+
     """
     frame = assisted_capture(camera)
     transform = np.array(robot.Pose()).T
@@ -79,12 +82,7 @@ def _save_point_cloud_and_pose(
     """
     frame.save(save_directory / f"img{image_and_pose_iterator:02d}.zdf")
 
-    file_storage = cv2.FileStorage(
-        str(save_directory / f"pos{image_and_pose_iterator:02d}.yaml"),
-        cv2.FILE_STORAGE_WRITE,
-    )
-    file_storage.write("PoseState", transform)
-    file_storage.release()
+    assert_affine_matrix_and_save(transform, save_directory / f"pos{image_and_pose_iterator:02d}.yaml")
 
 
 def _verify_good_capture(frame: zivid.Frame) -> None:
@@ -113,11 +111,11 @@ def _capture_one_frame_and_robot_pose(
     then signals the robot to move to the next pose.
 
     Args:
-        robot: robot item in open RoboDK rdk file
+        robot: Robot item in open RoboDK rdk file
         camera: Zivid camera
         save_directory: Path to where data will be saved
         image_and_pose_iterator: Counter for point cloud and pose acquisition sequence
-        next_target: next pose the robot should move to in sequence
+        next_target: Next pose the robot should move to in sequence
 
     """
     robot.WaitMove()
@@ -132,23 +130,7 @@ def _capture_one_frame_and_robot_pose(
     print(f"Image and pose #{image_and_pose_iterator} saved")
 
 
-def _read_transform(transform_file: Path) -> zivid.calibration.Pose:
-    """Read transformation matrix from a YAML file.
-
-    Args:
-        transform_file: Path to the YAML file
-
-    Returns:
-        transform: Transformation matrix
-
-    """
-    file_storage = cv2.FileStorage(str(transform_file), cv2.FILE_STORAGE_READ)
-    transform = file_storage.getNode("PoseState").mat()
-    file_storage.release()
-    return transform
-
-
-def save_hand_eye_results(save_directory: Path, transform: np.ndarray, residuals: list) -> None:
+def save_hand_eye_results(save_directory: Path, transform: np.ndarray, residuals: List) -> None:
     """Save transformation and residuals to directory.
 
     Args:
@@ -157,9 +139,7 @@ def save_hand_eye_results(save_directory: Path, transform: np.ndarray, residuals
         residuals: List of residuals
 
     """
-    file_storage_transform = cv2.FileStorage(str(save_directory / "hand_eye_transform.yaml"), cv2.FILE_STORAGE_WRITE)
-    file_storage_transform.write("PoseState", transform)
-    file_storage_transform.release()
+    assert_affine_matrix_and_save(transform, save_directory / "handEyeTransform.yaml")
 
     file_storage_residuals = cv2.FileStorage(str(save_directory / "residuals.yaml"), cv2.FILE_STORAGE_WRITE)
     residual_list = []
@@ -180,11 +160,11 @@ def generate_hand_eye_dataset(app: zivid.application, robot: Item, targets: List
 
     Args:
         app: Zivid application instance
-        robot: robot item in open RoboDK rdk file
-        targets: list of roboDK targets (poses)
+        robot: Robot item in open RoboDK rdk file
+        targets: List of roboDK targets (poses)
 
     Returns:
-        Path: save_directory for where data will be saved
+        Path: Save_directory for where data will be saved
 
     """
     num_targets = len(targets)
@@ -208,7 +188,7 @@ def generate_hand_eye_dataset(app: zivid.application, robot: Item, targets: List
     return save_directory
 
 
-def assisted_capture(camera: zivid.Camera, max_time_milliseconds=800) -> zivid.frame:
+def assisted_capture(camera: zivid.Camera, max_time_milliseconds: int = 800) -> zivid.Frame:
     """Capturing image with Zivid camera using assisted capture settings.
 
     Args:
@@ -227,7 +207,10 @@ def assisted_capture(camera: zivid.Camera, max_time_milliseconds=800) -> zivid.f
     return camera.capture(settings)
 
 
-def perform_hand_eye_calibration(calibration_type: str, dataset_directory: Path) -> Tuple[List, List]:
+def perform_hand_eye_calibration(
+    calibration_type: str,
+    dataset_directory: Path,
+) -> Tuple[np.ndarray, List[zivid.calibration.HandEyeResidual]]:
     """Perform hand-eye calibration based on calibration type.
 
     Args:
@@ -244,15 +227,15 @@ def perform_hand_eye_calibration(calibration_type: str, dataset_directory: Path)
         pose_and_image_iterator = 1
 
         while True:
-            frame_file = dataset_directory / f"img{pose_and_image_iterator:02d}.zdf"
-            pose_file = dataset_directory / f"pos{pose_and_image_iterator:02d}.yaml"
+            frame_file_path = dataset_directory / f"img{pose_and_image_iterator:02d}.zdf"
+            pose_file_path = dataset_directory / f"pos{pose_and_image_iterator:02d}.yaml"
 
-            if frame_file.is_file() and pose_file.is_file():
+            if frame_file_path.is_file() and pose_file_path.is_file():
                 print(f"Detect feature points from img{pose_and_image_iterator:02d}.zdf")
-                point_cloud = zivid.Frame(frame_file).point_cloud()
+                point_cloud = zivid.Frame(frame_file_path).point_cloud()
                 detected_features = zivid.calibration.detect_feature_points(point_cloud)
                 print(f"Read robot pose from pos{pose_and_image_iterator:02d}.yaml")
-                transform = _read_transform(pose_file)
+                transform = load_and_assert_affine_matrix(pose_file_path)
 
                 detection_result = zivid.calibration.HandEyeInput(zivid.calibration.Pose(transform), detected_features)
                 hand_eye_input.append(detection_result)
@@ -290,7 +273,7 @@ def options() -> argparse.Namespace:
     Returns:
         eih or eth: eye-in-hand or eye-to-hand
         ip: IP address of the robot controller
-        target_keyword: the common name of the targets (poses) in RoboDK station that will be used for the hand-eye dataset
+        target_keyword: The common name of the targets (poses) in RoboDK station that will be used for the hand-eye dataset
 
     """
     parser = argparse.ArgumentParser(description=__doc__)
@@ -317,7 +300,7 @@ def _main():
 
     rdk, robot = connect_to_robot(user_options.ip)
     targets = get_robot_targets(rdk, user_options.target_keyword)
-    # NOTE! Verify safe operation speeds and accelerations for your robot
+    #  NOTE! Verify safe operation speeds and accelerations for your robot
     robot_speed_accel_limits = [100, 100, 50, 50]
     set_robot_speed_and_acceleration(robot, *robot_speed_accel_limits)
 

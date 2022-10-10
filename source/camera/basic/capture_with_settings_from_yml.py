@@ -2,6 +2,7 @@
 Capture point clouds, with color, from the Zivid camera, with settings from YML file.
 
 The YML files for this sample can be found under the main Zivid sample instructions.
+
 """
 
 from pathlib import Path

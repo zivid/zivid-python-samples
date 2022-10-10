@@ -2,6 +2,7 @@
 Robot Control Module
 Module interfaces with the python API for RoboDK and the RoboDK software.
 It can be used to connect to the specified robot, get a list of targets and set robot speeds.
+
 """
 from typing import Any, List, Tuple
 
@@ -10,14 +11,14 @@ from robolink import ITEM_TYPE_ROBOT, RUNMODE_RUN_ROBOT, Item, Robolink
 
 def connect_to_robot(robot_ip: str) -> Tuple[Any, Any]:
     """Sets up the connection to the robot and sets the mode to run,
-    such that the robot will accept movement commands
+    such that the robot will accept movement commands.
 
     Args:
-        robot_ip : unique IP address associated with robot being used
+        robot_ip : Unique IP address associated with robot being used
 
     Returns:
         rdk : Robolink - the link between RoboDK and Python
-        robot : robot item in open RoboDK rdk file
+        robot : Robot item in open RoboDK rdk file
 
     """
     rdk = Robolink()
@@ -36,14 +37,14 @@ def connect_to_robot(robot_ip: str) -> Tuple[Any, Any]:
 def set_robot_speed_and_acceleration(
     robot: Item, speed: int, joint_speed: int, acceleration: int, joint_acceleration: int
 ) -> None:
-    """Sets the speed and acceleration of the Robot
+    """Sets the speed and acceleration of the Robot.
 
     Args:
-        robot: robot item in open RoboDK rdk file
+        robot: Robot item in open RoboDK rdk file
         speed: Set max linear speed for robot (mm/s)
-        joint_speed: set max joint speed of robot (deg/s)
-        acceleration: total linear acceleration of robot (mm/s²)
-        joint_acceleration: set max joint acceleration allowed for robot (deg/s²)
+        joint_speed: Set max joint speed of robot (deg/s)
+        acceleration: Total linear acceleration of robot (mm/s²)
+        joint_acceleration: Set max joint acceleration allowed for robot (deg/s²)
 
     """
     robot.setSpeed(speed)
@@ -60,7 +61,7 @@ def get_robot_targets(rdk: Robolink, target_keyword: str) -> List:
 
     Args:
         rdk:  Robolink - the link between RoboDK and Python
-        target_keyword: the common name of the targets (poses) in RoboDK station that will be used for the hand-eye dataset
+        target_keyword: The common name of the targets (poses) in RoboDK station that will be used for the hand-eye dataset
 
     Returns:
         List: Array of target items

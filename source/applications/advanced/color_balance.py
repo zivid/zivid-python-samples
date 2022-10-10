@@ -1,9 +1,11 @@
 """
 Balance color of 2D image.
+
 """
 
 import datetime
 from dataclasses import dataclass
+from typing import Tuple
 
 import numpy as np
 import zivid
@@ -13,7 +15,7 @@ from sample_utils.display import display_rgb
 @dataclass
 class MeanColor:
     """
-    RGB  channel mean colors
+    RGB  channel mean colors.
 
     Attributes:
         red (np.array): Red channel mean value
@@ -27,15 +29,15 @@ class MeanColor:
     blue: np.float64
 
 
-def _compute_mean_rgb(rgb, pixels):
+def _compute_mean_rgb(rgb: np.ndarray, pixels: int) -> MeanColor:
     """Compute mean RGB values.
 
     Args:
-        rgb: RGB image (HxWx3 darray)
+        rgb: RGB image (HxWx3 ndarray)
         pixels: Number of central pixels (^2) for computation
 
     Returns:
-        mean_color: RGB channel mean values
+        MeanColor: RGB channel mean values
 
     """
     height = np.shape(rgb)[0]
@@ -66,7 +68,7 @@ def _compute_mean_rgb(rgb, pixels):
     return MeanColor(red=mean_red, green=mean_green, blue=mean_blue)
 
 
-def _auto_settings_configuration(camera):
+def _auto_settings_configuration(camera: zivid.Camera) -> zivid.Settings2D:
     """Automatically configure 2D capture settings by taking images in a loop while tunning gain, exposure time, and
     aperture. The goal is that the maximum of mean RGB values reaches the value within defined limits.
 
@@ -98,7 +100,7 @@ def _auto_settings_configuration(camera):
     while True:
         rgba = camera.capture(settings_2d).image_rgba().copy_data()
         mean_color = _compute_mean_rgb(rgba[:, :, 0:3], 100)
-        max_mean_color = max(mean_color.red, mean_color.green, mean_color.blue)
+        max_mean_color = max(float(mean_color.red), float(mean_color.green), float(mean_color.blue))
         print(f"Iteration: {cnt+1}")
         print(f" Max mean color: {max_mean_color} ")
         print(f" Desired color range: [{desired_color_range[0]},{desired_color_range[1]}]")
@@ -139,7 +141,7 @@ def _auto_settings_configuration(camera):
     return settings_2d
 
 
-def _color_balance_calibration(camera, settings_2d):
+def _color_balance_calibration(camera: zivid.Camera, settings_2d: zivid.Settings2D) -> Tuple[float, float, float]:
     """Balance color for RGB image by taking images of white surface (piece of paper, wall, etc.) in a loop.
 
     Args:
@@ -176,12 +178,16 @@ def _color_balance_calibration(camera, settings_2d):
         if saturated is True:
             print("Color balance incomplete - the range limits of color balance parameters have been reached")
             break
-        max_color = max(mean_color.red, mean_color.green, mean_color.blue)
-        corrected_red_balance = np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 8)
-        corrected_green_balance = np.clip(
-            settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 8
+        max_color = max(float(mean_color.red), float(mean_color.green), float(mean_color.blue))
+        corrected_red_balance = float(
+            np.clip(settings_2d.processing.color.balance.red * max_color / mean_color.red, 1, 8)
         )
-        corrected_blue_balance = np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 8)
+        corrected_green_balance = float(
+            np.clip(settings_2d.processing.color.balance.green * max_color / mean_color.green, 1, 8)
+        )
+        corrected_blue_balance = float(
+            np.clip(settings_2d.processing.color.balance.blue * max_color / mean_color.blue, 1, 8)
+        )
 
         corrected_values = [corrected_red_balance, corrected_green_balance, corrected_blue_balance]
 

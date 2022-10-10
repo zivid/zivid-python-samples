@@ -1,6 +1,5 @@
 [MESSAGES CONTROL]
-disable=bad-continuation,         ######## Disabled because of conflicts with black ########
-        consider-using-enumerate, ######## Temporary disabled ########
+disable=consider-using-enumerate,
         import-error,
         missing-docstring,
         no-member,

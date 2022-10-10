@@ -1,5 +1,6 @@
 """
 Capture point clouds, with color, from the Zivid camera, and visualize it.
+
 """
 
 import zivid

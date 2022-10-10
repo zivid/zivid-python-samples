@@ -10,13 +10,25 @@ connected to a different PC. After saving a correction, it will automatically be
 time that camera captures a new point cloud.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
 """
+
+from typing import List
 
 import zivid
 from zivid.experimental import calibration
 
 
-def yes_no_prompt(question: str):
+def _yes_no_prompt(question: str) -> bool:
+    """Gets a yes or no answer to a given question.
+
+    Args:
+        question: A question what requires a yes or no answer
+
+    Returns:
+        bool: True if the answer is yes, False if no
+
+    """
     while True:
         response = input(question)
         if response in ["n", "N"]:
@@ -26,15 +38,23 @@ def yes_no_prompt(question: str):
         print("Invalid response. Please respond with either 'y' or 'n'.")
 
 
-def collect_dataset(camera: zivid.camera):
+def _collect_dataset(camera: zivid.Camera) -> List[calibration.InfieldCorrectionInput]:
+    """Collects input-data needed by in-field verification and correction function.
 
+    Args:
+        camera: Zivid camera instance
+
+    Returns:
+        dataset: Contains input-data needed by in-field verification and correction function
+
+    """
     dataset = []
     print("Please point the camera at a Zivid in-field calibration board. ")
 
     print_line = "------------------------------------------------------------------------"
     while True:
         print(print_line)
-        if yes_no_prompt("Capture (y) or finish (n)? "):
+        if _yes_no_prompt("Capture (y) or finish (n)? "):
             print("Capturing calibration board")
             detection_result = calibration.detect_feature_points(camera)
             infield_input = calibration.InfieldCorrectionInput(detection_result)
@@ -62,7 +82,7 @@ def _main() -> None:
     camera = app.connect_camera()
 
     # Gather data
-    dataset = collect_dataset(camera)
+    dataset = _collect_dataset(camera)
 
     # Calculate infield correciton
     print(f"Collected {len(dataset)} valid measurements.")
@@ -77,7 +97,7 @@ def _main() -> None:
     )
 
     # Optionally save to camera
-    if yes_no_prompt("Save to camera? "):
+    if _yes_no_prompt("Save to camera? "):
         print("Writing correction to camera")
         calibration.write_camera_correction(camera, correction)
         print("Success")

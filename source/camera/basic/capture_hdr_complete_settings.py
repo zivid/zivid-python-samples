@@ -7,14 +7,30 @@ In general, capturing an HDR point cloud is a lot simpler than this.
 The purpose of this example is to demonstrate how to configure all the settings.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
 """
 
 import datetime
+from typing import Iterable, Tuple
 
 import zivid
 
 
-def _get_exposure_values(camera):
+def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, float]]:
+    """Print normal XYZ values of the 10 x 10 central pixels.
+
+    Args:
+        camera: Zivid camera instance
+
+    Returns:
+        apertures: The f-number of each capture
+        gains: The gain from each capture
+        exposure_times: The exposure time from each capture
+
+    Raises:
+        Exception: If the model is not Zivid One+ or Zivid Two
+
+    """
     if (
         camera.info.model is zivid.CameraInfo.Model.zividOnePlusLarge
         or camera.info.model is zivid.CameraInfo.Model.zividOnePlusMedium

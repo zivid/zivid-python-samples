@@ -2,6 +2,7 @@
 Downsample point cloud from a ZDF file.
 
 The ZDF files for this sample can be found under the main instructions for Zivid samples.
+
 """
 
 from pathlib import Path

@@ -1,5 +1,6 @@
 """
 Update firmware on the Zivid camera.
+
 """
 
 import zivid
@@ -10,7 +11,7 @@ def _main():
 
     cameras = app.cameras()
     if len(cameras) == 0:
-        print("No camera found.")
+        raise TimeoutError("No camera found.")
 
     print(f"Found {len(cameras)} camera(s)")
     for camera in cameras:

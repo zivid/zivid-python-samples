@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
 SOURCE_DIR=$(realpath "$ROOT_DIR/source")
 
@@ -24,8 +24,8 @@ pylint \
     --rcfile "$ROOT_DIR/.pylintrc" \
     --dummy-variables-rgx="((^|, )(app|rgb|xyz|contrast))+$" \
     --extension-pkg-whitelist=netCDF4 \
-    $pythonFiles \
-    || exit $?
+    $pythonFiles ||
+    exit $?
 
 echo Running darglint on:
 echo "$pythonFiles"
