@@ -24,61 +24,15 @@ Eye-In-Hand:
 For verification, check that the Zivid gem centroid 3D coordinates are the same as above after the transformation.
 
 The YAML files for this sample can be found under the main instructions for Zivid samples.
+
 """
 
 from pathlib import Path
 
-import cv2
 import numpy as np
 import zivid
 from sample_utils.paths import get_sample_data_path
-
-
-def _assert_valid_matrix(file_name):
-    """Check if YAML file is valid.
-
-    Args:
-        file_name: Path to YAML file.
-
-    Returns None
-
-    Raises:
-        FileNotFoundError: If the YAML file specified by file_name cannot be opened.
-        NameError: If the transformation matrix named 'PoseState' is not found in the file.
-        ValueError: If the dimensions of the transformation matrix are not 4 x 4.
-    """
-    file_storage = cv2.FileStorage(str(file_name), cv2.FILE_STORAGE_READ)
-    if not file_storage.open(str(file_name), cv2.FILE_STORAGE_READ):
-        file_storage.release()
-        raise FileNotFoundError(f"Could not open {file_name}")
-
-    pose_state_node = file_storage.getNode("PoseState")
-
-    if pose_state_node.empty():
-        file_storage.release()
-        raise NameError(f"PoseState not found in file {file_name}")
-
-    shape = pose_state_node.mat().shape
-    if shape[0] != 4 or shape[1] != 4:
-        file_storage.release()
-        raise ValueError(f"Expected 4x4 matrix in {file_name}, but got {shape[0]} x {shape[1]}")
-
-
-def _read_transform(transform_file):
-    """Read transformation matrix from a YAML file.
-
-    Args:
-        transform_file: Path to the YAML file.
-
-    Returns:
-        transform: Transformation matrix.
-
-    """
-    file_storage = cv2.FileStorage(str(transform_file), cv2.FILE_STORAGE_READ)
-    transform = file_storage.getNode("PoseState").mat()
-    file_storage.release()
-
-    return transform
+from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
 
 def _main():
@@ -99,12 +53,10 @@ def _main():
             image_coordinate_x = 1035
             image_coordinate_y = 255
 
-            eye_to_hand_transform_file = Path() / get_sample_data_path() / "EyeToHandTransform.yaml"
-            # Checking if YAML files are valid
-            _assert_valid_matrix(eye_to_hand_transform_file)
+            eye_to_hand_transform_file_path = Path() / get_sample_data_path() / "EyeToHandTransform.yaml"
 
             print("Reading camera pose in robot base frame (result of eye-to-hand calibration)")
-            transform_base_to_camera = _read_transform(eye_to_hand_transform_file)
+            transform_base_to_camera = load_and_assert_affine_matrix(eye_to_hand_transform_file_path)
 
             break
 
@@ -117,17 +69,14 @@ def _main():
             image_coordinate_x = 1460
             image_coordinate_y = 755
 
-            eye_in_hand_transform_file = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
-            robot_transform_file = Path() / get_sample_data_path() / "RobotTransform.yaml"
-            # Checking if YAML files are valid
-            _assert_valid_matrix(eye_in_hand_transform_file)
-            _assert_valid_matrix(robot_transform_file)
+            eye_in_hand_transform_file_path = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
+            robot_transform_file_path = Path() / get_sample_data_path() / "RobotTransform.yaml"
 
             print("Reading camera pose in end-effector frame (result of eye-in-hand calibration)")
-            transform_end_effector_to_camera = _read_transform(eye_in_hand_transform_file)
+            transform_end_effector_to_camera = load_and_assert_affine_matrix(eye_in_hand_transform_file_path)
 
             print("Reading end-effector pose in robot base frame")
-            transform_base_to_end_effector = _read_transform(robot_transform_file)
+            transform_base_to_end_effector = load_and_assert_affine_matrix(robot_transform_file_path)
 
             print("Computing camera pose in robot base frame")
             transform_base_to_camera = np.matmul(transform_base_to_end_effector, transform_end_effector_to_camera)

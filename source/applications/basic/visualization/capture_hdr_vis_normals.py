@@ -2,6 +2,7 @@
 Capture Zivid point clouds, compute normals and convert to color map and display.
 
 For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud.
+
 """
 
 import zivid

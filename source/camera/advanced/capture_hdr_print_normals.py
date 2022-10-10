@@ -2,15 +2,22 @@
 Capture Zivid point clouds, compute normals and print a subset.
 
 For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud.
+
 """
 
-from typing import Any
 
+import numpy as np
 import zivid
-from nptyping import NDArray
 
 
-def _print_normals(radius: int, normals: NDArray[Any, Any, 3]):
+def _print_normals(radius: int, normals: np.ndarray) -> None:
+    """Print normal XYZ values of the 10 x 10 central pixels.
+
+    Args:
+        radius: Half of the width and height of the pixel area, e.g., radius of 5 results in 10 x 10 pixels.
+        normals: XYZ values of each normal
+
+    """
     line_separator = "-" * 50
     num_of_rows = normals.shape[0]
     num_of_cols = normals.shape[1]

@@ -4,38 +4,26 @@ checkerboard pose and save the transformation matrix to a YAML file.
 
 The checkerboard point cloud is also visualized with a coordinate system.
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
+
 """
+
 from pathlib import Path
 
-import cv2
 import numpy as np
 import open3d as o3d
 import zivid
 from sample_utils.paths import get_sample_data_path
+from sample_utils.save_load_matrix import assert_affine_matrix_and_save
 
 
-def _write_transform(transform, transform_file):
-    """Write transformation matrix to a YAML file.
-
-    Args:
-        transform: Transformation matrix
-        transform_file: YAML file name
-
-    """
-    file_storage_out = cv2.FileStorage(str(Path(__file__).parent / transform_file), cv2.FILE_STORAGE_WRITE)
-    file_storage_out.write("PoseState", transform)
-    file_storage_out.release()
-
-
-def _create_open3d_point_cloud(point_cloud):
-    """Create a point cloud in Open3D format from NumPy array
+def _create_open3d_point_cloud(point_cloud: zivid.PointCloud) -> o3d.geometry.PointCloud:
+    """Create a point cloud in Open3D format from NumPy array.
 
     Args:
         point_cloud: Zivid point cloud
 
     Returns:
-        refined_point_cloud_open3d: Point cloud in Open3D format without Nans
-        or non finite values
+        refined_point_cloud_open3d: Point cloud in Open3D format without Nans or non finite values
 
     """
     xyz = point_cloud.copy_data("xyz")
@@ -53,7 +41,10 @@ def _create_open3d_point_cloud(point_cloud):
     return refined_point_cloud_open3d
 
 
-def _visualize_checkerboard_point_cloud_with_coordinate_system(point_cloud_open3d, transform):
+def _visualize_checkerboard_point_cloud_with_coordinate_system(
+    point_cloud_open3d: o3d.geometry.PointCloud,
+    transform: np.ndarray,
+) -> None:
     """Create a mesh of a coordinate system and visualize it with the point cloud
     of a checkerboard and the checkerboard coordinate system.
 
@@ -86,9 +77,10 @@ def _main():
         transform_camera_to_checkerboard = zivid.calibration.detect_feature_points(point_cloud).pose().to_matrix()
         print(f"Camera pose in checkerboard frame:\n{transform_camera_to_checkerboard}")
 
-        transform_file = "CameraToCheckerboardTransform.yaml"
-        print(f"Saving detected checkerboard pose to YAML file: {transform_file}")
-        _write_transform(transform_camera_to_checkerboard, transform_file)
+        transform_file_name = "CameraToCheckerboardTransform.yaml"
+        print(f"Saving detected checkerboard pose to YAML file: {transform_file_name}")
+        transform_file_path = Path(__file__).parent / transform_file_name
+        assert_affine_matrix_and_save(transform_camera_to_checkerboard, transform_file_path)
 
         print("Visualizing checkerboard with coordinate system")
         checkerboard_point_cloud = _create_open3d_point_cloud(point_cloud)

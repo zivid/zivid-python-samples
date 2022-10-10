@@ -2,6 +2,7 @@
 Read point cloud data from a ZDF file and visualize it.
 
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
+
 """
 
 from pathlib import Path

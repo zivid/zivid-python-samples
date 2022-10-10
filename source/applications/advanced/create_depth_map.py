@@ -2,6 +2,7 @@
 Read point cloud data from a ZDF file, convert it to OpenCV format, then extract and visualize depth map.
 
 The ZDF files for this sample can be found under the main instructions for Zivid samples.
+
 """
 
 from pathlib import Path
@@ -12,14 +13,14 @@ import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _point_cloud_to_cv_z(point_cloud):
+def _point_cloud_to_cv_z(point_cloud: zivid.PointCloud) -> np.ndarray:
     """Get depth map from frame.
 
     Args:
         point_cloud: Zivid point cloud
 
     Returns:
-        Depth map (HxWx1 darray)
+        depth_map_color_map: Depth map (HxWx1 ndarray)
 
     """
     depth_map = point_cloud.copy_data("z")
@@ -35,14 +36,14 @@ def _point_cloud_to_cv_z(point_cloud):
     return depth_map_color_map
 
 
-def _point_cloud_to_cv_bgr(point_cloud):
+def _point_cloud_to_cv_bgr(point_cloud: zivid.PointCloud) -> np.ndarray:
     """Get bgr image from frame.
 
     Args:
         point_cloud: Zivid point cloud
 
     Returns:
-        BGR image (HxWx3 darray)
+        bgr: BGR image (HxWx3 ndarray)
 
     """
     rgba = point_cloud.copy_data("rgba")
@@ -52,15 +53,13 @@ def _point_cloud_to_cv_bgr(point_cloud):
     return bgr
 
 
-def _visualize_and_save_image(image, image_file, window_name):
+def _visualize_and_save_image(image: np.ndarray, image_file: str, window_name: str) -> None:
     """Visualize and save image to file.
 
     Args:
-        image: BGR image (HxWx3 darray)
+        image: BGR image (HxWx3 ndarray)
         image_file: File name
         window_name: OpenCV Window name
-
-    Returns None
 
     """
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)

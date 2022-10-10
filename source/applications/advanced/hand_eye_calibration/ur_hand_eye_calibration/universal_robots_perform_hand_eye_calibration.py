@@ -14,21 +14,25 @@ must be modified to your scene. This is done in universal_robots_hand_eye_script
 
 Further explanation of this sample is found in our knowledge base:
 https://support.zivid.com/latest/academy/applications/hand-eye/ur5-robot-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
+
 """
+
 import argparse
 import datetime
 import time
 from pathlib import Path
+from typing import List, Tuple
 
 import cv2
 import numpy as np
 import zivid
 from rtde import rtde, rtde_config
+from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from scipy.spatial.transform import Rotation
 
 
-def _options():
-    """Function for taking in arguments from user
+def _options() -> argparse.Namespace:
+    """Function for taking in arguments from user.
 
     Returns:
         Arguments from user
@@ -43,38 +47,43 @@ def _options():
     return parser.parse_args()
 
 
-def _write_robot_state(con: rtde, input_data, finish_capture: bool = False, camera_ready: bool = False):
-    """Write to robot I/O registrer
+def _write_robot_state(
+    con: rtde.RTDE,
+    input_data: rtde.serialize.DataObject,
+    finish_capture: bool = False,
+    camera_ready: bool = False,
+) -> None:
+    """Write to robot I/O registers.
 
     Args:
         con: Connection between computer and robot
         input_data: Input package containing the specific input data registers
         finish_capture: Boolean value to robot_state that q_r scene capture is finished
         camera_ready: Boolean value to robot_state that camera is ready to capture images
-    """
 
+    """
     input_data.input_bit_register_64 = int(finish_capture)
     input_data.input_bit_register_65 = int(camera_ready)
 
     con.send(input_data)
 
 
-def _initialize_robot_sync(host: str):
-    """Set up communication with UR robot
+def _initialize_robot_sync(host: str) -> Tuple[rtde.RTDE, rtde.serialize.DataObject]:
+    """Set up communication with UR robot.
 
     Args:
         host: IP address
 
     Returns:
-        Connection to robot
-        Package containing the specific input data registers
+        con: Connection to robot
+        robot_input_data: Package containing the specific input data registers
 
     Raises:
-        RuntimeError: if protocol do not match
-        RuntimeError: if script is unable to configure output
-        RuntimeError: if synchronization is not possible
-    """
+        RuntimeError: If protocol do not match
+        RuntimeError: If script is unable to configure output
+        RuntimeError: If synchronization is not possible
 
+    """
     conf = rtde_config.ConfigFile(Path(Path.cwd() / "universal_robots_communication_file.xml"))
     output_names, output_types = conf.get_recipe("out")
     input_names, input_types = conf.get_recipe("in")
@@ -83,7 +92,7 @@ def _initialize_robot_sync(host: str):
     con = rtde.RTDE(host, 30004)
     con.connect()
 
-    # To ensure that the application is compatable with further versions of UR controller
+    # To ensure that the application is compatible with further versions of UR controller
     if not con.negotiate_protocol_version():
         raise RuntimeError("Protocol do not match")
 
@@ -100,30 +109,28 @@ def _initialize_robot_sync(host: str):
     return con, robot_input_data
 
 
-def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.ndarray):
-    """Save data to folder
+def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.ndarray) -> None:
+    """Save data to folder.
 
     Args:
         save_dir: Directory to save data
         image_num: Image number
         frame: Point cloud stored as .zdf
         transform: 4x4 transformation matrix
-    """
 
+    """
     frame.save(save_dir / f"img{image_num:02d}.zdf")
 
-    file_storage = cv2.FileStorage(str(save_dir / f"pos{image_num:02d}.yaml"), cv2.FILE_STORAGE_WRITE)
-    file_storage.write("PoseState", transform)
-    file_storage.release()
+    assert_affine_matrix_and_save(transform, save_dir / f"img{image_num:02d}.yaml")
 
 
-def _generate_folder():
-    """Generate folder where the dataset will be stored
+def _generate_folder() -> Path:
+    """Generate folder where the dataset will be stored.
 
     Returns:
-        Directory to where the data will be saved
-    """
+        Path: Location_dir to where the data will be saved
 
+    """
     location_dir = Path.cwd() / "datasets" / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     if not location_dir.is_dir():
@@ -132,8 +139,12 @@ def _generate_folder():
     return location_dir
 
 
-def _get_frame_and_transform_matrix(con: rtde, camera: zivid.Camera, settings: zivid.Settings):
-    """Capture image with Zivid camera and read robot pose
+def _get_frame_and_transform_matrix(
+    con: rtde,
+    camera: zivid.Camera,
+    settings: zivid.Settings,
+) -> Tuple[zivid.Frame, np.ndarray]:
+    """Capture image with Zivid camera and read robot pose.
 
     Args:
         con: Connection between computer and robot
@@ -141,10 +152,10 @@ def _get_frame_and_transform_matrix(con: rtde, camera: zivid.Camera, settings: z
         settings: Zivid settings
 
     Returns:
-        Zivid frame
-        4x4 tranformation matrix
-    """
+        frame: Zivid frame
+        transform: 4x4 transformation matrix
 
+    """
     frame = camera.capture(settings)
     robot_pose = np.array(con.receive().actual_TCP_pose)
 
@@ -158,14 +169,15 @@ def _get_frame_and_transform_matrix(con: rtde, camera: zivid.Camera, settings: z
     return frame, transform
 
 
-def _camera_settings(camera) -> zivid.Settings:
-    """Set camera settings
+def _camera_settings(camera: zivid.Camera) -> zivid.Settings:
+    """Set camera settings.
 
     Args:
         camera: Zivid camera
 
     Returns:
-        Zivid Settings
+        settings: Zivid Settings
+
     """
     suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
         max_capture_time=datetime.timedelta(milliseconds=1200),
@@ -177,50 +189,33 @@ def _camera_settings(camera) -> zivid.Settings:
     return settings
 
 
-def _read_robot_state(con: rtde):
-    """Recieve robot output recipe
+def _read_robot_state(con: rtde.RTDE) -> rtde.serialize:
+    """Receive robot output recipe.
 
     Args:
         con: Connection between computer and robot
 
     Returns:
-        Robot state
-    """
+        robot_state: Robot state
 
+    """
     robot_state = con.receive()
 
-    assert robot_state is not None, "Not able to recieve robot_state"
+    assert robot_state is not None, "Not able to receive robot_state"
 
     return robot_state
 
 
-def pose_from_datastring(datastring: str):
-    """Extract pose from yaml file saved by openCV
-
-    Args:
-        datastring: String of text from .yaml file
-
-    Returns:
-        Robotic pose as zivid Pose class
-    """
-
-    string = datastring.split("data:")[-1].strip().strip("[").strip("]")
-    pose_matrix = np.fromstring(string, dtype=np.float64, count=16, sep=",").reshape((4, 4))
-    return zivid.calibration.Pose(pose_matrix)
-
-
-def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: list):
-    """Save transformation and residuals to folder
+def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: List) -> None:
+    """Save transformation and residuals to folder.
 
     Args:
         save_dir: Path to where data will be saved
         transform: 4x4 transformation matrix
         residuals: List of residuals
-    """
 
-    file_storage_transform = cv2.FileStorage(str(save_dir / "transformation.yaml"), cv2.FILE_STORAGE_WRITE)
-    file_storage_transform.write("PoseState", transform)
-    file_storage_transform.release()
+    """
+    assert_affine_matrix_and_save(transform, save_dir / "handEyeTransform.yaml")
 
     file_storage_residuals = cv2.FileStorage(str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE)
     residual_list = []
@@ -235,40 +230,42 @@ def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: lis
     file_storage_residuals.release()
 
 
-def _image_count(robot_state):
-    """Read robot output register 24
+def _image_count(robot_state) -> int:
+    """Read robot output register 24.
 
     Args:
         robot_state: Robot state
 
     Returns:
         Number of captured images
+
     """
     return robot_state.output_int_register_24
 
 
-def _ready_for_capture(robot_state):
-    """Read robot output register 64
+def _ready_for_capture(robot_state) -> bool:
+    """Read robot output register 64.
 
     Args:
         robot_state: Robot state
 
     Returns:
         Boolean value that states if camera is ready to capture
+
     """
     return robot_state.output_bit_register_64
 
 
-def _verify_good_capture(frame: zivid.Frame):
-    """Verify that checkeroard featurepoints are detected in the frame
+def _verify_good_capture(frame: zivid.Frame) -> None:
+    """Verify that checkerboard feature-points are detected in the frame.
 
     Args:
         frame: Zivid frame containing point cloud
 
     Raises:
         RuntimeError: If no feature points are detected in frame
-    """
 
+    """
     point_cloud = frame.point_cloud()
     detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
@@ -277,16 +274,16 @@ def _verify_good_capture(frame: zivid.Frame):
 
 
 def _capture_one_frame_and_robot_pose(
-    con: rtde,
+    con: rtde.RTDE,
     camera: zivid.Camera,
     settings: zivid.Settings,
     save_dir: Path,
-    input_data,
+    input_data: rtde.serialize.DataObject,
     image_num: int,
     ready_to_capture: bool,
-):
+) -> None:
     """Capture 3D image and robot pose for a given robot posture,
-    then signals robot to move to next posture
+    then signals robot to move to next posture.
 
     Args:
         con: Connection between computer and robot
@@ -296,8 +293,8 @@ def _capture_one_frame_and_robot_pose(
         input_data: Input package containing the specific input data registers
         image_num: Image number
         ready_to_capture: Boolean value to robot_state that camera is ready to capture images
-    """
 
+    """
     frame, transform = _get_frame_and_transform_matrix(con, camera, settings)
     _verify_good_capture(frame)
 
@@ -309,17 +306,17 @@ def _capture_one_frame_and_robot_pose(
     print("Image and pose saved")
 
 
-def _generate_dataset(con: rtde, input_data):
-    """Generate dataset based on predefined robot poses
+def _generate_dataset(con: rtde.RTDE, input_data: rtde.serialize.DataObject) -> Path:
+    """Generate dataset based on predefined robot poses.
 
     Args:
         con: Connection between computer and robot
         input_data: Input package containing the specific input data registers
 
     Returns:
-        Directory to where dataset is saved
-    """
+        Path: Save_dir to where dataset is saved
 
+    """
     with zivid.Application() as app:
         with app.connect_camera() as camera:
 
@@ -367,20 +364,24 @@ def _generate_dataset(con: rtde, input_data):
     return save_dir
 
 
-def perform_hand_eye_calibration(mode: str, data_dir: Path):
-    """Perform had-eye calibration based on mode
+def perform_hand_eye_calibration(
+    mode: str,
+    data_dir: Path,
+) -> Tuple[np.ndarray, List[zivid.calibration.HandEyeResidual]]:
+    """Perform had-eye calibration based on mode.
 
     Args:
         mode: Calibration mode, eye-in-hand or eye-to-hand
         data_dir: Path to dataset
 
     Returns:
-        4x4 transformation matrix
-        List of residuals
+        transform: 4x4 transformation matrix
+        residuals: List of residuals
 
     Raises:
         RuntimeError: If no feature points are detected
         ValueError: If calibration mode is invalid
+
     """
     # setup zivid
     with zivid.Application():
@@ -388,21 +389,20 @@ def perform_hand_eye_calibration(mode: str, data_dir: Path):
         calibration_inputs = []
         idata = 1
         while True:
-            frame_file = data_dir / f"img{idata:02d}.zdf"
-            pose_file = data_dir / f"pos{idata:02d}.yaml"
+            frame_file_path = data_dir / f"img{idata:02d}.zdf"
+            pose_file_path = data_dir / f"pos{idata:02d}.yaml"
 
-            if frame_file.is_file() and pose_file.is_file():
+            if frame_file_path.is_file() and pose_file_path.is_file():
 
                 print(f"Detect feature points from img{idata:02d}.zdf")
-                point_cloud = zivid.Frame(frame_file).point_cloud()
+                point_cloud = zivid.Frame(frame_file_path).point_cloud()
                 detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
                 if not detection_result.valid():
-                    raise RuntimeError(f"Failed to detect feature points from frame {frame_file}")
+                    raise RuntimeError(f"Failed to detect feature points from frame {frame_file_path}")
 
                 print(f"Read robot pose from pos{idata:02d}.yaml")
-                with open(pose_file, encoding="utf-8") as file:
-                    pose = pose_from_datastring(file.read())
+                pose = load_and_assert_affine_matrix(pose_file_path)
 
                 calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
             else:

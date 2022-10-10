@@ -1,6 +1,9 @@
 """
 Display relevant data for Zivid Samples.
+
 """
+
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,15 +11,13 @@ import open3d as o3d
 from zivid import PointCloud
 
 
-def display_rgb(rgb, title="RGB image", block=True):
+def display_rgb(rgb: np.ndarray, title: str = "RGB image", block: bool = True) -> None:
     """Display RGB image.
 
     Args:
-        rgb: RGB image (HxWx3 darray)
+        rgb: RGB image (HxWx3 ndarray)
         title: Image title
-        block: Whether to wait for the figure to be closed before returning
-
-    Returns None
+        block: Stops the running program until the windows is closed
 
     """
     plt.figure()
@@ -25,14 +26,12 @@ def display_rgb(rgb, title="RGB image", block=True):
     plt.show(block=block)
 
 
-def display_depthmap(xyz, block=True):
+def display_depthmap(xyz: np.ndarray, block: bool = True) -> None:
     """Create and display depthmap.
 
     Args:
-        xyz: X, Y and Z images (point cloud co-ordinates)
-        block: Whether to wait for the figure to be closed before returning
-
-    Returns None
+        xyz: A numpy array of X, Y and Z point cloud coordinates
+        block: Stops the running program until the windows is closed
 
     """
     plt.figure()
@@ -47,15 +46,13 @@ def display_depthmap(xyz, block=True):
     plt.show(block=block)
 
 
-def display_pointcloud(xyz, rgb, normals=None):
+def display_pointcloud(xyz: np.ndarray, rgb: np.ndarray, normals: Optional[np.ndarray] = None) -> None:
     """Display point cloud provided from 'xyz' with colors from 'rgb'.
 
     Args:
         rgb: RGB image
-        xyz: X, Y and Z images (point cloud co-ordinates)
-        normals: ordered array of normal vectors, mapped to xyz
-
-    Returns None
+        xyz: A numpy array of X, Y and Z point cloud coordinates
+        normals: Ordered array of normal vectors, mapped to xyz
 
     """
     xyz = np.nan_to_num(xyz).reshape(-1, 3)
@@ -87,14 +84,15 @@ def display_pointcloud(xyz, rgb, normals=None):
     visualizer.destroy_window()
 
 
-def display_pointcloud_with_downsampled_normals(point_cloud: PointCloud, downsampling: PointCloud.Downsampling):
-    """Display point cloud with downsampled normals
+def display_pointcloud_with_downsampled_normals(
+    point_cloud: PointCloud,
+    downsampling: PointCloud.Downsampling,
+) -> None:
+    """Display point cloud with downsampled normals.
 
     Args:
-        point_cloud: a Zivid point cloud handle
-        downsampling: a valid Zivid downsampling factor to apply to normals
-
-    Returns None
+        point_cloud: A Zivid point cloud handle
+        downsampling: A valid Zivid downsampling factor to apply to normals
 
     """
     rgb = point_cloud.copy_data("rgba")[:, :, :3]

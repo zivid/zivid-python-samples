@@ -3,6 +3,7 @@ Cover the same dynamic range in a scene with different acquisition settings to o
 
 The camera captures multi-acquisition HDR point clouds in a loop, with settings from YML files.
 The YML files for this sample can be found under the main Zivid sample instructions.
+
 """
 
 from pathlib import Path

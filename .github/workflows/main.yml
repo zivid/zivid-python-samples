@@ -2,40 +2,42 @@ name: Main CI workflow
 # Note: If the workflow name is changed, the CI badge URL in the README must also be updated
 
 on:
-  push: # Push trigger runs on any pushed branch.
-  schedule: # Scheduled trigger runs on the latest commit on the default branch.
-    - cron: "0 22 * * *"
+    push: # Push trigger runs on any pushed branch.
+    schedule: # Scheduled trigger runs on the latest commit on the default branch.
+        - cron: "0 22 * * *"
 
 jobs:
-  Linux-Setup:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: ["ubuntu:18.04", "ubuntu:20.04"]
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Setup on ${{matrix.os}}
-        run: |
-          docker run \
-            --volume $PWD:/host \
-            --workdir /host/continuous-integration \
-            --env "PYTHONDONTWRITEBYTECODE=1" \
-            ${{matrix.os}} \
-            bash -c "./setup.sh"
-  Linux-Setup-and-Lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: ["ubuntu:18.04"]
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Setup and lint on ${{matrix.os}}
-        run: |
-          docker run \
-            --volume $PWD:/host \
-            --workdir /host/continuous-integration \
-            --env "PYTHONDONTWRITEBYTECODE=1" \
-            ${{matrix.os}} \
-            bash -c "./setup.sh && ./lint.sh"
+    ubuntu-setup:
+        name: Ubuntu setup
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                ubuntu-version: ["ubuntu:18.04", "ubuntu:20.04"]
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v2
+            - name: Setup on ${{matrix.ubuntu-version}}
+              run: |
+                  docker run \
+                      --volume $PWD:/host \
+                      --workdir /host/continuous-integration \
+                      --env "PYTHONDONTWRITEBYTECODE=1" \
+                      ${{matrix.ubuntu-version}} \
+                      bash -c "./setup.sh"
+    ubuntu-setup-and-lint:
+        name: Ubuntu setup and lint
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                ubuntu-version: ["ubuntu:18.04"]
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v2
+            - name: Setup and lint on ${{matrix.ubuntu-version}}
+              run: |
+                  docker run \
+                      --volume $PWD:/host \
+                      --workdir /host/continuous-integration \
+                      --env "PYTHONDONTWRITEBYTECODE=1" \
+                      ${{matrix.ubuntu-version}} \
+                      bash -c "./setup.sh && ./lint.sh"

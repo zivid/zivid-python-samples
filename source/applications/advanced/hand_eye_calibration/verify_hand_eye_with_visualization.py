@@ -18,24 +18,26 @@ directory where this sample is stored. You can open the PLY point clouds
 in MeshLab for visual inspection.
 
 """
+
 import argparse
 from pathlib import Path
+from typing import List
 
-import cv2
 import numpy as np
 import open3d as o3d
 import zivid
+from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
 
-def _filter_checkerboard_roi(xyz, centroid):
+def _filter_checkerboard_roi(xyz: np.ndarray, centroid: np.ndarray) -> np.ndarray:
     """Filters out the data outside the region of interest defined by the checkerboard centroid.
 
     Args:
-        xyz: a numpy array of X, Y and Z point cloud coordinates.
-        centroid: a numpy array of X, Y and Z checkerboard centroid coordinates.
+        xyz: A numpy array of X, Y and Z point cloud coordinates
+        centroid: A numpy array of X, Y and Z checkerboard centroid coordinates
 
     Returns:
-        xyz: a numpy array of X, Y and Z point cloud coordinates within the region of interest.
+        xyz: A numpy array of X, Y and Z point cloud coordinates within the region of interest
 
     """
     # the longest distance from the checkerboard centroid to the calibration board corner is < 245 mm
@@ -63,35 +65,15 @@ def _args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _read_transform(transform_file):
-    """Read transformation matrix from a YAML file.
+def _create_open3d_point_cloud(rgba: np.ndarray, xyz: np.ndarray) -> o3d.geometry.PointCloud:
+    """Creates a point cloud in Open3D format from NumPy array.
 
     Args:
-        transform_file: Path to the YAML file
+        xyz: A numpy array of X, Y and Z point cloud coordinates
+        rgba: A numpy array of R, G and B point cloud pixels
 
     Returns:
-        transform: Transformation matrix
-
-    """
-    file_storage = cv2.FileStorage(str(transform_file), cv2.FILE_STORAGE_READ)
-    transform = file_storage.getNode("PoseState").mat()
-    file_storage.release()
-
-    if transform is None:
-        raise Exception("No transform found on the provided path!")
-
-    return transform
-
-
-def _create_open3d_point_cloud(rgba, xyz):
-    """Creates a point cloud in Open3D format from NumPy array
-
-    Args:
-        xyz: a numpy array of X, Y and Z point cloud coordinates
-        rgba: a numpy array of R, G and B point cloud pixels
-
-    Returns:
-        refined_point_cloud_open3d: point cloud in Open3D format without Nans
+        refined_point_cloud_open3d: Point cloud in Open3D format without Nans
         or non finite values
 
     """
@@ -108,19 +90,24 @@ def _create_open3d_point_cloud(rgba, xyz):
     return refined_point_cloud_open3d
 
 
-def _path_list_creator(path, file_prefix_name, number_of_digits_zfill, file_suffix_name):
+def _path_list_creator(
+    path: Path,
+    file_prefix_name: str,
+    number_of_digits_zfill: int,
+    file_suffix_name: str,
+) -> List[Path]:
     """Creates a list of paths where the files have a predefined prefix,
         an incremental number and a predefined suffix on their name,
         respectively. Eg.: img01.zdf
 
     Args:
-        path: a path that leads to the files directory
-        file_prefix_name: a string that comes before the number
-        number_of_digits_zfill: a number of digits in the number
-        file_suffix_name: a string that comes after the number
+        path: A path that leads to the files directory
+        file_prefix_name: A string that comes before the number
+        number_of_digits_zfill: A number of digits in the number
+        file_suffix_name: A string that comes after the number
 
     Returns:
-        list_of_paths: list of appended paths
+        list_of_paths: List of appended paths
 
     """
     num = 1
@@ -168,7 +155,7 @@ def _main():
 
         with zivid.Application():
 
-            hand_eye_transform = _read_transform(path / "transformation.yaml")
+            hand_eye_transform = load_and_assert_affine_matrix(path / "handEyeTransform.yaml")
 
             number_of_dataset_pairs = len(list_of_paths_to_hand_eye_dataset_point_clouds)
 
@@ -181,7 +168,7 @@ def _main():
                 # Reading point cloud from file
                 point_cloud = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id]).point_cloud()
 
-                robot_pose = _read_transform(list_of_paths_to_hand_eye_dataset_robot_poses[data_pair_id])
+                robot_pose = load_and_assert_affine_matrix(list_of_paths_to_hand_eye_dataset_robot_poses[data_pair_id])
 
                 # Transforms point cloud to the robot end-effector frame
                 if robot_camera_configuration.lower() == "eth":

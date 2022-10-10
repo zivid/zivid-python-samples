@@ -1,5 +1,6 @@
 """
 Use Capture Assistant to capture point clouds, with color, from the Zivid camera.
+
 """
 
 import datetime

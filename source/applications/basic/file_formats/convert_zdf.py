@@ -7,6 +7,7 @@ Available formats:
     .ply - Polygon File Format
     .csv,.txt - [X, Y, Z, r, g, b, SNR]
     .png,.jpg,.bmp,.tiff - 2D RGB image
+
 """
 
 import argparse
@@ -17,7 +18,13 @@ import numpy as np
 import zivid
 
 
-def _options():
+def _options() -> argparse.Namespace:
+    """Function for taking in arguments from user.
+
+    Returns:
+        Argument from user
+
+    """
     parser = argparse.ArgumentParser(
         description="Convert from a ZDF to your preferred format\
             \nExample:\n\t $ python convert_zdf.py --ply Zivid3D.zdf",
@@ -41,14 +48,14 @@ def _options():
     return parser.parse_args()
 
 
-def _flatten_point_cloud(point_cloud):
+def _flatten_point_cloud(point_cloud: zivid.PointCloud) -> np.ndarray:
     """Convert from point cloud to flattened point cloud (with numpy).
 
     Args:
-        point_cloud: a handle to point cloud in the GPU memory
+        point_cloud: A handle to point cloud in the GPU memory
 
     Returns:
-        2D numpy array, with 8 columns and npixels rows
+        A 2D numpy array, with 8 columns and npixels rows
 
     """
     # Convert to numpy 3D array
@@ -60,42 +67,36 @@ def _flatten_point_cloud(point_cloud):
     return flattened_point_cloud[~np.isnan(flattened_point_cloud[:, 0]), :]
 
 
-def _convert_2_ply(frame, file_name: str):
+def _convert_2_ply(frame: zivid.Frame, file_name: str) -> None:
     """Convert from frame to ply.
 
     Args:
-        frame: A frame captured by a Zivid camera.
+        frame: A frame captured by a Zivid camera
         file_name: File name without extension
-
-    Returns None
 
     """
     print(f"Saving the frame to {file_name}.ply")
     frame.save(f"{file_name}.ply")
 
 
-def _convert_2_csv(point_cloud, file_name: str):
+def _convert_2_csv(point_cloud: zivid.PointCloud, file_name: str) -> None:
     """Convert from point cloud to csv or txt.
 
     Args:
-        point_cloud: a handle to point cloud in the GPU memory
+        point_cloud: A handle to point cloud in the GPU memory
         file_name: File name with extension
-
-    Returns None
 
     """
     print(f"Saving the frame to {file_name}")
     np.savetxt(file_name, _flatten_point_cloud(point_cloud), delimiter=",", fmt="%.3f")
 
 
-def _convert_2_2d(point_cloud, file_name: str):
+def _convert_2_2d(point_cloud: zivid.PointCloud, file_name: str) -> None:
     """Convert from point cloud to 2D image.
 
     Args:
-        point_cloud: a handle to point cloud in the GPU memory
+        point_cloud: A handle to point cloud in the GPU memory
         file_name: File name without extension
-
-    Returns None
 
     """
     print(f"Saving the frame to {file_name}")
