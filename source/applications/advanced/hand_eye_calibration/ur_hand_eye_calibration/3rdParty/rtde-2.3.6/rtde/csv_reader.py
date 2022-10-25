@@ -50,7 +50,7 @@ class CSVReader(object):
         reader = csv.reader(csvfile, delimiter=delimiter)
         header = self.get_header_data(reader)
 
-        # read csv file
+        # read CSV file
         data = [row for row in reader]
 
         if len(data) == 0:

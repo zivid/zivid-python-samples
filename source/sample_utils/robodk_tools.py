@@ -6,7 +6,7 @@ It can be used to connect to the specified robot, get a list of targets and set 
 """
 from typing import Any, List, Tuple
 
-from robolink import ITEM_TYPE_ROBOT, RUNMODE_RUN_ROBOT, Item, Robolink
+from robodk.robolink import ITEM_TYPE_ROBOT, RUNMODE_RUN_ROBOT, Item, Robolink
 
 
 def connect_to_robot(robot_ip: str) -> Tuple[Any, Any]:

@@ -21,7 +21,3 @@ Note: The recommended Python version for these samples is 3.8.
 3. [Install RoboDK](https://robodk.com/download)
 
 4. [Install RoboDK python](https://pypi.org/project/robodk/)
-
-Other requirements can be installed using the following command:
-
-    pip install -r requirements.txt
