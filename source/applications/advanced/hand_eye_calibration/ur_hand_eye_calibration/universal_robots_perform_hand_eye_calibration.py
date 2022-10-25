@@ -115,7 +115,7 @@ def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, trans
     Args:
         save_dir: Directory to save data
         image_num: Image number
-        frame: Point cloud stored as .zdf
+        frame: Point cloud stored as ZDF
         transform: 4x4 transformation matrix
 
     """

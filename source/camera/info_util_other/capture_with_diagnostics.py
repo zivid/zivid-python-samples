@@ -1,13 +1,14 @@
 """
 Capture point clouds, with color, from the Zivid camera, with settings from YML file and diagnostics enabled.
 
-Enabling diagnostics allows collecting additional data to be saved in the zdf file.
-Send zdf files with diagnostics enabled to the Zivid support team to allow more thorough troubleshooting.
+Enabling diagnostics allows collecting additional data to be saved in the ZDF file.
+Send ZDF files with diagnostics enabled to the Zivid support team to allow more thorough troubleshooting.
 Have in mind that enabling diagnostics increases the capture time and the RAM usage.
 
 The YML file for this sample can be found under the main instructions for Zivid samples.
 
 """
+
 
 from pathlib import Path
 

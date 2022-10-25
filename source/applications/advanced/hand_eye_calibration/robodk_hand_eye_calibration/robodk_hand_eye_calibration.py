@@ -25,8 +25,8 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import zivid
-from robolink import Item
-from robot_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
+from robodk.robolink import Item
+from sample_utils.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from zivid.capture_assistant import SuggestSettingsParameters
 
@@ -76,7 +76,7 @@ def _save_point_cloud_and_pose(
     Args:
         save_directory: Path to where data will be saved
         image_and_pose_iterator: Image number
-        frame: Point cloud stored as .zdf
+        frame: Point cloud stored as ZDF
         transform: 4x4 transformation matrix
 
     """
@@ -156,7 +156,7 @@ def save_hand_eye_results(save_directory: Path, transform: np.ndarray, residuals
 
 def generate_hand_eye_dataset(app: zivid.application, robot: Item, targets: List) -> Path:
     """Generate dataset of pairs of robot poses and point clouds containing calibration target.
-    This dataset is composed of pairs of yml and zdf files respectively.
+    This dataset is composed of pairs of YML and ZDF files respectively.
 
     Args:
         app: Zivid application instance
@@ -218,8 +218,11 @@ def perform_hand_eye_calibration(
         dataset_directory: Path to dataset
 
     Returns:
-        Tuple:  - 4x4 transformation matrix
-                - List of residuals
+        transform: 4x4 transformation matrix
+        residuals: List of residuals
+
+    Raises:
+        ValueError: Invalid calibration type
 
     """
     with zivid.Application():
@@ -286,9 +289,8 @@ def options() -> argparse.Namespace:
     parser.add_argument(
         "--target-keyword",
         required=True,
-        help="This is the keyword shared for naming all poses used for hand-eye dataset, i.e. pose in 'pose 1, pose 2, pose 3",
+        help='This is the keyword shared for naming all poses used for hand-eye dataset, i.e. if we have: "Target 1", "Target 2", ... , "Target N". Then we should use "Target"',
     )
-
     return parser.parse_args()
 
 
@@ -299,7 +301,9 @@ def _main():
     user_options = options()
 
     rdk, robot = connect_to_robot(user_options.ip)
+
     targets = get_robot_targets(rdk, user_options.target_keyword)
+
     #  NOTE! Verify safe operation speeds and accelerations for your robot
     robot_speed_accel_limits = [100, 100, 50, 50]
     set_robot_speed_and_acceleration(robot, *robot_speed_accel_limits)

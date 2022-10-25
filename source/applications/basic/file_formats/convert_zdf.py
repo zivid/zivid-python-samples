@@ -1,12 +1,12 @@
 """
-Convert point cloud data from a ZDF file to your preferred format (.ply, .csv, .txt, .png, .jpg, .bmp, .tiff).
+Convert point cloud data from a ZDF file to your preferred format (PLY, CSV, TXT, PNG, JPG, BMP, TIFF).
 
 Example: $ python convert_zdf.py --ply Zivid3D.zdf
 
 Available formats:
-    .ply - Polygon File Format
-    .csv,.txt - [X, Y, Z, r, g, b, SNR]
-    .png,.jpg,.bmp,.tiff - 2D RGB image
+    PLY - Polygon File Format
+    CSV, TXT - [X, Y, Z, r, g, b, SNR]
+    PNG, JPG, BMP, TIFF - 2D RGB image
 
 """
 
@@ -68,7 +68,7 @@ def _flatten_point_cloud(point_cloud: zivid.PointCloud) -> np.ndarray:
 
 
 def _convert_2_ply(frame: zivid.Frame, file_name: str) -> None:
-    """Convert from frame to ply.
+    """Convert from frame to PLY.
 
     Args:
         frame: A frame captured by a Zivid camera
@@ -80,7 +80,7 @@ def _convert_2_ply(frame: zivid.Frame, file_name: str) -> None:
 
 
 def _convert_2_csv(point_cloud: zivid.PointCloud, file_name: str) -> None:
-    """Convert from point cloud to csv or txt.
+    """Convert from point cloud to CSV or TXT.
 
     Args:
         point_cloud: A handle to point cloud in the GPU memory

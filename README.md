@@ -83,8 +83,7 @@ from the camera can be used.
                 it.
           - **file\_formats**
               - [convert\_zdf](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/convert_zdf.py) - Convert point cloud data from a ZDF file to your
-                preferred format (.ply, .csv, .txt, .png, .jpg, .bmp,
-                .tiff).
+                preferred format (PLY, CSV, TXT, PNG, JPG, BMP, TIFF).
               - [read\_iterate\_zdf](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py) - Read point cloud data from a ZDF file, iterate through
                 it, and extract individual points.
       - **advanced**
@@ -100,6 +99,8 @@ from the camera can be used.
             mask, and visualize it.
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
             to the Zivid Calibration Board.
+          - [verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/verify_hand_eye_calibration/verify_hand_eye_calibration.py) - suggest\_settings\_parameters =
+            zivid.capture\_assistant.SuggestSettingsParameters(
           - **hand\_eye\_calibration**
               - [pose\_conversions](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/pose_conversions.py) - Convert to/from Transformation Matrix (Rotation Matrix
                 + Translation Vector).
@@ -116,12 +117,9 @@ from the camera can be used.
   - **sample\_utils**
       - [display](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/display.py) - Display relevant data for Zivid Samples.
       - [paths](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
+      - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/robodk_tools.py) - Robot Control Module
       - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/save_load_matrix.py) - \# Checks if matrix is affine
-  - **applications**
-      - **advanced**
-          - **hand\_eye\_calibration**
-              - **robodk\_hand\_eye\_calibration**
-                  - [robot\_tools](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robot_tools.py) - Robot Control Module
+      - [transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/transformation_matrix.py) - translation: np.ndarray = np.array((0, 0, 0))
 
 ## Installation
 
