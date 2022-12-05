@@ -48,7 +48,7 @@ def _filter_checkerboard_roi(xyz: np.ndarray, centroid: np.ndarray) -> np.ndarra
     return xyz
 
 
-def _args() -> argparse.Namespace:
+def _options() -> argparse.Namespace:
     """Function for taking in arguments from user.
 
     Returns:
@@ -125,35 +125,35 @@ def _path_list_creator(
         num = num + 1
 
 
-def _main():
+def _main() -> None:
 
-    while True:
-        robot_camera_configuration = input(
-            "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
-        ).strip()
-        if robot_camera_configuration.lower() == "eth" or robot_camera_configuration.lower() == "eih":
-            break
-        print("Entered unknown Hand-Eye calibration type")
+    with zivid.Application():
 
-    args = _args()
-    path = args.input_path
+        while True:
+            robot_camera_configuration = input(
+                "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
+            ).strip()
+            if robot_camera_configuration.lower() == "eth" or robot_camera_configuration.lower() == "eih":
+                break
+            print("Entered unknown Hand-Eye calibration type")
 
-    list_of_paths_to_hand_eye_dataset_point_clouds = _path_list_creator(path, "img", 2, ".zdf")
+        args = _options()
+        path = args.input_path
 
-    list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
+        list_of_paths_to_hand_eye_dataset_point_clouds = _path_list_creator(path, "img", 2, ".zdf")
 
-    if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
-        raise Exception("The number of point clouds (ZDF iles) and robot poses (YAML files) must be the same")
+        list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
 
-    if len(list_of_paths_to_hand_eye_dataset_robot_poses) == 0:
-        raise Exception("There are no robot poses (YAML files) in the data folder")
+        if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
+            raise Exception("The number of point clouds (ZDF iles) and robot poses (YAML files) must be the same")
 
-    if len(list_of_paths_to_hand_eye_dataset_point_clouds) == 0:
-        raise Exception("There are no point clouds (ZDF files) in the data folder")
+        if len(list_of_paths_to_hand_eye_dataset_robot_poses) == 0:
+            raise Exception("There are no robot poses (YAML files) in the data folder")
 
-    if len(list_of_paths_to_hand_eye_dataset_robot_poses) == len(list_of_paths_to_hand_eye_dataset_point_clouds):
+        if len(list_of_paths_to_hand_eye_dataset_point_clouds) == 0:
+            raise Exception("There are no point clouds (ZDF files) in the data folder")
 
-        with zivid.Application():
+        if len(list_of_paths_to_hand_eye_dataset_robot_poses) == len(list_of_paths_to_hand_eye_dataset_point_clouds):
 
             hand_eye_transform = load_and_assert_affine_matrix(path / "handEyeTransform.yaml")
 
@@ -198,14 +198,14 @@ def _main():
                     # Appending the Open3D point cloud to a list for visualization
                     list_of_open_3d_point_clouds.append(point_cloud_open3d)
 
-    print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100.0%")
-    print("\nAll done!\n")
+        print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100.0%")
+        print("\nAll done!\n")
 
-    if data_pair_id > 1:
-        print("Visualizing transformed point clouds\n")
-        o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
-    else:
-        raise Exception("Not enought data!")
+        if data_pair_id > 1:
+            print("Visualizing transformed point clouds\n")
+            o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
+        else:
+            raise Exception("Not enought data!")
 
 
 if __name__ == "__main__":

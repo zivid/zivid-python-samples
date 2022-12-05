@@ -105,7 +105,7 @@ def _convert_2_2d(point_cloud: zivid.PointCloud, file_name: str) -> None:
     cv2.imwrite(file_name, bgr)
 
 
-def _main():
+def _main() -> None:
     user_options = _options()
 
     file_path = Path(user_options.filename)

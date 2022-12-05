@@ -12,7 +12,7 @@ import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     # The file_camera file is in Zivid Sample Data. See instructions in README.md

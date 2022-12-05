@@ -71,7 +71,7 @@ def roi_box_point_cloud(
     return masked_xyz, masked_rgba
 
 
-def _main():
+def _main() -> None:
 
     with zivid.Application():
 

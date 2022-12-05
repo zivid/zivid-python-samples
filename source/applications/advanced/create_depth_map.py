@@ -70,7 +70,7 @@ def _visualize_and_save_image(image: np.ndarray, image_file: str, window_name: s
     cv2.imwrite(image_file, image)
 
 
-def _main():
+def _main() -> None:
 
     with zivid.Application():
 

@@ -33,7 +33,7 @@ def _print_normals(radius: int, normals: np.ndarray) -> None:
     print(line_separator)
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

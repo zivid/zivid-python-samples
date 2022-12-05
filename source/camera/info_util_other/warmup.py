@@ -9,7 +9,7 @@ from time import sleep
 import zivid
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

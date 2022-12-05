@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import numpy as np
+import zivid
 from sample_utils.paths import get_sample_data_path
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from scipy.spatial.transform import Rotation as R
@@ -214,45 +215,48 @@ def print_header(txt: str) -> None:
     print(f"{'*' * terminal_width}")
 
 
-def _main():
-    np.set_printoptions(precision=4, suppress=True)
-    print_header("This example shows conversions to/from Transformation Matrix")
+def _main() -> None:
 
-    transformation_matrix = load_and_assert_affine_matrix(get_sample_data_path() / "RobotTransform.yaml")
-    print(f"Transformation Matrix:\n{transformation_matrix}")
+    with zivid.Application():
 
-    # Extract Rotation Matrix and Translation Vector from Transformation Matrix
-    print(f"Rotation Matrix:\n{transformation_matrix[:3,:3]}")
-    print(f"Translation Vector:\n{transformation_matrix[:-1, -1]}")
+        np.set_printoptions(precision=4, suppress=True)
+        print_header("This example shows conversions to/from Transformation Matrix")
 
-    ###
-    # Convert from Zivid to Robot (Transformation Matrix --> any format)
-    ###
-    print_header("Convert from Zivid (Rotation Matrix) to Robot")
-    axis_angle = rotation_matrix_to_axis_angle(transformation_matrix[:3, :3])
-    print(f"AxisAngle:\n{axis_angle.axis}, {axis_angle.angle:.4f}")
-    rotation_vector = rotation_matrix_to_rotation_vector(transformation_matrix[:3, :3])
-    print(f"Rotation Vector:\n{rotation_vector}")
-    quaternion = rotation_matrix_to_quaternion(transformation_matrix[:3, :3])
-    print(f"Quaternion:\n{quaternion}")
-    rpy_list = rotation_matrix_to_roll_pitch_yaw(transformation_matrix[:3, :3])
+        transformation_matrix = load_and_assert_affine_matrix(get_sample_data_path() / "RobotTransform.yaml")
+        print(f"Transformation Matrix:\n{transformation_matrix}")
 
-    ###
-    # Convert from Robot to Zivid (any format --> Rotation Matrix (part of Transformation Matrix))
-    ###
-    print_header("Convert from Robot to Zivid (Rotation Matrix)")
-    rotation_matrix = axis_angle_to_rotation_matrix(axis_angle)
-    print(f"Rotation Matrix from Axis Angle:\n{rotation_matrix}")
-    rotation_matrix = rotation_vector_to_rotation_matrix(rotation_vector)
-    print(f"Rotation Matrix from Rotation Vector:\n{rotation_matrix}")
-    rotation_matrix = quaternion_to_rotation_matrix(quaternion)
-    print(f"Rotation Matrix from Quaternion:\n{rotation_matrix}")
-    roll_pitch_yaw_to_rotation_matrix(rpy_list)
+        # Extract Rotation Matrix and Translation Vector from Transformation Matrix
+        print(f"Rotation Matrix:\n{transformation_matrix[:3,:3]}")
+        print(f"Translation Vector:\n{transformation_matrix[:-1, -1]}")
 
-    # Replace rotation matrix in transformation matrix
-    transformation_matrix[:3, :3] = rotation_matrix
-    # Save transformation matrix which has passed through quaternion representation
-    assert_affine_matrix_and_save(transformation_matrix, Path(__file__).parent / "RobotTransformOut.yaml")
+        ###
+        # Convert from Zivid to Robot (Transformation Matrix --> any format)
+        ###
+        print_header("Convert from Zivid (Rotation Matrix) to Robot")
+        axis_angle = rotation_matrix_to_axis_angle(transformation_matrix[:3, :3])
+        print(f"AxisAngle:\n{axis_angle.axis}, {axis_angle.angle:.4f}")
+        rotation_vector = rotation_matrix_to_rotation_vector(transformation_matrix[:3, :3])
+        print(f"Rotation Vector:\n{rotation_vector}")
+        quaternion = rotation_matrix_to_quaternion(transformation_matrix[:3, :3])
+        print(f"Quaternion:\n{quaternion}")
+        rpy_list = rotation_matrix_to_roll_pitch_yaw(transformation_matrix[:3, :3])
+
+        ###
+        # Convert from Robot to Zivid (any format --> Rotation Matrix (part of Transformation Matrix))
+        ###
+        print_header("Convert from Robot to Zivid (Rotation Matrix)")
+        rotation_matrix = axis_angle_to_rotation_matrix(axis_angle)
+        print(f"Rotation Matrix from Axis Angle:\n{rotation_matrix}")
+        rotation_matrix = rotation_vector_to_rotation_matrix(rotation_vector)
+        print(f"Rotation Matrix from Rotation Vector:\n{rotation_matrix}")
+        rotation_matrix = quaternion_to_rotation_matrix(quaternion)
+        print(f"Rotation Matrix from Quaternion:\n{rotation_matrix}")
+        roll_pitch_yaw_to_rotation_matrix(rpy_list)
+
+        # Replace rotation matrix in transformation matrix
+        transformation_matrix[:3, :3] = rotation_matrix
+        # Save transformation matrix which has passed through quaternion representation
+        assert_affine_matrix_and_save(transformation_matrix, Path(__file__).parent / "RobotTransformOut.yaml")
 
 
 if __name__ == "__main__":

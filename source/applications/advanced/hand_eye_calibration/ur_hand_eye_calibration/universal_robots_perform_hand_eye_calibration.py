@@ -121,7 +121,7 @@ def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, trans
     """
     frame.save(save_dir / f"img{image_num:02d}.zdf")
 
-    assert_affine_matrix_and_save(transform, save_dir / f"img{image_num:02d}.yaml")
+    assert_affine_matrix_and_save(transform, save_dir / f"pos{image_num:02d}.yaml")
 
 
 def _generate_folder() -> Path:
@@ -306,10 +306,11 @@ def _capture_one_frame_and_robot_pose(
     print("Image and pose saved")
 
 
-def _generate_dataset(con: rtde.RTDE, input_data: rtde.serialize.DataObject) -> Path:
+def _generate_dataset(app: zivid.Application, con: rtde.RTDE, input_data: rtde.serialize.DataObject) -> Path:
     """Generate dataset based on predefined robot poses.
 
     Args:
+        app: Zivid application instance
         con: Connection between computer and robot
         input_data: Input package containing the specific input data registers
 
@@ -317,42 +318,41 @@ def _generate_dataset(con: rtde.RTDE, input_data: rtde.serialize.DataObject) -> 
         Path: Save_dir to where dataset is saved
 
     """
-    with zivid.Application() as app:
-        with app.connect_camera() as camera:
+    with app.connect_camera() as camera:
 
-            settings = _camera_settings(camera)
-            save_dir = _generate_folder()
+        settings = _camera_settings(camera)
+        save_dir = _generate_folder()
 
-            # Signal robot that camera is ready
-            ready_to_capture = True
-            _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
+        # Signal robot that camera is ready
+        ready_to_capture = True
+        _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
 
+        robot_state = _read_robot_state(con)
+
+        print(
+            "Initial output robot_states: \n"
+            f"Image count: {_image_count(robot_state)} \n"
+            f"Ready for capture: {_ready_for_capture(robot_state)}\n"
+        )
+
+        images_captured = 1
+        while _image_count(robot_state) != -1:
             robot_state = _read_robot_state(con)
 
-            print(
-                "Initial output robot_states: \n"
-                f"Image count: {_image_count(robot_state)} \n"
-                f"Ready for capture: {_ready_for_capture(robot_state)}\n"
-            )
+            if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
+                print(f"Capture image {_image_count(robot_state)}")
+                _capture_one_frame_and_robot_pose(
+                    con,
+                    camera,
+                    settings,
+                    save_dir,
+                    input_data,
+                    images_captured,
+                    ready_to_capture,
+                )
+                images_captured += 1
 
-            images_captured = 1
-            while _image_count(robot_state) != -1:
-                robot_state = _read_robot_state(con)
-
-                if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
-                    print(f"Capture image {_image_count(robot_state)}")
-                    _capture_one_frame_and_robot_pose(
-                        con,
-                        camera,
-                        settings,
-                        save_dir,
-                        input_data,
-                        images_captured,
-                        ready_to_capture,
-                    )
-                    images_captured += 1
-
-                time.sleep(0.1)
+            time.sleep(0.1)
 
     _write_robot_state(con, input_data, finish_capture=False, camera_ready=False)
     time.sleep(1.0)
@@ -383,32 +383,29 @@ def perform_hand_eye_calibration(
         ValueError: If calibration mode is invalid
 
     """
-    # setup zivid
-    with zivid.Application():
+    calibration_inputs = []
+    idata = 1
+    while True:
+        frame_file_path = data_dir / f"img{idata:02d}.zdf"
+        pose_file_path = data_dir / f"pos{idata:02d}.yaml"
 
-        calibration_inputs = []
-        idata = 1
-        while True:
-            frame_file_path = data_dir / f"img{idata:02d}.zdf"
-            pose_file_path = data_dir / f"pos{idata:02d}.yaml"
+        if frame_file_path.is_file() and pose_file_path.is_file():
 
-            if frame_file_path.is_file() and pose_file_path.is_file():
+            print(f"Detect feature points from img{idata:02d}.zdf")
+            point_cloud = zivid.Frame(frame_file_path).point_cloud()
+            detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
-                print(f"Detect feature points from img{idata:02d}.zdf")
-                point_cloud = zivid.Frame(frame_file_path).point_cloud()
-                detection_result = zivid.calibration.detect_feature_points(point_cloud)
+            if not detection_result.valid():
+                raise RuntimeError(f"Failed to detect feature points from frame {frame_file_path}")
 
-                if not detection_result.valid():
-                    raise RuntimeError(f"Failed to detect feature points from frame {frame_file_path}")
+            print(f"Read robot pose from pos{idata:02d}.yaml")
+            pose = load_and_assert_affine_matrix(pose_file_path)
 
-                print(f"Read robot pose from pos{idata:02d}.yaml")
-                pose = load_and_assert_affine_matrix(pose_file_path)
+            calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
+        else:
+            break
 
-                calibration_inputs.append(zivid.calibration.HandEyeInput(pose, detection_result))
-            else:
-                break
-
-            idata += 1
+        idata += 1
 
         print(f"\nPerform {mode} calibration")
 
@@ -433,15 +430,16 @@ def perform_hand_eye_calibration(
     return transform, residuals
 
 
-def _main():
+def _main() -> None:
 
+    app = zivid.Application()
     user_options = _options()
 
     robot_ip_address = user_options.ip
     con, input_data = _initialize_robot_sync(robot_ip_address)
     con.send_start()
 
-    dataset_dir = _generate_dataset(con, input_data)
+    dataset_dir = _generate_dataset(app, con, input_data)
 
     if user_options.eih:
         transform, residuals = perform_hand_eye_calibration("eye-in-hand", dataset_dir)

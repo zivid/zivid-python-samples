@@ -201,7 +201,7 @@ def _color_balance_calibration(camera: zivid.Camera, settings_2d: zivid.Settings
     return (corrected_red_balance, corrected_green_balance, corrected_blue_balance)
 
 
-def _main():
+def _main() -> None:
 
     app = zivid.Application()
 

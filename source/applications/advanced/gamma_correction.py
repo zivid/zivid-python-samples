@@ -82,7 +82,7 @@ def _display_bgr(image: np.ndarray, bgr_name: str) -> None:
     cv2.waitKey(0)
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     user_options = _options()

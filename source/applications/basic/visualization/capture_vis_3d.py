@@ -7,7 +7,7 @@ import zivid
 from sample_utils.display import display_pointcloud
 
 
-def _main():
+def _main() -> None:
     with zivid.Application() as app:
 
         print("Connecting to camera")
