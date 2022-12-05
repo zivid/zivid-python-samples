@@ -87,6 +87,8 @@ from the camera can be used.
               - [read\_iterate\_zdf](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py) - Read point cloud data from a ZDF file, iterate through
                 it, and extract individual points.
       - **advanced**
+          - [auto\_2d\_acquisition\_settings](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/auto_2d_acquisition_settings.py) - Automatically find 2D acquisition settings for a 2D
+            capture using a Zivid calibration board.
           - [color\_balance](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/color_balance.py) - Balance color of 2D image.
           - [create\_depth\_map](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/create_depth_map.py) - Read point cloud data from a ZDF file, convert it to
             OpenCV format, then extract and visualize depth map.
@@ -99,8 +101,6 @@ from the camera can be used.
             mask, and visualize it.
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
             to the Zivid Calibration Board.
-          - [verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/verify_hand_eye_calibration/verify_hand_eye_calibration.py) - suggest\_settings\_parameters =
-            zivid.capture\_assistant.SuggestSettingsParameters(
           - **hand\_eye\_calibration**
               - [pose\_conversions](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/pose_conversions.py) - Convert to/from Transformation Matrix (Rotation Matrix
                 + Translation Vector).
@@ -118,8 +118,12 @@ from the camera can be used.
       - [display](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/display.py) - Display relevant data for Zivid Samples.
       - [paths](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
       - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/robodk_tools.py) - Robot Control Module
-      - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/save_load_matrix.py) - \# Checks if matrix is affine
-      - [transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/transformation_matrix.py) - translation: np.ndarray = np.array((0, 0, 0))
+      - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/save_load_matrix.py) - try:
+  - **applications**
+      - **advanced**
+          - **verify\_hand\_eye\_calibration**
+              - [robodk\_verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/verify_hand_eye_calibration/robodk_verify_hand_eye_calibration.py) - Perform a touch test with a robot to verify Hand-Eye
+                Calibration using the RoboDK interface.
 
 ## Installation
 

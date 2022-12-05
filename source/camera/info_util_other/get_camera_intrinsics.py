@@ -9,7 +9,7 @@ import zivid
 from zivid.experimental import calibration
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

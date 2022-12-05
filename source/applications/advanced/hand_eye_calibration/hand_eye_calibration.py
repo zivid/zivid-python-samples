@@ -73,7 +73,7 @@ def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
     return camera.capture(settings)
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

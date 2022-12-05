@@ -8,7 +8,7 @@ For scenes with high dynamic range we combine multiple acquisitions to get an HD
 import zivid
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

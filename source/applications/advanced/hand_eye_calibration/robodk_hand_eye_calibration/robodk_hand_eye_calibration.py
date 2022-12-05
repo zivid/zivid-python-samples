@@ -225,39 +225,38 @@ def perform_hand_eye_calibration(
         ValueError: Invalid calibration type
 
     """
-    with zivid.Application():
-        hand_eye_input = []
-        pose_and_image_iterator = 1
+    hand_eye_input = []
+    pose_and_image_iterator = 1
 
-        while True:
-            frame_file_path = dataset_directory / f"img{pose_and_image_iterator:02d}.zdf"
-            pose_file_path = dataset_directory / f"pos{pose_and_image_iterator:02d}.yaml"
+    while True:
+        frame_file_path = dataset_directory / f"img{pose_and_image_iterator:02d}.zdf"
+        pose_file_path = dataset_directory / f"pos{pose_and_image_iterator:02d}.yaml"
 
-            if frame_file_path.is_file() and pose_file_path.is_file():
-                print(f"Detect feature points from img{pose_and_image_iterator:02d}.zdf")
-                point_cloud = zivid.Frame(frame_file_path).point_cloud()
-                detected_features = zivid.calibration.detect_feature_points(point_cloud)
-                print(f"Read robot pose from pos{pose_and_image_iterator:02d}.yaml")
-                transform = load_and_assert_affine_matrix(pose_file_path)
+        if frame_file_path.is_file() and pose_file_path.is_file():
+            print(f"Detect feature points from img{pose_and_image_iterator:02d}.zdf")
+            point_cloud = zivid.Frame(frame_file_path).point_cloud()
+            detected_features = zivid.calibration.detect_feature_points(point_cloud)
+            print(f"Read robot pose from pos{pose_and_image_iterator:02d}.yaml")
+            transform = load_and_assert_affine_matrix(pose_file_path)
 
-                detection_result = zivid.calibration.HandEyeInput(zivid.calibration.Pose(transform), detected_features)
-                hand_eye_input.append(detection_result)
-            else:
-                break
-
-            pose_and_image_iterator += 1
-
-        print(f"\nPerforming {calibration_type} calibration")
-
-        if calibration_type == "eye-in-hand":
-            calibration_result = zivid.calibration.calibrate_eye_in_hand(hand_eye_input)
-        elif calibration_type == "eye-to-hand":
-            calibration_result = zivid.calibration.calibrate_eye_to_hand(hand_eye_input)
+            detection_result = zivid.calibration.HandEyeInput(zivid.calibration.Pose(transform), detected_features)
+            hand_eye_input.append(detection_result)
         else:
-            raise ValueError(f"Invalid calibration type: {calibration_type}")
+            break
 
-        transform = calibration_result.transform()
-        residuals = calibration_result.residuals()
+        pose_and_image_iterator += 1
+
+    print(f"\nPerforming {calibration_type} calibration")
+
+    if calibration_type == "eye-in-hand":
+        calibration_result = zivid.calibration.calibrate_eye_in_hand(hand_eye_input)
+    elif calibration_type == "eye-to-hand":
+        calibration_result = zivid.calibration.calibrate_eye_to_hand(hand_eye_input)
+    else:
+        raise ValueError(f"Invalid calibration type: {calibration_type}")
+
+    transform = calibration_result.transform()
+    residuals = calibration_result.residuals()
 
     print("\n\nTransform: \n")
     np.set_printoptions(precision=5, suppress=True)
@@ -294,7 +293,7 @@ def options() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _main():
+def _main() -> None:
 
     app = zivid.Application()
 

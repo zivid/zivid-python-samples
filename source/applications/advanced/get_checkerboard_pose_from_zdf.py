@@ -64,7 +64,7 @@ def _visualize_checkerboard_point_cloud_with_coordinate_system(
     visualizer.destroy_window()
 
 
-def _main():
+def _main() -> None:
 
     with zivid.Application():
 

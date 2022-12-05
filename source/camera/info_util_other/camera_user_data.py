@@ -8,7 +8,7 @@ import argparse
 import zivid
 
 
-def _args() -> argparse.Namespace:
+def _options() -> argparse.Namespace:
     """Function for taking in arguments from user.
 
     Returns:
@@ -93,8 +93,8 @@ def _read(camera: zivid.Camera) -> str:
     return data.decode()
 
 
-def _main():
-    args = _args()
+def _main() -> None:
+    args = _options()
     mode = args.mode
 
     app = zivid.Application()

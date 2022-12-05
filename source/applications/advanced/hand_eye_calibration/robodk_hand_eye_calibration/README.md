@@ -5,7 +5,7 @@ This sample offers an easy and adaptable method to perform hand eye with a varie
 
 For more on Hand-Eye Calibration, please see the [tutorial](https://support.zivid.com/latest/academy/applications/hand-eye.html) in our Knowledge Base.
 
-If you need help with the sample, visit our Knowledge Base article [here](help.zivid.com) (To be updated)
+If you need help with this sample, visit our Knowledge Base [article](https://support.zivid.com/en/latest/academy/applications/hand-eye/robodk-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html).
 
 This sample is made and modeled with a Universal Robots UR5e robot.
 It is a requirement that you make your own poses that suit your environment.

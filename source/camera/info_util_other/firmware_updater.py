@@ -6,7 +6,7 @@ Update firmware on the Zivid camera.
 import zivid
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     cameras = app.cameras()

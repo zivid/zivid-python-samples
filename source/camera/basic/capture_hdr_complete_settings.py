@@ -49,7 +49,7 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, f
     return zip(apertures, gains, exposure_times)
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

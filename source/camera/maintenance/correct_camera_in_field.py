@@ -19,22 +19,20 @@ import zivid
 from zivid.experimental import calibration
 
 
-def _yes_no_prompt(question: str) -> bool:
+def _yes_no_prompt(question: str) -> str:
     """Gets a yes or no answer to a given question.
 
     Args:
         question: A question what requires a yes or no answer
 
     Returns:
-        bool: True if the answer is yes, False if no
+        String containing 'y' or 'n'
 
     """
     while True:
-        response = input(question)
-        if response in ["n", "N"]:
-            return False
-        if response in ["y", "Y"]:
-            return True
+        response = input(f"{question} (y/n): ")
+        if response in ["n", "N", "y", "Y"]:
+            return response.lower()
         print("Invalid response. Please respond with either 'y' or 'n'.")
 
 
@@ -97,7 +95,8 @@ def _main() -> None:
     )
 
     # Optionally save to camera
-    if _yes_no_prompt("Save to camera? "):
+    answer = _yes_no_prompt("Save to camera? ")
+    if answer == "y":
         print("Writing correction to camera")
         calibration.write_camera_correction(camera, correction)
         print("Success")

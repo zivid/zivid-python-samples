@@ -8,7 +8,7 @@ import platform
 import zivid
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
     print(f"Python:       {platform.python_version()}")
     print(f"zivid-python: {zivid.__version__}")
