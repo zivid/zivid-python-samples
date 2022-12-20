@@ -87,9 +87,10 @@ from the camera can be used.
               - [read\_iterate\_zdf](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py) - Read point cloud data from a ZDF file, iterate through
                 it, and extract individual points.
       - **advanced**
-          - [auto\_2d\_acquisition\_settings](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/auto_2d_acquisition_settings.py) - Automatically find 2D acquisition settings for a 2D
-            capture using a Zivid calibration board.
-          - [color\_balance](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/color_balance.py) - Balance color of 2D image.
+          - [auto\_2d\_settings](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/auto_2d_settings.py) - Automatically find 2D settings for a 2D capture by using a
+            Zivid calibration board.
+          - [color\_balance](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/color_balance.py) - Balance color of a 2D image by using a Zivid calibration
+            board.
           - [create\_depth\_map](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/create_depth_map.py) - Read point cloud data from a ZDF file, convert it to
             OpenCV format, then extract and visualize depth map.
           - [downsample](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py) - Downsample point cloud from a ZDF file.
@@ -115,10 +116,12 @@ from the camera can be used.
                   - [universal\_robots\_perform\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/ur_hand_eye_calibration/universal_robots_perform_hand_eye_calibration.py) - Script to generate a dataset and perform hand-eye
                     calibration using a Universal Robot UR5e robot.
   - **sample\_utils**
+      - [calibration\_board\_utils](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/calibration_board_utils.py) - Utility functions for the Zivid calibration board.
       - [display](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/display.py) - Display relevant data for Zivid Samples.
       - [paths](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
       - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/robodk_tools.py) - Robot Control Module
       - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/save_load_matrix.py) - try:
+      - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/sample_utils/white_balance_calibration.py) - Balance color for 2D capture using white surface as reference.
   - **applications**
       - **advanced**
           - **verify\_hand\_eye\_calibration**
