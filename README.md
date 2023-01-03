@@ -41,6 +41,8 @@ from the camera can be used.
       - **basic**
           - [capture](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py) - Capture point clouds, with color, from the Zivid camera.
           - [capture\_2d](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py) - Capture 2D images from the Zivid camera.
+          - [capture\_2d\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d_with_settings_from_yml.py) - Capture 2D images from the Zivid camera, with settings
+            from YML file.
           - [capture\_assistant](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_assistant.py) - Use Capture Assistant to capture point clouds, with color,
             from the Zivid camera.
           - [capture\_from\_file\_camera](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py) - Capture point clouds, with color, from the Zivid file

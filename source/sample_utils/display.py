@@ -5,6 +5,7 @@ Display relevant data for Zivid Samples.
 
 from typing import Optional
 
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
@@ -24,6 +25,19 @@ def display_rgb(rgb: np.ndarray, title: str = "RGB image", block: bool = True) -
     plt.imshow(rgb)
     plt.title(title)
     plt.show(block=block)
+
+
+def display_bgr(bgr: np.ndarray, bgr_name: str) -> None:
+    """Display BGR image using OpenCV.
+
+    Args:
+        bgr: BGR image (HxWx3 ndarray)
+        bgr_name: Name of the OpenCV window
+
+    """
+    cv2.imshow(bgr_name, bgr)
+    print("Press any key to continue")
+    cv2.waitKey(0)
 
 
 def display_depthmap(xyz: np.ndarray, block: bool = True) -> None:

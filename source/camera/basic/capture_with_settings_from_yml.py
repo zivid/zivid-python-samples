@@ -5,21 +5,47 @@ The YML files for this sample can be found under the main Zivid sample instructi
 
 """
 
+import argparse
 from pathlib import Path
 
 import zivid
 from sample_utils.paths import get_sample_data_path
 
 
+def _options(camera_model) -> argparse.Namespace:
+    """Function to read user arguments.
+
+    Args:
+        camera_model: Zivid camera model
+
+    Returns:
+        Arguments from user
+
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        type=Path,
+        default=get_sample_data_path() / "Settings" / camera_model[0:8] / "Settings01.yml",
+        help="Path to the camera settings YML file",
+    )
+
+    return parser.parse_args()
+
+
 def _main() -> None:
+
     app = zivid.Application()
 
     print("Connecting to camera")
     camera = app.connect_camera()
 
+    user_options = _options(camera.info.model)
+
     print("Loading settings from file")
-    camera_model = camera.info.model
-    settings_file = Path() / get_sample_data_path() / Path("Settings/" + camera_model[0:8] + "/Settings01.yml")
+    settings_file = Path(user_options.settings_path)
     settings = zivid.Settings.load(settings_file)
 
     print("Capturing frame")
