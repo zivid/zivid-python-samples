@@ -111,10 +111,10 @@ You may want to experiment with the SDK, without access to a physical
 camera. Minor changes are required to keep the sample working.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L19-L23))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L17-L21))
 
 ``` sourceCode python
-file_camera = Path() / get_sample_data_path() / "FileCameraZividOne.zfc"
+file_camera = get_sample_data_path() / "FileCameraZividOne.zfc"
 camera = app.create_file_camera(file_camera)
 ```
 
@@ -322,10 +322,10 @@ compute device memory) and the capture and camera information.
 Once saved, the frame can be loaded from a ZDF file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L18-L20))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L16-L18))
 
 ``` sourceCode python
-data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+data_file = get_sample_data_path() / "Zivid3D.zdf"
 print(f"Reading point cloud from file: {data_file}")
 frame = zivid.Frame(data_file)
 ```

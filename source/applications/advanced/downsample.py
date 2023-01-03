@@ -5,6 +5,7 @@ The ZDF files for this sample can be found under the main instructions for Zivid
 
 """
 
+import argparse
 from pathlib import Path
 
 import zivid
@@ -12,11 +13,33 @@ from sample_utils.display import display_pointcloud
 from sample_utils.paths import get_sample_data_path
 
 
+def _options() -> argparse.Namespace:
+    """Function to read user arguments.
+
+    Returns:
+        Arguments from user
+
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument(
+        "--zdf-path",
+        required=False,
+        type=Path,
+        default=get_sample_data_path() / "Zivid3D.zdf",
+        help="Path to the ZDF file",
+    )
+
+    return parser.parse_args()
+
+
 def _main() -> None:
 
     with zivid.Application():
 
-        data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+        user_options = _options()
+        data_file = user_options.zdf_path
+
         print(f"Reading ZDF frame from file: {data_file}")
         frame = zivid.Frame(data_file)
 

@@ -6,8 +6,6 @@ The ZFC files for this sample can be found under the main instructions for Zivid
 
 """
 
-from pathlib import Path
-
 import zivid
 from sample_utils.paths import get_sample_data_path
 
@@ -16,7 +14,7 @@ def _main() -> None:
     app = zivid.Application()
 
     # The file_camera file is in Zivid Sample Data. See instructions in README.md
-    file_camera = Path() / get_sample_data_path() / "FileCameraZividOne.zfc"
+    file_camera = get_sample_data_path() / "FileCameraZividOne.zfc"
 
     print(f"Creating virtual camera using file: {file_camera}")
     camera = app.create_file_camera(file_camera)

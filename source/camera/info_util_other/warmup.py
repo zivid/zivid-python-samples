@@ -1,30 +1,63 @@
 """
 A basic warm-up method for a Zivid camera with specified time and capture cycle.
 
+The sample uses Capture Assistant unless a path to YAML Camera Settings is passed.
 """
 
+import argparse
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import sleep
 
 import zivid
 
 
+def _options() -> argparse.Namespace:
+    """Function to read user arguments.
+
+    Returns:
+        Arguments from user
+
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        help="Path to the YAML file that contains Camera Settings",
+    )
+
+    parser.add_argument(
+        "--capture-cycle",
+        required=False,
+        type=float,
+        default=5.0,
+        help="Capture cycle in seconds",
+    )
+
+    return parser.parse_args()
+
+
 def _main() -> None:
+    user_options = _options()
     app = zivid.Application()
 
     print("Connecting to camera")
     camera = app.connect_camera()
 
     warmup_time = timedelta(minutes=10)
-    capture_cycle = timedelta(seconds=5)
-    max_capture_time = timedelta(milliseconds=1000)
+    capture_cycle = timedelta(seconds=user_options.capture_cycle)
 
-    print("Getting camera settings")
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=max_capture_time,
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
-    settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+    if user_options.settings_path:
+        print("Loading settings from file")
+        settings = zivid.Settings.load(Path(user_options.settings_path))
+    else:
+        print("Getting camera settings from capture assistant")
+        suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
+            max_capture_time=timedelta(milliseconds=1000),
+            ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
+        )
+        settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
 
     before_warmup = datetime.now()
 

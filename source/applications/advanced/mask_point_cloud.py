@@ -5,8 +5,6 @@ The ZDF file for this sample can be found under the main instructions for Zivid 
 
 """
 
-from pathlib import Path
-
 import numpy as np
 import zivid
 from sample_utils.display import display_depthmap, display_pointcloud, display_rgb
@@ -17,7 +15,7 @@ def _main() -> None:
 
     with zivid.Application():
 
-        data_file = Path() / get_sample_data_path() / "Zivid3D.zdf"
+        data_file = get_sample_data_path() / "Zivid3D.zdf"
         print(f"Reading ZDF frame from file: {data_file}")
         frame = zivid.Frame(data_file)
 

@@ -27,8 +27,6 @@ The YAML files for this sample can be found under the main instructions for Zivi
 
 """
 
-from pathlib import Path
-
 import numpy as np
 import zivid
 from sample_utils.paths import get_sample_data_path
@@ -55,7 +53,7 @@ def _main() -> None:
                 image_coordinate_x = 1035
                 image_coordinate_y = 255
 
-                eye_to_hand_transform_file_path = Path() / get_sample_data_path() / "EyeToHandTransform.yaml"
+                eye_to_hand_transform_file_path = get_sample_data_path() / "EyeToHandTransform.yaml"
 
                 print("Reading camera pose in robot base frame (result of eye-to-hand calibration)")
                 transform_base_to_camera = load_and_assert_affine_matrix(eye_to_hand_transform_file_path)
@@ -71,8 +69,8 @@ def _main() -> None:
                 image_coordinate_x = 1460
                 image_coordinate_y = 755
 
-                eye_in_hand_transform_file_path = Path() / get_sample_data_path() / "EyeInHandTransform.yaml"
-                robot_transform_file_path = Path() / get_sample_data_path() / "RobotTransform.yaml"
+                eye_in_hand_transform_file_path = get_sample_data_path() / "EyeInHandTransform.yaml"
+                robot_transform_file_path = get_sample_data_path() / "RobotTransform.yaml"
 
                 print("Reading camera pose in flange (end-effector) frame (result of eye-in-hand calibration)")
                 transform_flange_to_camera = load_and_assert_affine_matrix(eye_in_hand_transform_file_path)
@@ -87,7 +85,7 @@ def _main() -> None:
 
             print("Entered unknown Hand-Eye calibration type")
 
-        data_file = Path() / get_sample_data_path() / file_name
+        data_file = get_sample_data_path() / file_name
         print(f"Reading point cloud from file: {data_file}")
         frame = zivid.Frame(data_file)
         point_cloud = frame.point_cloud()

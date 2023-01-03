@@ -6,8 +6,6 @@ The YML files for this sample can be found under the main Zivid sample instructi
 
 """
 
-from pathlib import Path
-
 import zivid
 from sample_utils.paths import get_sample_data_path
 
@@ -20,9 +18,7 @@ def _main() -> None:
 
     for i in range(1, 4):
         camera_model = camera.info.model
-        settings_file = (
-            Path() / get_sample_data_path() / Path("Settings/" + camera_model[0:8] + f"/Settings0{i :01d}.yml")
-        )
+        settings_file = get_sample_data_path() / "Settings" / camera_model[0:8] / f"Settings0{i :01d}.yml"
         print(f"Loading settings from file: {settings_file}")
         settings = zivid.Settings.load(settings_file)
 

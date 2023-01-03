@@ -76,6 +76,9 @@ def _main() -> None:
 
     display_rgb(rgba_balanced[:, :, 0:3], title="RGB image after color balance", block=True)
 
+    print("Saving settings after color balance")
+    zivid.Settings2D.save(settings_2d, "Settings2DAfterColorBalance.yml")
+
 
 if __name__ == "__main__":
     _main()
