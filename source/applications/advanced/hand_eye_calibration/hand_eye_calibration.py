@@ -94,12 +94,14 @@ def _main() -> None:
                 print("Detecting checkerboard in point cloud")
                 detection_result = zivid.calibration.detect_feature_points(frame.point_cloud())
 
-                if detection_result:
-                    print("OK")
+                if detection_result.valid():
+                    print("Calibration board detected")
                     hand_eye_input.append(zivid.calibration.HandEyeInput(robot_pose, detection_result))
                     current_pose_id += 1
                 else:
-                    print("FAILED")
+                    print(
+                        "Failed to detect calibration board, ensure that the entire board is in the view of the camera"
+                    )
             except ValueError as ex:
                 print(ex)
         elif command == "c":
