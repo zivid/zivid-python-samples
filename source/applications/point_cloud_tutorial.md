@@ -51,7 +51,7 @@ compute device memory) and the capture and camera information. Capture
 When you capture with Zivid, you get a frame in return.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L30))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L27))
 
 ``` sourceCode python
 with camera.capture(settings) as frame:
@@ -81,7 +81,7 @@ frame = zivid.Frame(data_file)
 You can now get a handle to the point cloud data on the GPU.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L22))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L21))
 
 ``` sourceCode python
 point_cloud = frame.point_cloud()
@@ -126,7 +126,7 @@ complete list of output data formats and how to copy them from the GPU.
 Here is an example of how to copy data.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L24-L25))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L22-L23))
 
 ``` sourceCode python
 xyz = point_cloud.copy_data("xyz")
@@ -150,7 +150,7 @@ frame or, e.g., [scale the point cloud by transforming it from mm to
 m](https://support.zivid.com/latest//academy/applications/transform/transform-millimeters-to-meters.html).
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L124))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L123))
 
 ``` sourceCode python
 point_cloud.transform(transform_base_to_camera)
@@ -168,7 +168,7 @@ Downsampling can be done in-place, which modifies the current point
 cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L64))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L63))
 
 ``` sourceCode python
 point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
