@@ -25,17 +25,17 @@ def _main() -> None:
         timestamp = calibration.camera_correction_timestamp(camera)
         print(f"Timestamp of current camera correction: {timestamp.strftime(r'%Y-%m-%d %H:%M:%S')}")
     else:
-        print("This camera has no in-field correction written to it.")
+        print("This camera has no infield correction written to it.")
 
     # Gather data
     print("Capturing calibration board")
     detection_result = calibration.detect_feature_points(camera)
 
-    # Prepare data and check that it is appropriate for in-field verification
+    # Prepare data and check that it is appropriate for infield verification
     infield_input = calibration.InfieldCorrectionInput(detection_result)
     if not infield_input.valid():
         raise RuntimeError(
-            f"Capture not valid for in-field verification! Feedback: {infield_input.status_description()}"
+            f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
         )
 
     # Show results

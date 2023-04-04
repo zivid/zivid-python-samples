@@ -13,6 +13,7 @@ import argparse
 from pathlib import Path
 
 import zivid
+from sample_utils.display import display_pointcloud
 from sample_utils.paths import get_sample_data_path
 
 
@@ -60,9 +61,12 @@ def _main() -> None:
 
     print("Capturing frame")
     with camera.capture(settings) as frame:
-        data_file = "Frame.zdf"
-        print(f"Saving frame to file: {data_file}")
-        frame.save(data_file)
+        point_cloud = frame.point_cloud()
+        xyz = point_cloud.copy_data("xyz")
+        rgba = point_cloud.copy_data("rgba")
+
+        print("Visualizing point cloud")
+        display_pointcloud(xyz, rgba[:, :, 0:3])
 
 
 if __name__ == "__main__":
