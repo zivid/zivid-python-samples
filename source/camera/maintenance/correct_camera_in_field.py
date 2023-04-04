@@ -19,20 +19,22 @@ import zivid
 from zivid.experimental import calibration
 
 
-def _yes_no_prompt(question: str) -> str:
+def _yes_no_prompt(question: str) -> bool:
     """Gets a yes or no answer to a given question.
 
     Args:
-        question: A question what requires a yes or no answer
+        question: A question that requires a yes or no answer
 
     Returns:
-        String containing 'y' or 'n'
+        Bool that is True for 'y' and 'Y' and False for 'n' or 'N'
 
     """
     while True:
         response = input(f"{question} (y/n): ")
-        if response in ["n", "N", "y", "Y"]:
-            return response.lower()
+        if response in {"y", "Y"}:
+            return True
+        if response in {"n", "N"}:
+            return False
         print("Invalid response. Please respond with either 'y' or 'n'.")
 
 
@@ -84,22 +86,22 @@ def _main() -> None:
 
     # Calculate infield correciton
     print(f"Collected {len(dataset)} valid measurements.")
-    print("Computing new camera correction...")
-    correction = calibration.compute_camera_correction(dataset)
-    accuracy_estimate = correction.accuracy_estimate()
+    if len(dataset) > 0:
+        print("Computing new camera correction...")
+        correction = calibration.compute_camera_correction(dataset)
+        accuracy_estimate = correction.accuracy_estimate()
 
-    print(
-        "If written to the camera, this correction can be expected to yield a dimension accuracy of ",
-        f"{accuracy_estimate.dimension_accuracy()*100:.3f} or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
-        "Accuracy close to where the correction data was collected is likely better.",
-    )
+        print(
+            "If written to the camera, this correction can be expected to yield a dimension accuracy of ",
+            f"{accuracy_estimate.dimension_accuracy()*100:.3f} or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
+            "Accuracy close to where the correction data was collected is likely better.",
+        )
 
-    # Optionally save to camera
-    answer = _yes_no_prompt("Save to camera? ")
-    if answer == "y":
-        print("Writing correction to camera")
-        calibration.write_camera_correction(camera, correction)
-        print("Success")
+        # Optionally save to camera
+        if _yes_no_prompt("Save to camera?"):
+            print("Writing correction to camera")
+            calibration.write_camera_correction(camera, correction)
+            print("Success")
 
 
 if __name__ == "__main__":
