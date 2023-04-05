@@ -5,15 +5,13 @@ The ZFC file for this sample can be downloaded from https://support.zivid.com/en
 
 """
 
-from typing import List
-
 import numpy as np
 import zivid
 from sample_utils.display import display_depthmap, display_pointcloud
 from sample_utils.paths import get_sample_data_path
 
 
-def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[np.ndarray]:
+def _transform_points(points: list[np.ndarray], transform: np.ndarray) -> list[np.ndarray]:
     """Perform a homogenous transformation to every point in 'points' and return the transformed points.
 
     Args:
@@ -24,12 +22,12 @@ def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[n
         transformed_points: list of transformed 3D points
 
     """
-    rotation_matrix = transform[:3, :3]
-    translation_vector = transform[:3, 3]
+    R = transform[:3, :3]
+    t = transform[:3, 3]
 
     transformed_points = []
     for point in points:
-        transformed_points.append(rotation_matrix @ point + translation_vector)
+        transformed_points.append(R @ point + t)
 
     return transformed_points
 
