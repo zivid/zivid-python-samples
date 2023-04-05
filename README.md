@@ -45,7 +45,7 @@ from the camera can be used.
             from YML file.
           - [capture\_assistant](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_assistant.py) - Use Capture Assistant to capture point clouds, with color,
             from the Zivid camera.
-          - [capture\_from\_file\_camera](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py) - Capture point clouds, with color, from the Zivid file
+          - [capture\_from\_file\_camera](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py) - Capture point clouds, with color, with the Zivid file
             camera.
           - [capture\_hdr](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr.py) - Capture point clouds, with color, from the Zivid camera.
           - [capture\_hdr\_complete\_settings](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py) - Capture point clouds, with color, from the Zivid camera
@@ -64,7 +64,7 @@ from the camera can be used.
             with settings from YML file and diagnostics enabled.
           - [firmware\_updater](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/firmware_updater.py) - Update firmware on the Zivid camera.
           - [get\_camera\_intrinsics](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/get_camera_intrinsics.py) - Read intrinsic parameters from the Zivid camera (OpenCV
-            model).
+            model) or estimate them from the point cloud.
           - [print\_version\_info](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/print_version_info.py) - Print version information for Python, zivid-python and
             Zivid SDK, then list cameras and print camera info for each
             connected camera.
@@ -72,11 +72,13 @@ from the camera can be used.
             time and capture cycle.
       - **maintenance**
           - [correct\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/correct_camera_in_field.py) - Correct the dimension trueness of a Zivid camera.
-          - [reset\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/reset_camera_in_field.py) - Reset in-field correction on a camera.
+          - [reset\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/reset_camera_in_field.py) - Reset infield correction on a camera.
           - [verify\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/maintenance/verify_camera_in_field.py) - Check the dimension trueness of a Zivid camera.
   - **applications**
       - **basic**
           - **visualization**
+              - [capture\_from\_file\_camera\_vis\_3d](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/visualization/capture_from_file_camera_vis_3d.py) - Capture point clouds, with color, with the Zivid file
+                camera.
               - [capture\_hdr\_vis\_normals](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/visualization/capture_hdr_vis_normals.py) - Capture Zivid point clouds, compute normals and
                 convert to color map and display.
               - [capture\_vis\_3d](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/visualization/capture_vis_3d.py) - Capture point clouds, with color, from the Zivid

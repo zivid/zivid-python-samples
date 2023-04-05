@@ -39,17 +39,17 @@ def _yes_no_prompt(question: str) -> bool:
 
 
 def _collect_dataset(camera: zivid.Camera) -> List[calibration.InfieldCorrectionInput]:
-    """Collects input-data needed by in-field verification and correction function.
+    """Collects input-data needed by infield verification and correction function.
 
     Args:
         camera: Zivid camera instance
 
     Returns:
-        dataset: Contains input-data needed by in-field verification and correction function
+        dataset: Contains input-data needed by infield verification and correction function
 
     """
     dataset = []
-    print("Please point the camera at a Zivid in-field calibration board. ")
+    print("Please point the camera at a Zivid infield calibration board. ")
 
     print_line = "------------------------------------------------------------------------"
     while True:

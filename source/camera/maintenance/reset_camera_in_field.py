@@ -1,5 +1,5 @@
 """
-Reset in-field correction on a camera.
+Reset infield correction on a camera.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
@@ -15,7 +15,7 @@ def _main() -> None:
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    print("Reset in-field correction on the camera")
+    print("Reset infield correction on the camera")
     calibration.reset_camera_correction(camera)
 
 

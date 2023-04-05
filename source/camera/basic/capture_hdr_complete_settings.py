@@ -39,7 +39,9 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, f
         apertures = (8.0, 4.0, 4.0)
         gains = (1.0, 1.0, 2.0)
         exposure_times = (10000, 10000, 40000)
-    elif camera.info.model is zivid.CameraInfo.Model.zividTwo:
+    elif (
+        camera.info.model is zivid.CameraInfo.Model.zividTwo or camera.info.model is zivid.CameraInfo.Model.zividTwoL100
+    ):
         apertures = (5.66, 2.38, 1.8)
         gains = (1.0, 1.0, 1.0)
         exposure_times = (1677, 5000, 100000)
@@ -55,9 +57,16 @@ def _main() -> None:
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    print("Configuring processing settings for capture:")
+    print("Configuring settings for capture:")
     settings = zivid.Settings()
     settings.experimental.engine = "phase"
+    settings.region_of_interest.box.enabled = True
+    settings.region_of_interest.box.point_o = [1000, 1000, 1000]
+    settings.region_of_interest.box.point_a = [1000, -1000, 1000]
+    settings.region_of_interest.box.point_b = [-1000, 1000, 1000]
+    settings.region_of_interest.box.extents = [-1000, 1000]
+    settings.region_of_interest.depth.enabled = True
+    settings.region_of_interest.depth.range = [200, 2000]
     filters = settings.processing.filters
     filters.smoothing.gaussian.enabled = True
     filters.smoothing.gaussian.sigma = 1.5
@@ -67,17 +76,23 @@ def _main() -> None:
     filters.outlier.removal.threshold = 5.0
     filters.reflection.removal.enabled = True
     filters.reflection.removal.experimental.mode = "global"
+    filters.cluster.removal.enabled = True
+    filters.cluster.removal.max_neighbor_distance = 10
+    filters.cluster.removal.min_area = 100
     filters.experimental.contrast_distortion.correction.enabled = True
     filters.experimental.contrast_distortion.correction.strength = 0.4
     filters.experimental.contrast_distortion.removal.enabled = False
     filters.experimental.contrast_distortion.removal.threshold = 0.5
+    filters.experimental.hole_filling.enabled = True
+    filters.experimental.hole_filling.hole_size = 0.2
+    filters.experimental.hole_filling.strictness = 1
     color = settings.processing.color
     color.balance.red = 1.0
     color.balance.blue = 1.0
     color.balance.green = 1.0
     color.gamma = 1.0
     settings.processing.color.experimental.mode = "automatic"
-    print(settings.processing)
+    print(settings)
 
     print("Configuring acquisition settings different for all HDR acquisitions")
     exposure_values = _get_exposure_values(camera)
