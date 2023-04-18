@@ -3,7 +3,7 @@ Check the dimension trueness of a Zivid camera.
 
 This example shows how to verify the local dimension trueness of a camera.
 If the trueness is much worse than expected, the camera may have been damaged by
-shock in shipping in handling. If so, look at the CorrectCameraInField sample.
+shock in shipping in handling. If so, look at the correct_camera_in_field sample sample.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
