@@ -134,30 +134,28 @@ from the camera can be used.
 
 ## Installation
 
+Note: The recommended Python version for these samples is 3.6 - 3.9.
+
 1.  [Install Zivid
     Software](https://support.zivid.com/latest//getting-started/software-installation.html).
 
-2.  [Install Zivid
-    Python](https://github.com/zivid/zivid-python#installation). Note:
-    The recommended Python version for these samples is 3.6 - 3.9.
-
-3.  [Download Zivid Sample
+2.  [Download Zivid Sample
     Data](https://support.zivid.com/latest//api-reference/samples/sample-data.html).
 
-4.  Install the runtime requirements using IDE or command line:
-    
-    ``` sourceCode 
+3. Install the runtime requirements using IDE or command line:
+
+    ```sh
     pip install -r requirements.txt
     ```
 
-5.  Add the directory source to PYTHONPATH. Navigate to the root of the
-    repository and run:
+4. Add the directory source to PYTHONPATH. Navigate to the root of the
+   repository and run:
 
->   - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
->   - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
->   - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
+   > - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
+   > - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
+   > - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
 
-6.  Open and run one of the samples.
+5. Open and run one of the samples.
 
 ## Support
 

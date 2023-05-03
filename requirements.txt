@@ -1,7 +1,8 @@
-numpy
 matplotlib
-opencv-python
+numpy
 open3d
+opencv-python
 pyyaml
-scipy
 robodk
+scipy
+zivid
