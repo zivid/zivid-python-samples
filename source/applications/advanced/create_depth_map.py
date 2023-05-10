@@ -8,6 +8,7 @@ The ZDF files for this sample can be found under the main instructions for Zivid
 import cv2
 import numpy as np
 import zivid
+from sample_utils.display import display_bgr
 from sample_utils.paths import get_sample_data_path
 
 
@@ -60,11 +61,7 @@ def _visualize_and_save_image(image: np.ndarray, image_file: str, window_name: s
         window_name: OpenCV Window name
 
     """
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.imshow(window_name, image)
-    print("Press any key to continue")
-    cv2.waitKey(0)
-    cv2.destroyWindow(window_name)
+    display_bgr(image, window_name)
     cv2.imwrite(image_file, image)
 
 
