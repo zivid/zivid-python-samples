@@ -8,6 +8,7 @@ The ZDF files for this sample can be found under the main instructions for Zivid
 import cv2
 import numpy as np
 import zivid
+from sample_utils.display import display_bgr
 from sample_utils.paths import get_sample_data_path
 
 
@@ -44,27 +45,21 @@ def _point_cloud_to_cv_bgr(point_cloud: zivid.PointCloud) -> np.ndarray:
         bgr: BGR image (HxWx3 ndarray)
 
     """
-    rgba = point_cloud.copy_data("rgba")
-    # Applying color map
-    bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
+    bgra = point_cloud.copy_data("bgra")
 
-    return bgr
+    return bgra[:, :, :3]
 
 
-def _visualize_and_save_image(image: np.ndarray, image_file: str, window_name: str) -> None:
+def _visualize_and_save_image(image: np.ndarray, image_file: str, title: str) -> None:
     """Visualize and save image to file.
 
     Args:
         image: BGR image (HxWx3 ndarray)
         image_file: File name
-        window_name: OpenCV Window name
+        title: OpenCV Window name
 
     """
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.imshow(window_name, image)
-    print("Press any key to continue")
-    cv2.waitKey(0)
-    cv2.destroyWindow(window_name)
+    display_bgr(image, title)
     cv2.imwrite(image_file, image)
 
 

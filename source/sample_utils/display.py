@@ -27,15 +27,15 @@ def display_rgb(rgb: np.ndarray, title: str = "RGB image", block: bool = True) -
     plt.show(block=block)
 
 
-def display_bgr(bgr: np.ndarray, bgr_name: str) -> None:
+def display_bgr(bgr: np.ndarray, title: str = "RGB image") -> None:
     """Display BGR image using OpenCV.
 
     Args:
         bgr: BGR image (HxWx3 ndarray)
-        bgr_name: Name of the OpenCV window
+        title: Name of the OpenCV window
 
     """
-    cv2.imshow(bgr_name, bgr)
+    cv2.imshow(title, bgr)
     print("Press any key to continue")
     cv2.waitKey(0)
 

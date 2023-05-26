@@ -8,6 +8,7 @@ import argparse
 import cv2
 import numpy as np
 import zivid
+from sample_utils.display import display_bgr
 
 
 def _options() -> argparse.Namespace:
@@ -46,10 +47,9 @@ def _capture_bgr_image(camera: zivid.Camera, gamma: float) -> np.ndarray:
 
     print("Capturing 2D frame")
     with camera.capture(settings_2d) as frame_2d:
-        image = frame_2d.image_rgba()
-        rgba = image.copy_data()
-        bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
-        return bgr
+        image = frame_2d.image_bgra()
+        bgra = image.copy_data()
+        return bgra[:, :, :3]
 
 
 def _combine_images(image_one: np.ndarray, image_two: np.ndarray) -> np.ndarray:
@@ -67,19 +67,6 @@ def _combine_images(image_one: np.ndarray, image_two: np.ndarray) -> np.ndarray:
     combined_image = np.hstack([image_one[:, :width], image_two[:, -width:]])
 
     return combined_image
-
-
-def _display_bgr(image: np.ndarray, bgr_name: str) -> None:
-    """Display BGR image using OpenCV.
-
-    Args:
-        image: BGR image to be displayed
-        bgr_name: Name of the OpenCV window
-
-    """
-    cv2.imshow(bgr_name, image)
-    print("Press any key to continue")
-    cv2.waitKey(0)
 
 
 def _main() -> None:
@@ -100,7 +87,8 @@ def _main() -> None:
 
     print(f"Displaying color image before and after gamma correction: {user_options.gamma}")
     combined_image = _combine_images(bgr_original, bgr_adjusted)
-    _display_bgr(combined_image, "Original on left, adjusted on right")
+    cv2.imwrite("combined_image.jpg", combined_image)
+    display_bgr(combined_image[:, :, 0:3], title="Original on left, adjusted on right")
 
 
 if __name__ == "__main__":

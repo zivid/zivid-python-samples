@@ -5,3 +5,4 @@ open3d
 pyyaml
 scipy
 robodk
+zivid

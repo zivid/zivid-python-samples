@@ -100,9 +100,8 @@ def _convert_2_2d(point_cloud: zivid.PointCloud, file_name: str) -> None:
 
     """
     print(f"Saving the frame to {file_name}")
-    rgba = point_cloud.copy_data("rgba")
-    bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
-    cv2.imwrite(file_name, bgr)
+    bgra = point_cloud.copy_data("bgra")
+    cv2.imwrite(file_name, bgra[:, :, :3])
 
 
 def _main() -> None:
