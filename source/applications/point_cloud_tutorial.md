@@ -66,7 +66,7 @@ for detailed instructions on how to capture.
 The frame can also be loaded from a ZDF file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L16-L18))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L14-L16))
 
 ``` sourceCode python
 data_file = get_sample_data_path() / "Zivid3D.zdf"
@@ -81,7 +81,7 @@ frame = zivid.Frame(data_file)
 You can now get a handle to the point cloud data on the GPU.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L21))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L19))
 
 ``` sourceCode python
 point_cloud = frame.point_cloud()
@@ -126,7 +126,7 @@ complete list of output data formats and how to copy them from the GPU.
 Here is an example of how to copy data.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L22-L23))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L20-L21))
 
 ``` sourceCode python
 xyz = point_cloud.copy_data("xyz")
@@ -150,7 +150,7 @@ frame or, e.g., [scale the point cloud by transforming it from mm to
 m](https://support.zivid.com/latest//academy/applications/transform/transform-millimeters-to-meters.html).
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L123))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L117))
 
 ``` sourceCode python
 point_cloud.transform(transform_base_to_camera)
@@ -168,7 +168,7 @@ Downsampling can be done in-place, which modifies the current point
 cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L63))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L61))
 
 ``` sourceCode python
 point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
@@ -178,7 +178,7 @@ It is also possible to get the downsampled point cloud as a new point
 cloud instance, which does not alter the existing point cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L57))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L55))
 
 ``` sourceCode python
 downsampled_point_cloud = point_cloud.downsampled(zivid.PointCloud.Downsampling.by2x2)

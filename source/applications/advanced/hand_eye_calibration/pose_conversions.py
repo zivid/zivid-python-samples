@@ -216,9 +216,7 @@ def print_header(txt: str) -> None:
 
 
 def _main() -> None:
-
     with zivid.Application():
-
         np.set_printoptions(precision=4, suppress=True)
         print_header("This example shows conversions to/from Transformation Matrix")
 

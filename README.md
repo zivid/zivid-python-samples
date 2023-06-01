@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.9.0. For
+This repository contains python code samples for Zivid SDK v2.10.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -157,8 +157,8 @@ The recommended Python version for these samples is 3.6 - 3.9.
 4.  Add the directory source to PYTHONPATH. Navigate to the root of the
     repository and run:
     
-      - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
-      - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
+      - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\\source"`
+      - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\\source"`
       - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
 
 5.  Open and run one of the samples.

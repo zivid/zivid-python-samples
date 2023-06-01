@@ -65,9 +65,7 @@ def _visualize_checkerboard_point_cloud_with_coordinate_system(
 
 
 def _main() -> None:
-
     with zivid.Application():
-
         data_file = get_sample_data_path() / "CalibrationBoardInCameraOrigin.zdf"
         print(f"Reading ZDF frame from file: {data_file}")
         frame = zivid.Frame(data_file)

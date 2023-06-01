@@ -176,6 +176,8 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     if camera.info.model == zivid.CameraInfo.Model.zividOnePlusSmall:
         focus_distance = 500
         focal_length = 16
+        circle_of_confusion = 0.015
+        fnum_min = 1.4
         if image_distance_near < 300 or image_distance_far > 1000:
             print(
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
@@ -184,6 +186,8 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusMedium:
         focus_distance = 1000
         focal_length = 16
+        circle_of_confusion = 0.015
+        fnum_min = 1.4
         if image_distance_near < 500 or image_distance_far > 2000:
             print(
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
@@ -192,6 +196,8 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusLarge:
         focus_distance = 1800
         focal_length = 16
+        circle_of_confusion = 0.015
+        fnum_min = 1.4
         if image_distance_near < 1200 or image_distance_far > 3000:
             print(
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
@@ -200,6 +206,8 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     elif camera.info.model == zivid.CameraInfo.Model.zividTwo:
         focus_distance = 700
         focal_length = 8
+        circle_of_confusion = 0.015
+        fnum_min = 1.8
         if image_distance_near < 300 or image_distance_far > 1300:
             print(
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
@@ -208,15 +216,25 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
         focus_distance = 1000
         focal_length = 8
+        circle_of_confusion = 0.015
+        fnum_min = 1.8
         if image_distance_near < 600 or image_distance_far > 1600:
             print(
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
                 f"({image_distance_far:.2f}) is outside recommended working distance for camera [600, 1600]"
             )
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwoPlusM130:
+        focus_distance = 1300
+        focal_length = 11
+        circle_of_confusion = 0.008
+        fnum_min = 2.1
+        if image_distance_near < 800 or image_distance_far > 2000:
+            print(
+                f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
+                f"({image_distance_far:.2f}) is outside recommended working distance for camera [800, 2000]"
+            )
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
-
-    circle_of_confusion = 0.015
 
     fnum_near = (
         np.abs(image_distance_near - focus_distance)
@@ -232,7 +250,7 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     fnum_near = min(max(fnum_near, 1), 32)
     fnum_far = min(max(fnum_far, 1), 32)
 
-    return max(fnum_near, fnum_far, 1.8)
+    return max(fnum_near, fnum_far, fnum_min)
 
 
 def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
@@ -258,10 +276,43 @@ def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
         exposure_time = 1677
     elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
         exposure_time = 1677
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwoPlusM130:
+        exposure_time = 1677
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
     return exposure_time
+
+
+def _find_max_brightness(camera: zivid.Camera) -> float:
+    """Find the max projector brightness that a given camera can provide.
+
+    Args:
+        camera: Zivid camera
+
+    Raises:
+        RuntimeError: If camera model is not supported
+
+    Returns:
+        Highest projector brightness value for given camera
+
+    """
+    if camera.info.model == zivid.CameraInfo.Model.zividOnePlusSmall:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusMedium:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusLarge:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwo:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwoPlusM130:
+        brightness = 2.5
+    else:
+        raise RuntimeError("Unsupported camera model in this sample.")
+
+    return brightness
 
 
 def _initialize_settings_2d(aperture: float, exposure_time: float, brightness: float, gain: float) -> zivid.Settings2D:
@@ -421,7 +472,7 @@ def _find_2d_settings_from_mask(
 
     """
     min_exposure_time = _find_lowest_exposure_time(camera)
-    brightness = 1.8 if use_projector else 0
+    brightness = _find_max_brightness(camera) if use_projector else 0
     settings_2d = _initialize_settings_2d(aperture=8, exposure_time=min_exposure_time, brightness=brightness, gain=1)
 
     lower_white_range = 210
@@ -523,7 +574,6 @@ def _plot_image_with_histogram(rgb: np.ndarray, settings_2d: zivid.Settings2D) -
 
 
 def _main() -> None:
-
     app = zivid.Application()
 
     user_options = _options()

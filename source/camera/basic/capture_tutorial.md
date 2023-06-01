@@ -114,14 +114,14 @@ Data](https://support.zivid.com/latest/api-reference/samples/sample-data.html)
 where there are multiple file cameras to choose from. Each file camera
 demonstrates a use case within one of the main applications of the
 respective camera model. The example below shows how to create a file
-camera using the Zivid Two M70 file camera from [Sample
+camera using the Zivid 2 M70 file camera from [Sample
 Data](https://support.zivid.com/latest/api-reference/samples/sample-data.html).
 
 ([go to
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L33))
 
 ``` sourceCode python
-default=get_sample_data_path() / "FileCameraZividTwoM70.zfc",
+default=get_sample_data_path() / "FileCameraZivid2M70.zfc",
 ```
 
 ([go to
@@ -198,7 +198,7 @@ There are only two parameters to configure with Capture Assistant:
 Another option is to configure settings manually. For more information
 about what each settings does, please see [Camera
 Settings](https://support.zivid.com/latest/reference-articles/camera-settings.html).
-Note that Zivid Two has a set of [standard
+Note that Zivid 2 has a set of [standard
 settings](https://support.zivid.com/latest//reference-articles/standard-acquisition-settings-zivid-two.html).
 
 #### Single Acquisition
@@ -233,7 +233,7 @@ settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum
 Fully configured settings are demonstrated below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L60-L107))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L68-L115))
 
 ``` sourceCode python
 print("Configuring settings for capture:")
@@ -274,12 +274,12 @@ settings.processing.color.experimental.mode = "automatic"
 print(settings)
 print("Configuring acquisition settings different for all HDR acquisitions")
 exposure_values = _get_exposure_values(camera)
-for (aperture, gain, exposure_time) in exposure_values:
+for aperture, gain, exposure_time, brightness in exposure_values:
 	settings.acquisitions.append(
 		zivid.Settings.Acquisition(
 			aperture=aperture,
-			exposure_time=datetime.timedelta(microseconds=exposure_time),
-			brightness=1.8,
+			exposure_time=exposure_time,
+			brightness=brightness,
 			gain=gain,
 		)
 	)
@@ -313,7 +313,7 @@ read and applied in the API. You may find it easier to modify the
 settings in these (human-readable) yaml-files in your preferred editor.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L119-L124))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L127-L132))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -326,7 +326,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L119-L121))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L127-L129))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -361,7 +361,7 @@ compute device memory) and the capture and camera information.
 Once saved, the frame can be loaded from a ZDF file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L16-L18))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L14-L16))
 
 ``` sourceCode python
 data_file = get_sample_data_path() / "Zivid3D.zdf"

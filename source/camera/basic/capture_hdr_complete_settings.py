@@ -10,13 +10,13 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 
 """
 
-import datetime
+from datetime import timedelta
 from typing import Iterable, Tuple
 
 import zivid
 
 
-def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, float]]:
+def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, timedelta, float]]:
     """Print normal XYZ values of the 10 x 10 central pixels.
 
     Args:
@@ -24,11 +24,12 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, f
 
     Returns:
         apertures: The f-number of each capture
-        gains: The gain from each capture
-        exposure_times: The exposure time from each capture
+        gains: The gain of each capture
+        exposure_times: The exposure time of each capture
+        brightnesses: The projector brightness of each capture
 
     Raises:
-        Exception: If the model is not Zivid One+ or Zivid Two
+        ValueError: If the model is not Zivid One+, Zivid 2 or Zivid 2+
 
     """
     if (
@@ -36,19 +37,26 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, f
         or camera.info.model is zivid.CameraInfo.Model.zividOnePlusMedium
         or camera.info.model is zivid.CameraInfo.Model.zividOnePlusSmall
     ):
-        apertures = (8.0, 4.0, 4.0)
+        apertures = (8.0, 4.0, 1.4)
         gains = (1.0, 1.0, 2.0)
-        exposure_times = (10000, 10000, 40000)
+        exposure_times = (timedelta(microseconds=6500), timedelta(microseconds=10000), timedelta(microseconds=40000))
+        brightnesses = (1.8, 1.8, 1.8)
     elif (
         camera.info.model is zivid.CameraInfo.Model.zividTwo or camera.info.model is zivid.CameraInfo.Model.zividTwoL100
     ):
         apertures = (5.66, 2.38, 1.8)
         gains = (1.0, 1.0, 1.0)
-        exposure_times = (1677, 5000, 100000)
+        exposure_times = (timedelta(microseconds=1677), timedelta(microseconds=5000), timedelta(microseconds=100000))
+        brightnesses = (1.8, 1.8, 1.8)
+    elif camera.info.model is zivid.CameraInfo.Model.zividTwoPlusM130:
+        apertures = (5.66, 2.38, 2.1)
+        gains = (1.0, 1.0, 1.0)
+        exposure_times = (timedelta(microseconds=1677), timedelta(microseconds=5000), timedelta(microseconds=100000))
+        brightnesses = (2.5, 2.5, 2.5)
     else:
-        raise Exception("Unknown camera model")
+        raise ValueError(f"Unsupported camera model in this sample: {camera.info.model_name}")
 
-    return zip(apertures, gains, exposure_times)
+    return zip(apertures, gains, exposure_times, brightnesses)
 
 
 def _main() -> None:
@@ -96,12 +104,12 @@ def _main() -> None:
 
     print("Configuring acquisition settings different for all HDR acquisitions")
     exposure_values = _get_exposure_values(camera)
-    for (aperture, gain, exposure_time) in exposure_values:
+    for aperture, gain, exposure_time, brightness in exposure_values:
         settings.acquisitions.append(
             zivid.Settings.Acquisition(
                 aperture=aperture,
-                exposure_time=datetime.timedelta(microseconds=exposure_time),
-                brightness=1.8,
+                exposure_time=exposure_time,
+                brightness=brightness,
                 gain=gain,
             )
         )

@@ -36,7 +36,6 @@ def _options(camera_model) -> argparse.Namespace:
 
 
 def _main() -> None:
-
     app = zivid.Application()
 
     print("Connecting to camera")

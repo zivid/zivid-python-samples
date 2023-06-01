@@ -63,7 +63,6 @@ def _main() -> None:
 
     print(f"Starting warm up for {warmup_time} minutes")
     while (datetime.now() - before_warmup) < warmup_time:
-
         before_capture = datetime.now()
         camera.capture(settings)
         after_capture = datetime.now()

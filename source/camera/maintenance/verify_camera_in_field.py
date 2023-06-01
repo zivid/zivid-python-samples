@@ -14,7 +14,6 @@ from zivid.experimental import calibration
 
 
 def _main() -> None:
-
     app = zivid.Application()
 
     print("Connecting to camera")

@@ -294,7 +294,6 @@ def options() -> argparse.Namespace:
 
 
 def _main() -> None:
-
     app = zivid.Application()
 
     user_options = options()
