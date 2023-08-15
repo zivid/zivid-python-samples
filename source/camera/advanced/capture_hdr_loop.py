@@ -10,6 +10,34 @@ import zivid
 from sample_utils.paths import get_sample_data_path
 
 
+def _settings_folder(camera: zivid.Camera) -> str:
+    """Get folder name for settings files in Zivid Sample Data.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        Folder name
+
+    """
+
+    model = camera.info.model
+
+    if model == zivid.CameraInfo.Model.zividOnePlusSmall:
+        return "zividOne"
+    if model == zivid.CameraInfo.Model.zividOnePlusMedium:
+        return "zividOne"
+    if model == zivid.CameraInfo.Model.zividOnePlusLarge:
+        return "zividOne"
+    if model == zivid.CameraInfo.Model.zividTwo:
+        return "zividTwo"
+    if model == zivid.CameraInfo.Model.zividTwoL100:
+        return "zividTwo"
+    if model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return "zivid2Plus"
+    raise RuntimeError(f"Unhandled enum value {camera.info.model}")
+
+
 def _main() -> None:
     app = zivid.Application()
 
@@ -17,8 +45,7 @@ def _main() -> None:
     camera = app.connect_camera()
 
     for i in range(1, 4):
-        camera_model = camera.info.model
-        settings_file = get_sample_data_path() / "Settings" / camera_model[0:8] / f"Settings0{i :01d}.yml"
+        settings_file = get_sample_data_path() / "Settings" / _settings_folder(camera) / f"Settings0{i :01d}.yml"
         print(f"Loading settings from file: {settings_file}")
         settings = zivid.Settings.load(settings_file)
 

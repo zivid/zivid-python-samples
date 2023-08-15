@@ -12,32 +12,32 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                ubuntu-version: ["ubuntu:18.04", "ubuntu:20.04"]
+                ubuntu-version: ["20.04", "22.04"]
         steps:
             - name: Check out code
               uses: actions/checkout@v2
-            - name: Setup on ${{matrix.ubuntu-version}}
+            - name: Setup on Ubuntu ${{matrix.ubuntu-version}}
               run: |
                   docker run \
                       --volume $PWD:/host \
                       --workdir /host/continuous-integration \
                       --env "PYTHONDONTWRITEBYTECODE=1" \
-                      ${{matrix.ubuntu-version}} \
+                      ubuntu:${{matrix.ubuntu-version}} \
                       bash -c "./setup.sh"
     ubuntu-setup-and-lint:
         name: Ubuntu setup and lint
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                ubuntu-version: ["ubuntu:18.04"]
+                ubuntu-version: ["20.04"]
         steps:
             - name: Check out code
               uses: actions/checkout@v2
-            - name: Setup and lint on ${{matrix.ubuntu-version}}
+            - name: Setup and lint on Ubuntu ${{matrix.ubuntu-version}}
               run: |
                   docker run \
                       --volume $PWD:/host \
                       --workdir /host/continuous-integration \
                       --env "PYTHONDONTWRITEBYTECODE=1" \
-                      ${{matrix.ubuntu-version}} \
+                      ubuntu:${{matrix.ubuntu-version}} \
                       bash -c "./setup.sh && ./lint.sh"

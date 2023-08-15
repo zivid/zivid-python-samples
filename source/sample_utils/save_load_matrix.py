@@ -44,13 +44,13 @@ def load_and_assert_affine_matrix(yaml_file_path: Path) -> np.ndarray:
         matrix: Affine 4x4 matrix of np.ndarray type
 
     Raises:
-        Exception: If no transform was read
+        RuntimeError: If no transform was read
 
     """
     matrix = np.array(zivid.Matrix4x4(yaml_file_path))
 
     if matrix is None:
-        raise Exception("No transform found on the provided path!")
+        raise RuntimeError("No transform found on the provided path!")
 
     assert_affine(matrix)
 

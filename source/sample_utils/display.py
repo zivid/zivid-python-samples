@@ -3,7 +3,7 @@ Display relevant data for Zivid Samples.
 
 """
 
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import cv2
 import matplotlib.pyplot as plt
@@ -24,6 +24,23 @@ def display_rgb(rgb: np.ndarray, title: str = "RGB image", block: bool = True) -
     plt.figure()
     plt.imshow(rgb)
     plt.title(title)
+    plt.show(block=block)
+
+
+def display_rgbs(rgbs: List[np.ndarray], titles: List[str], layout: Tuple[int, int], block: bool = True) -> None:
+    if layout[0] * layout[1] < len(rgbs):
+        raise RuntimeError(
+            f"Layout {layout} only has room for {layout[0] * layout[1]} images, while {len(rgbs)} was provided."
+        )
+    if len(titles) != len(rgbs):
+        raise RuntimeError(f"Expected {len(titles)} titles, because {len(rgbs)} images were provided.")
+    axs = plt.subplots(layout[0], layout[1], figsize=(layout[1] * 8, layout[0] * 6))[1]
+    axs.resize(layout[0], layout[1])
+    for row in range(layout[0]):
+        for col in range(layout[1]):
+            axs[row, col].imshow(rgbs[col + row * layout[1]])
+            axs[row, col].title.set_text(titles[col + row * layout[1]])
+    plt.tight_layout()
     plt.show(block=block)
 
 

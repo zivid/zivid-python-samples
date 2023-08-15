@@ -319,7 +319,6 @@ def _generate_dataset(app: zivid.Application, con: rtde.RTDE, input_data: rtde.s
 
     """
     with app.connect_camera() as camera:
-
         settings = _camera_settings(camera)
         save_dir = _generate_folder()
 
@@ -390,7 +389,6 @@ def perform_hand_eye_calibration(
         pose_file_path = data_dir / f"pos{idata:02d}.yaml"
 
         if frame_file_path.is_file() and pose_file_path.is_file():
-
             print(f"Detect feature points from img{idata:02d}.zdf")
             point_cloud = zivid.Frame(frame_file_path).point_cloud()
             detection_result = zivid.calibration.detect_feature_points(point_cloud)
@@ -433,7 +431,6 @@ def perform_hand_eye_calibration(
 
 
 def _main() -> None:
-
     app = zivid.Application()
     user_options = _options()
 

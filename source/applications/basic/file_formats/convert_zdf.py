@@ -112,7 +112,6 @@ def _main() -> None:
         raise FileNotFoundError(f"{user_options.filename} does not exist")
 
     with zivid.Application():
-
         print(f"Reading point cloud from file: {user_options.filename}")
         frame = zivid.Frame(user_options.filename)
 

@@ -64,9 +64,7 @@ def _visualize_and_save_image(image: np.ndarray, image_file: str, title: str) ->
 
 
 def _main() -> None:
-
     with zivid.Application():
-
         data_file = get_sample_data_path() / "Zivid3D.zdf"
         print(f"Reading ZDF frame from file: {data_file}")
         frame = zivid.Frame(data_file)
