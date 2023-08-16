@@ -12,7 +12,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                ubuntu-version: ["ubuntu:18.04", "ubuntu:20.04"]
+                ubuntu-version: ["ubuntu:20.04"]
         steps:
             - name: Check out code
               uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                ubuntu-version: ["ubuntu:18.04"]
+                ubuntu-version: ["ubuntu:20.04"]
         steps:
             - name: Check out code
               uses: actions/checkout@v2
