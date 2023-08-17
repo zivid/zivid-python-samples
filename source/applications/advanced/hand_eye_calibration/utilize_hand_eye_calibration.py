@@ -34,9 +34,7 @@ from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
 
 def _main() -> None:
-
     with zivid.Application():
-
         np.set_printoptions(precision=2)
 
         while True:
@@ -45,7 +43,6 @@ def _main() -> None:
             ).strip()
 
             if robot_camera_configuration.lower() == "eth":
-
                 file_name = "ZividGemEyeToHand.zdf"
 
                 # The (picking) point is defined as image coordinates in camera frame. It is hard-coded for the
@@ -61,7 +58,6 @@ def _main() -> None:
                 break
 
             if robot_camera_configuration.lower() == "eih":
-
                 file_name = "ZividGemEyeInHand.zdf"
 
                 # The (picking) point is defined as image coordinates in camera frame. It is hard-coded for the
@@ -94,7 +90,6 @@ def _main() -> None:
             command = input("Enter command, s (to transform single point) or p (to transform point cloud): ").strip()
 
             if command.lower() == "s":
-
                 print("Transforming single point")
 
                 xyz = point_cloud.copy_data("xyz")
@@ -117,7 +112,6 @@ def _main() -> None:
                 break
 
             if command.lower() == "p":
-
                 print("Transforming point cloud")
 
                 point_cloud.transform(transform_base_to_camera)

@@ -126,9 +126,7 @@ def _path_list_creator(
 
 
 def _main() -> None:
-
     with zivid.Application():
-
         while True:
             robot_camera_configuration = input(
                 "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
@@ -145,23 +143,21 @@ def _main() -> None:
         list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
 
         if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
-            raise Exception("The number of point clouds (ZDF iles) and robot poses (YAML files) must be the same")
+            raise RuntimeError("The number of point clouds (ZDF files) and robot poses (YAML files) must be the same")
 
         if len(list_of_paths_to_hand_eye_dataset_robot_poses) == 0:
-            raise Exception("There are no robot poses (YAML files) in the data folder")
+            raise RuntimeError("There are no robot poses (YAML files) in the data folder")
 
         if len(list_of_paths_to_hand_eye_dataset_point_clouds) == 0:
-            raise Exception("There are no point clouds (ZDF files) in the data folder")
+            raise RuntimeError("There are no point clouds (ZDF files) in the data folder")
 
         if len(list_of_paths_to_hand_eye_dataset_robot_poses) == len(list_of_paths_to_hand_eye_dataset_point_clouds):
-
             hand_eye_transform = load_and_assert_affine_matrix(path / "handEyeTransform.yaml")
 
             number_of_dataset_pairs = len(list_of_paths_to_hand_eye_dataset_point_clouds)
 
             list_of_open_3d_point_clouds = []
             for data_pair_id in range(number_of_dataset_pairs):
-
                 # Updating the user about the process status through the terminal
                 print(f"{data_pair_id} / {number_of_dataset_pairs} - {100*data_pair_id / number_of_dataset_pairs}%")
 
@@ -205,7 +201,7 @@ def _main() -> None:
             print("Visualizing transformed point clouds\n")
             o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
         else:
-            raise Exception("Not enought data!")
+            raise RuntimeError("Not enough data!")
 
 
 if __name__ == "__main__":

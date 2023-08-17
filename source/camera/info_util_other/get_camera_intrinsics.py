@@ -16,7 +16,8 @@ def _print_parameter_delta(label: str, fixed_value: float, estimated_value: floa
 
 
 def _print_intrinsic_parameters_delta(
-    fixed_intrinsics: zivid.CameraIntrinsics, estimated_intrinsics: zivid.CameraIntrinsics
+    fixed_intrinsics: zivid.CameraIntrinsics,
+    estimated_intrinsics: zivid.CameraIntrinsics,
 ) -> None:
     _print_parameter_delta("CX", fixed_intrinsics.camera_matrix.cx, estimated_intrinsics.camera_matrix.cx)
     _print_parameter_delta("CY", fixed_intrinsics.camera_matrix.cy, estimated_intrinsics.camera_matrix.cy)
@@ -53,6 +54,38 @@ def _main():
             temperature = frame.state.temperature.lens
             print(f"\nAperture: {fnum:.2f}, Lens Temperature: {temperature:.2f}°C")
             _print_intrinsic_parameters_delta(intrinsics, estimated_intrinsics)
+
+    if camera.info.model not in [
+        zivid.CameraInfo().Model().zividOnePlusSmall,
+        zivid.CameraInfo().Model().zividOnePlusMedium,
+        zivid.CameraInfo().Model().zividOnePlusLarge,
+        zivid.CameraInfo().Model().zividTwo,
+        zivid.CameraInfo().Model().zividTwoL100,
+    ]:
+        settings_subsampled = zivid.Settings(
+            acquisitions=[zivid.Settings.Acquisition()],
+            sampling=zivid.Settings.Sampling(pixel=zivid.Settings.Sampling.Pixel.blueSubsample2x2),
+        )
+        fixed_intrinsics_for_subsampled_settings_path = "FixedIntrinsicsSubsampledBlue2x2.yml"
+        print(
+            f"Saving camera intrinsics for subsampled capture to file: {fixed_intrinsics_for_subsampled_settings_path}"
+        )
+        fixed_intrinsics_for_subsampled_settings = calibration.intrinsics(camera, settings_subsampled)
+        fixed_intrinsics_for_subsampled_settings.save(fixed_intrinsics_for_subsampled_settings_path)
+        frame = camera.capture(settings_subsampled)
+        estimated_intrinsics_for_subsampled_settings = calibration.estimate_intrinsics(frame)
+        estimated_intrinsics_for_subsampled_settings_path = "EstimatedIntrinsicsFromSubsampledBlue2x2Capture.yml"
+        print(
+            f"Saving estimated camera intrinsics for subsampled capture to file: {fixed_intrinsics_for_subsampled_settings_path}"
+        )
+        estimated_intrinsics_for_subsampled_settings.save(estimated_intrinsics_for_subsampled_settings_path)
+        print("\nDifference between fixed and estimated intrinsics for subsampled point cloud:")
+        _print_intrinsic_parameters_delta(
+            fixed_intrinsics_for_subsampled_settings,
+            estimated_intrinsics_for_subsampled_settings,
+        )
+    else:
+        print(f"{camera.info.model_name} does not support sub-sampled mode.")
 
 
 if __name__ == "__main__":

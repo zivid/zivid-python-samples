@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.9.0. For
+This repository contains python code samples for Zivid SDK v2.10.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -53,6 +53,7 @@ from the camera can be used.
           - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py) - Capture point clouds, with color, from the Zivid camera,
             with settings from YML file.
       - **advanced**
+          - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D separately with the Zivid camera.
           - [capture\_hdr\_loop](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/advanced/capture_hdr_loop.py) - Cover the same dynamic range in a scene with different
             acquisition settings to optimize for quality, speed, or to
             find a compromise.
@@ -157,8 +158,8 @@ The recommended Python version for these samples is 3.6 - 3.9.
 4.  Add the directory source to PYTHONPATH. Navigate to the root of the
     repository and run:
     
-      - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\source"`
-      - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\source"`
+      - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\\source"`
+      - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\\source"`
       - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
 
 5.  Open and run one of the samples.

@@ -34,9 +34,7 @@ def _options() -> argparse.Namespace:
 
 
 def _main() -> None:
-
     with zivid.Application():
-
         user_options = _options()
         data_file = user_options.zdf_path
 

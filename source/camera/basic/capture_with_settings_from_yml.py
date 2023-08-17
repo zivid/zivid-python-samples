@@ -12,11 +12,39 @@ import zivid
 from sample_utils.paths import get_sample_data_path
 
 
-def _options(camera_model) -> argparse.Namespace:
+def _settings_folder(camera: zivid.Camera) -> str:
+    """Get folder name for settings files in Zivid Sample Data.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        Folder name
+
+    """
+
+    model = camera.info.model
+
+    if model == zivid.CameraInfo.Model.zividOnePlusSmall:
+        return "zividOne"
+    if model == zivid.CameraInfo.Model.zividOnePlusMedium:
+        return "zividOne"
+    if model == zivid.CameraInfo.Model.zividOnePlusLarge:
+        return "zividOne"
+    if model == zivid.CameraInfo.Model.zividTwo:
+        return "zividTwo"
+    if model == zivid.CameraInfo.Model.zividTwoL100:
+        return "zividTwo"
+    if model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return "zivid2Plus"
+    raise RuntimeError(f"Unhandled enum value {camera.info.model}")
+
+
+def _options(camera) -> argparse.Namespace:
     """Function to read user arguments.
 
     Args:
-        camera_model: Zivid camera model
+        camera: Zivid camera
 
     Returns:
         Arguments from user
@@ -28,7 +56,7 @@ def _options(camera_model) -> argparse.Namespace:
         "--settings-path",
         required=False,
         type=Path,
-        default=get_sample_data_path() / "Settings" / camera_model[0:8] / "Settings01.yml",
+        default=get_sample_data_path() / "Settings" / _settings_folder(camera) / "Settings01.yml",
         help="Path to the camera settings YML file",
     )
 
@@ -36,13 +64,12 @@ def _options(camera_model) -> argparse.Namespace:
 
 
 def _main() -> None:
-
     app = zivid.Application()
 
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    user_options = _options(camera.info.model)
+    user_options = _options(camera)
 
     print("Loading settings from file")
     settings_file = Path(user_options.settings_path)

@@ -44,12 +44,12 @@ def _check_user_data_support(camera: zivid.Camera) -> None:
         camera: Zivid camera instance
 
     Raises:
-        Exception: If the camera does not support user data
+        RuntimeError: If the camera does not support user data
 
     """
     max_data_size = camera.info.user_data.max_size_bytes
     if max_data_size == 0:
-        raise Exception("This camera does not support user data")
+        raise RuntimeError("This camera does not support user data")
 
 
 def _write(camera: zivid.Camera, string: str) -> None:

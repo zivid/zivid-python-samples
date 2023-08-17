@@ -46,7 +46,6 @@ def _options() -> argparse.Namespace:
 
 
 def _main() -> None:
-
     app = zivid.Application()
 
     user_options = _options()

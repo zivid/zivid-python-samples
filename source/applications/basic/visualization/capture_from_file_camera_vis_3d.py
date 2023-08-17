@@ -5,7 +5,7 @@ This sample can be used without access to a physical camera.
 The file camera files are found in Zivid Sample Data with ZFC file extension.
 See the instructions in README.md to download the Zivid Sample Data.
 There are five available file cameras to choose from, one for each camera model.
-The default file camera used in this sample is the Zivid Two M70 file camera.
+The default file camera used in this sample is the Zivid 2 M70 file camera.
 
 """
 
@@ -31,7 +31,7 @@ def _options() -> argparse.Namespace:
         "--file-camera",
         required=False,
         type=Path,
-        default=get_sample_data_path() / "FileCameraZividTwoM70.zfc",
+        default=get_sample_data_path() / "FileCameraZivid2M70.zfc",
         help="Path to the file camera .zfc file",
     )
 
