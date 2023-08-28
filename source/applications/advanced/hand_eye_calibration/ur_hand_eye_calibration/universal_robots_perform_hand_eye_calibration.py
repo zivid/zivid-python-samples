@@ -407,25 +407,25 @@ def perform_hand_eye_calibration(
 
         idata += 1
 
-        print(f"\nPerform {mode} calibration")
+    print(f"\nPerform {mode} calibration")
 
-        if mode == "eye-in-hand":
-            calibration_result = zivid.calibration.calibrate_eye_in_hand(calibration_inputs)
-        elif mode == "eye-to-hand":
-            calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
-        else:
-            raise ValueError(f"Invalid calibration mode: {mode}")
+    if mode == "eye-in-hand":
+        calibration_result = zivid.calibration.calibrate_eye_in_hand(calibration_inputs)
+    elif mode == "eye-to-hand":
+        calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
+    else:
+        raise ValueError(f"Invalid calibration mode: {mode}")
 
-        transform = calibration_result.transform()
-        residuals = calibration_result.residuals()
+    transform = calibration_result.transform()
+    residuals = calibration_result.residuals()
 
-        print("\n\nTransform: \n")
-        np.set_printoptions(precision=5, suppress=True)
-        print(transform)
+    print("\n\nTransform: \n")
+    np.set_printoptions(precision=5, suppress=True)
+    print(transform)
 
-        print("\n\nResiduals: \n")
-        for res in residuals:
-            print(f"Rotation: {res.rotation():.6f}   Translation: {res.translation():.6f}")
+    print("\n\nResiduals: \n")
+    for res in residuals:
+        print(f"Rotation: {res.rotation():.6f}   Translation: {res.translation():.6f}")
 
     return transform, residuals
 
