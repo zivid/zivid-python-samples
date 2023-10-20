@@ -14,7 +14,7 @@ max-locals=20
 max-returns=9
 max-bool-expr=6
 max-statements=70
-max-branches=15
+max-branches=17
 
 [FORMAT]
 max-line-length=225

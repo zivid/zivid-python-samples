@@ -139,7 +139,7 @@ from the camera can be used.
 
 Note:
 
-The recommended Python version for these samples is 3.6 - 3.9.
+The recommended Python version for these samples is 3.7 - 3.9.
 
 -----
 

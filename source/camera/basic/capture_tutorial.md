@@ -240,7 +240,7 @@ settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum
 Fully configured settings are demonstrated below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L68-L119))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L72-L123))
 
 ``` sourceCode python
 print("Configuring settings for capture:")
@@ -327,7 +327,7 @@ Presets](https://support.zivid.com/latest/reference-articles/presets-settings.ht
 for recommended .yml files tuned for your application.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L131-L136))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L135-L140))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -340,7 +340,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L131-L133))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L135-L137))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
