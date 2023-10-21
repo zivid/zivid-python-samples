@@ -48,11 +48,15 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, t
         gains = (1.0, 1.0, 1.0)
         exposure_times = (timedelta(microseconds=1677), timedelta(microseconds=5000), timedelta(microseconds=100000))
         brightnesses = (1.8, 1.8, 1.8)
-    elif camera.info.model is zivid.CameraInfo.Model.zivid2PlusM130:
-        apertures = (5.66, 2.38, 2.1)
+    elif (
+        camera.info.model is zivid.CameraInfo.Model.zivid2PlusM130
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusM60
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusL110
+    ):
+        apertures = (5.66, 2.8, 2.37)
         gains = (1.0, 1.0, 1.0)
         exposure_times = (timedelta(microseconds=1677), timedelta(microseconds=5000), timedelta(microseconds=100000))
-        brightnesses = (2.5, 2.5, 2.5)
+        brightnesses = (2.2, 2.2, 2.2)
     else:
         raise ValueError(f"Unhandled enum value {camera.info.model}")
 

@@ -59,8 +59,6 @@ def _main():
         zivid.CameraInfo().Model().zividOnePlusSmall,
         zivid.CameraInfo().Model().zividOnePlusMedium,
         zivid.CameraInfo().Model().zividOnePlusLarge,
-        zivid.CameraInfo().Model().zividTwo,
-        zivid.CameraInfo().Model().zividTwoL100,
     ]:
         settings_subsampled = zivid.Settings(
             acquisitions=[zivid.Settings.Acquisition()],

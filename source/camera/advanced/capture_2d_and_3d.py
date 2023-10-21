@@ -73,9 +73,21 @@ def _main() -> None:
 
     print("Configuring 3D settings")
     settings = zivid.Settings()
+    settings.experimental.engine = "phase"
     settings.acquisitions.append(zivid.Settings.Acquisition())
     settings.sampling.pixel = user_input.pixels_to_sample
     settings.sampling.color = zivid.Settings.Sampling.Color.disabled
+
+    model = camera.info.model
+    if settings.sampling.pixel == zivid.Settings.Sampling.Pixel.all and model in (
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ):
+        # For 2+, we must lower Brightness from the default 2.5 to 2.2, when using `all` mode.
+        # This code can be removed by changing the Config.yml option 'Camera/Power/Limit'.
+        for acquisition in settings.acquisitions:
+            acquisition.brightness = 2.2
 
     print("Capturing 2D frame")
     with camera.capture(settings_2d) as frame_2d:

@@ -235,6 +235,26 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
                 f"({image_distance_far:.2f}) is outside recommended working distance for camera [800, 2000]"
             )
+    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        focus_distance = 600
+        focal_length = 11
+        circle_of_confusion = 0.008
+        fnum_min = 2.37
+        if image_distance_near < 300 or image_distance_far > 1100:
+            print(
+                f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
+                f"({image_distance_far:.2f}) is outside recommended working distance for camera [300, 1100]"
+            )
+    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        focus_distance = 1100
+        focal_length = 11
+        circle_of_confusion = 0.008
+        fnum_min = 2.37
+        if image_distance_near < 800 or image_distance_far > 2000:
+            print(
+                f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
+                f"({image_distance_far:.2f}) is outside recommended working distance for camera [700, 1700]"
+            )
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -280,6 +300,10 @@ def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
         exposure_time = 1677
     elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
         exposure_time = 1677
+    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        exposure_time = 1677
+    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        exposure_time = 1677
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -310,7 +334,11 @@ def _find_max_brightness(camera: zivid.Camera) -> float:
     elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
         brightness = 1.8
     elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
-        brightness = 2.5
+        brightness = 2.2
+    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        brightness = 2.2
+    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        brightness = 2.2
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
