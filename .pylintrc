@@ -10,7 +10,7 @@ generated-members=cv2.*
 
 [DESIGN]
 max-args=7
-max-locals=20
+max-locals=30
 max-returns=9
 max-bool-expr=6
 max-statements=70
