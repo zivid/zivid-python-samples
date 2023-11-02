@@ -105,6 +105,10 @@ from the camera can be used.
           - [hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/hand_eye_calibration.py) - Perform Hand-Eye calibration.
           - [mask\_point\_cloud](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/mask_point_cloud.py) - Read point cloud data from a ZDF file, apply a binary
             mask, and visualize it.
+          - [project\_and\_find\_marker](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/project_and_find_marker.py) - Show a marker using the projector, capture a set of 2D
+            images to find the marker coordinates (2D and 3D).
+          - [reproject\_points](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/reproject_points.py) - Illuminate checkerboard (Zivid Calibration Board) corners
+            by getting checkerboard pose
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
             to the Zivid Calibration Board.
           - **hand\_eye\_calibration**
