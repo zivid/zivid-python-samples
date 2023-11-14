@@ -158,8 +158,8 @@ As with all cameras there are settings that can be configured.
 
 ### Presets
 
-The recommendation is to use [Zivid
-Presets](https://support.zivid.com/latest/reference-articles/presets-settings.html)
+The recommendation is to use
+[Presets](https://support.zivid.com/latest/reference-articles/presets-settings.html)
 available in Zivid Studio and as .yml files (see `load_yml_label`
 below). Alternatively, you can use our Capture Assistant, or you may
 configure the settings manually.
@@ -322,8 +322,8 @@ settings_2d.processing.color.gamma = 1.0
 Zivid Studio can store the current settings to .yml files. These can be
 read and applied in the API. You may find it easier to modify the
 settings in these (human-readable) yaml-files in your preferred editor.
-Check out [Zivid
-Presets](https://support.zivid.com/latest/reference-articles/presets-settings.html)
+Check out
+[Presets](https://support.zivid.com/latest/reference-articles/presets-settings.html)
 for recommended .yml files tuned for your application.
 
 ([go to
