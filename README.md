@@ -143,7 +143,7 @@ from the camera can be used.
 
 Note:
 
-The recommended Python version for these samples is 3.7 - 3.9.
+Supported Python versions are listed in the [zivid-python](https://github.com/zivid/zivid-python) repository.
 
 -----
 
