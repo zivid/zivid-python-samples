@@ -18,6 +18,9 @@ def _settings_folder(camera: zivid.Camera) -> str:
     Args:
         camera: Zivid camera
 
+    Raises:
+        RuntimeError: If camera is not supported
+
     Returns:
         Folder name
 

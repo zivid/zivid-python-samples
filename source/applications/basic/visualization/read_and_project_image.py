@@ -1,0 +1,83 @@
+"""
+Read a 2D image from file and project it using the camera projector.
+
+The image for this sample can be found under the main instructions for Zivid samples.
+
+"""
+
+from datetime import timedelta
+from typing import Tuple
+
+import cv2
+import numpy as np
+import zivid
+import zivid.experimental.calibration
+import zivid.experimental.projection
+from sample_utils.paths import get_sample_data_path
+
+
+def _resize_and_create_projector_image(image_to_resize: np.ndarray, final_resolution: Tuple) -> np.ndarray:
+    """Resizes an image to a given resolution.
+
+    Args:
+        image_to_resize: openCV image that needs to be resized
+        final_resolution: resolution after resizing
+
+    Returns:
+        An image with a resolution that matches the projector resolution
+
+    """
+    resized_image = cv2.resize(
+        image_to_resize, (final_resolution[1], final_resolution[0]), interpolation=cv2.INTER_LINEAR
+    )
+    projector_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2BGRA)
+
+    return projector_image
+
+
+def _main() -> None:
+    with zivid.Application() as app:
+        print("Connecting to camera")
+        with app.connect_camera() as camera:
+            image_file = get_sample_data_path() / "ZividLogo.png"
+            print("Reading 2D image from file: ")
+            input_image = cv2.imread(str(image_file))
+            if input_image is None:
+                raise RuntimeError(f"File {image_file} not found or couldn't be read.")
+
+            print(f"Input image size: {input_image.shape[:2]}")
+
+            print("Retrieving the projector resolution that the camera supports")
+            projector_resolution = zivid.experimental.projection.projector_resolution(camera)
+
+            print(f"Resizing input image to fit projector resolution:{projector_resolution}")
+            projector_image = _resize_and_create_projector_image(
+                image_to_resize=input_image, final_resolution=projector_resolution
+            )
+
+            projector_image_file = "ProjectorImage.png"
+            print(f"Saving the projector image to file: {projector_image_file}")
+            cv2.imwrite(projector_image_file, projector_image)
+
+            print("Displaying the projector image")
+
+            with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image:
+                settings_2d = zivid.Settings2D()
+                settings_2d.acquisitions.append(
+                    zivid.Settings2D.Acquisition(
+                        brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83
+                    )
+                )
+
+                print("Capturing a 2D image with the projected image")
+                frame_2d = projected_image.capture(settings_2d)
+
+                captured_image_file = "CapturedImage.png"
+                print(f"Saving the captured image: {captured_image_file}")
+                frame_2d.image_bgra().save(captured_image_file)
+
+                input("Press enter to stop projecting ...")
+
+
+if __name__ == "__main__":
+    _main()

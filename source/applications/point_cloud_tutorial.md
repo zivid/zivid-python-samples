@@ -121,6 +121,8 @@ complete list of output data formats and how to copy them from the GPU.
 | `numpy.ndarray([height,width,3], dtype=float32)`                                                                                      | `PointCloud.copy_data("xyzw")`    | 16 bytes       | 37 MB      |
 | `numpy.ndarray([height,width], dtype=float32)`                                                                                        | `PointCloud.copy_data("z")`       | 4 bytes        | 9 MB       |
 | `numpy.ndarray([height,width,4], dtype=uint8)`                                                                                        | `PointCloud.copy_data("rgba")`    | 4 bytes        | 9 MB       |
+| `numpy.ndarray([height,width,4], dtype=uint8)`                                                                                        | `PointCloud.copy_data("bgra")`    | 4 bytes        | 9 MB       |
+| `numpy.ndarray([height,width,4], dtype=uint8)`                                                                                        | `PointCloud.copy_data("srgb")`    | 4 bytes        | 9 MB       |
 | `numpy.ndarray([height,width], dtype=float32)`                                                                                        | `PointCloud.copy_data("snr")`     | 4 bytes        | 9 MB       |
 | `numpy.ndarray([height,width], dtype=[('x', '<f4'), ('y', '<f4'), ('z', '<f4'), ('r', 'u1'), ('g', 'u1'), ('b', 'u1'), ('a', 'u1')])` | `PointCloud.copy_data("xyzrgba")` | 16 bytes       | 37 MB      |
 

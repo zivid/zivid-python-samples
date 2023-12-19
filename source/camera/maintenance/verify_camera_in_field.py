@@ -3,9 +3,10 @@ Check the dimension trueness of a Zivid camera.
 
 This example shows how to verify the local dimension trueness of a camera.
 If the trueness is much worse than expected, the camera may have been damaged by
-shock in shipping in handling. If so, look at the correct_camera_in_field sample sample.
+shock in shipping or handling. If so, look at the correct_camera_in_field sample sample.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+Note: This example uses experimental SDK features, which may be modified, moved, or deleted
+in the future without notice.
 
 """
 
@@ -41,7 +42,7 @@ def _main() -> None:
     print(f"Successful measurement at {detection_result.centroid()}")
     camera_verification = calibration.verify_camera(infield_input)
     print(
-        f"Estimated dimension trueness at measured position: {camera_verification.local_dimension_trueness()*100:.3f}%"
+        f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness()*100:.3f}%"
     )
 
 

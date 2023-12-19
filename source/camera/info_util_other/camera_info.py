@@ -1,5 +1,5 @@
 """
-Print version information for Python, zivid-python and Zivid SDK, then list cameras and print camera info for each connected camera.
+Print version information for Python, zivid-python and Zivid SDK, then list cameras and print camera info and state for each connected camera.
 
 """
 
@@ -15,7 +15,8 @@ def _main() -> None:
     print(f"Zivid SDK:    {zivid.SDKVersion.full}")
     cameras = app.cameras()
     for camera in cameras:
-        print(f"Camera Info:  {camera}")
+        print(f"Camera Info:  {camera.info}")
+        print(f"Camera State: {camera.state}")
 
 
 if __name__ == "__main__":
