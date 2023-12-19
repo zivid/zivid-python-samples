@@ -98,12 +98,13 @@ You may also list all cameras connected to the computer, and view their
 serial numbers through
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/print_version_info.py#L16-L18))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/info_util_other/camera_info.py#L16-L19))
 
 ``` sourceCode python
 cameras = app.cameras()
 for camera in cameras:
-	print(f"Camera Info:  {camera}")
+	print(f"Camera Info:  {camera.info}")
+	print(f"Camera State: {camera.state}")
 ```
 
 ### File Camera

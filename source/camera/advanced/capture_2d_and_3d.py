@@ -12,6 +12,7 @@ import argparse
 import numpy as np
 import zivid
 from sample_utils.display import display_pointcloud, display_rgbs
+from zivid.experimental import calibration
 
 
 def _options() -> argparse.Namespace:
@@ -36,27 +37,20 @@ def _options() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _map_rgb(pixels_to_sample: zivid.Settings.Sampling.Pixel, rgba: np.ndarray) -> np.ndarray:
+def _map_rgb(pixel_mapping: zivid.PixelMapping, rgba: np.ndarray) -> np.ndarray:
     """Function to map the full RGB image to a subsampled one.
 
     Args:
-        pixels_to_sample: zivid.Settings.Sampling.Pixel option to use for subsampling
+        pixel_mapping: zivid.PixelMapping to use for pixel mapping
         rgba: RGBA image (HxWx4)
-
-    Raises:
-        RuntimeError: If chosen zivid.Settings.Sampling.Pixel is unsupported
 
     Returns:
         Subsampled RGB image
 
     """
-    if pixels_to_sample == zivid.Settings.Sampling.Pixel.blueSubsample2x2:
-        return rgba[::2, ::2, 0:3]
-    if pixels_to_sample == zivid.Settings.Sampling.Pixel.redSubsample2x2:
-        return rgba[1::2, 1::2, 0:3]
-    if pixels_to_sample == zivid.Settings.Sampling.Pixel.all:
-        return rgba[:, :, 0:3]
-    raise RuntimeError(f"Invalid pixels to sample: {pixels_to_sample}")
+    return rgba[
+        pixel_mapping.row_offset :: pixel_mapping.row_stride, pixel_mapping.col_offset :: pixel_mapping.col_stride, 0:3
+    ]
 
 
 def _main() -> None:
@@ -89,13 +83,15 @@ def _main() -> None:
         for acquisition in settings.acquisitions:
             acquisition.brightness = 2.2
 
+    pixel_mapping = calibration.pixel_mapping(camera, settings)
+
     print("Capturing 2D frame")
     with camera.capture(settings_2d) as frame_2d:
         print("Getting RGBA image")
         image = frame_2d.image_rgba()
         rgba = image.copy_data()
 
-        rgb_mapped = _map_rgb(user_input.pixels_to_sample, rgba)
+        rgb_mapped = _map_rgb(pixel_mapping, rgba)
         display_rgbs(
             rgbs=[rgba[:, :, :3], rgb_mapped],
             titles=["Full resolution RGB from 2D capture", f"{user_input.pixels_to_sample} RGB from 2D capture"],

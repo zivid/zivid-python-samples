@@ -92,7 +92,7 @@ def _main() -> None:
         accuracy_estimate = correction.accuracy_estimate()
 
         print(
-            "If written to the camera, this correction can be expected to yield a dimension accuracy of ",
+            "If written to the camera, this correction can be expected to yield a dimension accuracy error of ",
             f"{accuracy_estimate.dimension_accuracy()*100:.3f} or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
             "Accuracy close to where the correction data was collected is likely better.",
         )
