@@ -35,12 +35,37 @@ def _resize_and_create_projector_image(image_to_resize: np.ndarray, final_resolu
     return projector_image
 
 
+def get_projector_image_file_for_camera(camera):
+    """Provides the path to the projector image for a given camera.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        Path to the projector image
+
+    Raises:
+        RuntimeError: Invalid camera model
+
+    """
+    model = camera.info.model
+    if model in [zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100]:
+        return get_sample_data_path() / "ZividLogoZivid2ProjectorResolution.png"
+    if model in [
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ]:
+        return get_sample_data_path() / "ZividLogoZivid2PlusProjectorResolution.png"
+    raise RuntimeError("Invalid camera model")
+
+
 def _main() -> None:
     with zivid.Application() as app:
         print("Connecting to camera")
         with app.connect_camera() as camera:
             image_file = get_sample_data_path() / "ZividLogo.png"
-            print("Reading 2D image from file: ")
+            print("Reading 2D image (of arbitrary resolution) from file: ")
             input_image = cv2.imread(str(image_file))
             if input_image is None:
                 raise RuntimeError(f"File {image_file} not found or couldn't be read.")
@@ -61,7 +86,7 @@ def _main() -> None:
 
             print("Displaying the projector image")
 
-            with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image:
+            with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image_handle:
                 settings_2d = zivid.Settings2D()
                 settings_2d.acquisitions.append(
                     zivid.Settings2D.Acquisition(
@@ -70,12 +95,24 @@ def _main() -> None:
                 )
 
                 print("Capturing a 2D image with the projected image")
-                frame_2d = projected_image.capture(settings_2d)
+                frame_2d = projected_image_handle.capture(settings_2d)
 
                 captured_image_file = "CapturedImage.png"
                 print(f"Saving the captured image: {captured_image_file}")
                 frame_2d.image_bgra().save(captured_image_file)
 
+                input("Press enter to stop projecting ...")
+
+            projector_image_file_for_given_camera = get_projector_image_file_for_camera(camera)
+
+            print(
+                f"Reading 2D image (of resolution matching the Zivid camera projector resolution) from file: {projector_image_file_for_given_camera}"
+            )
+            projector_image_for_given_camera = zivid.Image.load(projector_image_file_for_given_camera, "bgra")
+
+            with zivid.experimental.projection.show_image_bgra(
+                camera, projector_image_for_given_camera.copy_data()
+            ) as projected_image_handle:
                 input("Press enter to stop projecting ...")
 
 
