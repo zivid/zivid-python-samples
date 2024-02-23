@@ -31,7 +31,7 @@ def _print_intrinsic_parameters_delta(
     _print_parameter_delta("P2", fixed_intrinsics.distortion.p2, estimated_intrinsics.distortion.p2)
 
 
-def _main():
+def _main() -> None:
     app = zivid.Application()
 
     print("Connecting to camera")

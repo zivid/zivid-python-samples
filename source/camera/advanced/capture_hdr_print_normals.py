@@ -5,7 +5,6 @@ For scenes with high dynamic range we combine multiple acquisitions to get an HD
 
 """
 
-
 import numpy as np
 import zivid
 

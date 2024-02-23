@@ -230,7 +230,7 @@ def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: Lis
     file_storage_residuals.release()
 
 
-def _image_count(robot_state) -> int:
+def _image_count(robot_state: rtde.serialize.DataObject) -> int:
     """Read robot output register 24.
 
     Args:
@@ -243,7 +243,7 @@ def _image_count(robot_state) -> int:
     return robot_state.output_int_register_24
 
 
-def _ready_for_capture(robot_state) -> bool:
+def _ready_for_capture(robot_state: rtde.serialize.DataObject) -> bool:
     """Read robot output register 64.
 
     Args:

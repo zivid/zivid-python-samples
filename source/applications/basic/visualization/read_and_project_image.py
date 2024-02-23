@@ -6,6 +6,7 @@ The image for this sample can be found under the main instructions for Zivid sam
 """
 
 from datetime import timedelta
+from pathlib import Path
 from typing import Tuple
 
 import cv2
@@ -35,7 +36,7 @@ def _resize_and_create_projector_image(image_to_resize: np.ndarray, final_resolu
     return projector_image
 
 
-def get_projector_image_file_for_camera(camera):
+def get_projector_image_file_for_camera(camera: zivid.Camera) -> Path:
     """Provides the path to the projector image for a given camera.
 
     Args:
