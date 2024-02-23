@@ -59,7 +59,7 @@ Camera. This is essentially the Zivid driver.
 -----
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L12))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L10))
 
 ``` sourceCode python
 app = zivid.Application()
@@ -70,7 +70,7 @@ app = zivid.Application()
 Now we can connect to the camera.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L15))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L13))
 
 ``` sourceCode python
 camera = app.connect_camera()
@@ -214,16 +214,11 @@ settings](https://support.zivid.com/latest//reference-articles/standard-acquisit
 We can create settings for a single acquisition capture.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L18-L24))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L16-L17))
 
 ``` sourceCode python
 settings = zivid.Settings()
-settings.experimental.engine = "phase"
 settings.acquisitions.append(zivid.Settings.Acquisition())
-settings.acquisitions[0].aperture = 5.66
-settings.acquisitions[0].exposure_time = datetime.timedelta(microseconds=6500)
-settings.processing.filters.outlier.removal.enabled = True
-settings.processing.filters.outlier.removal.threshold = 5.0
 ```
 
 #### Multi Acquisition HDR
@@ -362,7 +357,7 @@ multiple acquisitions (HDR) is given by the number of `acquisitions` in
 `settings`.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L27))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L20))
 
 ``` sourceCode python
 with camera.capture(settings) as frame:
@@ -412,7 +407,7 @@ Save ----
 We can now save our results.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L28-L30))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L21-L23))
 
 ``` sourceCode python
 data_file = "Frame.zdf"
@@ -433,7 +428,7 @@ for a list of supported formats. For example, we can export the point
 cloud to .ply format.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L32-L34))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L25-L27))
 
 ``` sourceCode python
 data_file_ply = "PointCloud.ply"

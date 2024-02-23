@@ -41,7 +41,7 @@ Calling any of the APIs in the Zivid SDK requires initializing the Zivid
 application and keeping it alive while the program runs.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L12))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L10))
 
 ``` sourceCode python
 app = zivid.Application()
@@ -50,7 +50,7 @@ app = zivid.Application()
 ## Connect
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L15))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L13))
 
 ``` sourceCode python
 camera = app.connect_camera()
@@ -73,7 +73,7 @@ settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_par
 ## Capture
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L27))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L20))
 
 ``` sourceCode python
 with camera.capture(settings) as frame:
@@ -82,7 +82,7 @@ with camera.capture(settings) as frame:
 ## Save
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L28-L30))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L21-L23))
 
 ``` sourceCode python
 data_file = "Frame.zdf"

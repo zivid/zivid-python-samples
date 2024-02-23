@@ -47,7 +47,7 @@ def _settings_folder(camera: zivid.Camera) -> str:
     raise RuntimeError(f"Unhandled enum value {camera.info.model}")
 
 
-def _options(camera) -> argparse.Namespace:
+def _options(camera: zivid.Camera) -> argparse.Namespace:
     """Function to read user arguments.
 
     Args:

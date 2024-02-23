@@ -3,8 +3,6 @@ Capture point clouds, with color, from the Zivid camera.
 
 """
 
-import datetime
-
 import zivid
 
 
@@ -14,14 +12,9 @@ def _main() -> None:
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    print("Configuring settings")
+    print("Creating default capture settings")
     settings = zivid.Settings()
-    settings.experimental.engine = "phase"
     settings.acquisitions.append(zivid.Settings.Acquisition())
-    settings.acquisitions[0].aperture = 5.66
-    settings.acquisitions[0].exposure_time = datetime.timedelta(microseconds=6500)
-    settings.processing.filters.outlier.removal.enabled = True
-    settings.processing.filters.outlier.removal.threshold = 5.0
 
     print("Capturing frame")
     with camera.capture(settings) as frame:

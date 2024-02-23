@@ -12,6 +12,10 @@ ignore =
     W503,
     # Missing exception(s) in Raises section
     DAR401,
+    # Type annotation for `self` in method
+    ANN101,
+    # Type annotation for special method (e.g. `__init__`)
+    ANN204,
 # Covered better by pylint
 max-line-length = 9999
 exclude =

@@ -1,4 +1,5 @@
-black
-flake8
-pylint
-darglint
+black==24.1.0
+flake8==7.0.0
+flake8-annotations==3.0.1
+pylint==3.0.3
+darglint==1.8.1
