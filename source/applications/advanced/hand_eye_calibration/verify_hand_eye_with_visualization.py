@@ -17,6 +17,8 @@ Tip: This sample saves the point clouds in PLY format in the same
 directory where this sample is stored. You can open the PLY point clouds
 in MeshLab for visual inspection.
 
+Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
 """
 
 import argparse
@@ -26,6 +28,7 @@ from typing import List
 import numpy as np
 import open3d as o3d
 import zivid
+import zivid.experimental.calibration
 from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
 
@@ -162,24 +165,24 @@ def _main() -> None:
                 print(f"{data_pair_id} / {number_of_dataset_pairs} - {100*data_pair_id / number_of_dataset_pairs}%")
 
                 # Reading point cloud from file
-                point_cloud = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id]).point_cloud()
+                frame = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id])
 
                 robot_pose = load_and_assert_affine_matrix(list_of_paths_to_hand_eye_dataset_robot_poses[data_pair_id])
 
                 # Transforms point cloud to the robot end-effector frame
                 if robot_camera_configuration.lower() == "eth":
                     inv_robot_pose = np.linalg.inv(robot_pose)
-                    point_cloud_transformed = point_cloud.transform(np.matmul(inv_robot_pose, hand_eye_transform))
+                    frame.point_cloud().transform(np.matmul(inv_robot_pose, hand_eye_transform))
 
                 # Transforms point cloud to the robot base frame
                 if robot_camera_configuration.lower() == "eih":
-                    point_cloud_transformed = point_cloud.transform(np.matmul(robot_pose, hand_eye_transform))
+                    frame.point_cloud().transform(np.matmul(robot_pose, hand_eye_transform))
 
-                xyz = point_cloud_transformed.copy_data("xyz")
-                rgba = point_cloud_transformed.copy_data("rgba")
+                xyz = frame.point_cloud().copy_data("xyz")
+                rgba = frame.point_cloud().copy_data("rgba")
 
                 # Finding Cartesian coordinates of the checkerboard center point
-                detection_result = zivid.calibration.detect_feature_points(point_cloud_transformed)
+                detection_result = zivid.experimental.calibration.detect_feature_points(frame)
 
                 if detection_result.valid():
                     # Extracting the points within the ROI (checkerboard)

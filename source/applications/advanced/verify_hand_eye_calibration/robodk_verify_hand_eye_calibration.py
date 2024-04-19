@@ -46,7 +46,7 @@ def _capture_and_estimate_calibration_board_pose(camera: zivid.Camera) -> np.nda
     settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
     frame = camera.capture(settings_list)
 
-    calibration_board_pose = zivid.calibration.detect_feature_points(frame.point_cloud()).pose().to_matrix()
+    calibration_board_pose = zivid.calibration.detect_feature_points(frame).pose().to_matrix()
 
     return calibration_board_pose
 

@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.11.1. For
+This repository contains python code samples for Zivid SDK v2.12.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -122,7 +122,7 @@ from the camera can be used.
               - [robodk\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robodk_hand_eye_calibration.py) - Generate a dataset and perform hand-eye calibration
                 using the Robodk interface.
               - [utilize\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py) - Transform single data point or entire point cloud from
-                camera frame to robot base frame using Hand-Eye
+                camera to robot base reference frame using Hand-Eye
                 calibration
               - [verify\_hand\_eye\_with\_visualization](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/verify_hand_eye_with_visualization.py) - Verify hand-eye calibration by transforming all
                 dataset point clouds and
@@ -138,6 +138,9 @@ from the camera can be used.
       - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/white_balance_calibration.py) - Balance color for 2D capture using white surface as reference.
   - **applications**
       - **advanced**
+          - **robot\_guidance**
+              - [robodk\_robot\_guidance](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/robot_guidance/robodk_robot_guidance.py) - Guide the robot to follow a path on the Zivid
+                Calibration Board.
           - **verify\_hand\_eye\_calibration**
               - [robodk\_verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/verify_hand_eye_calibration/robodk_verify_hand_eye_calibration.py) - Perform a touch test with a robot to verify Hand-Eye
                 Calibration using the RoboDK interface.

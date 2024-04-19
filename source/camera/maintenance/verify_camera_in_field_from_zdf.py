@@ -19,8 +19,8 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 """
 
 import zivid
+import zivid.experimental.calibration
 from sample_utils.paths import get_sample_data_path
-from zivid.experimental import calibration
 
 
 def _main() -> None:
@@ -33,7 +33,7 @@ def _main() -> None:
         # offline infield verification
 
         print("Capturing calibration board")
-        with calibration.capture_calibration_board(camera) as frame:
+        with zivid.experimental.calibration.capture_calibration_board(camera) as frame:
             data_file = "FrameWithCalibrationBoard.zdf"
             print(f"Saving frame to file: {data_file}, for later use in offline infield verification")
             frame.save(data_file)
@@ -44,16 +44,16 @@ def _main() -> None:
         print(f"Reading frame from file: {data_file}, for offline infield verification")
         with zivid.Frame(data_file) as frame:
             print("Detecting calibration board")
-            detection_result = calibration.detect_feature_points(frame)
+            detection_result = zivid.experimental.calibration.detect_feature_points(frame)
 
-        infield_input = calibration.InfieldCorrectionInput(detection_result)
+        infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
         if not infield_input.valid():
             raise RuntimeError(
                 f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
             )
 
         print(f"Successful measurement at {detection_result.centroid()}")
-        camera_verification = calibration.verify_camera(infield_input)
+        camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
         print(
             f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness()*100:.3f}%"
         )

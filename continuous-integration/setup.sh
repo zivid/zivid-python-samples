@@ -28,8 +28,7 @@ function install_www_deb {
     rm -r $TMP_DIR || exit
 }
 
-install_www_deb "https://downloads.zivid.com/sdk/releases/2.11.1+de9b5dae-1/u${VERSION_ID:0:2}/zivid-telicam-driver_3.0.1.1-3_amd64.deb" || exit
-install_www_deb "https://downloads.zivid.com/sdk/releases/2.11.1+de9b5dae-1/u${VERSION_ID:0:2}/zivid_2.11.1+de9b5dae-1_amd64.deb" || exit
+install_www_deb "https://downloads.zivid.com/sdk/releases/2.12.0+6afd4961-1/u${VERSION_ID:0:2}/zivid_2.12.0+6afd4961-1_amd64.deb" || exit
 
 python3 -m pip install --upgrade pip || exit
 python3 -m pip install --requirement "$ROOT_DIR/requirements.txt" || exit

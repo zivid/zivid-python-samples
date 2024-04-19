@@ -7,6 +7,8 @@ in the camera frame. These points are then passed to the API to get the correspo
 The projector pixel coordinates are then used to draw markers at the correct locations before displaying
 the image using the projector.
 
+Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
 """
 
 from datetime import timedelta
@@ -16,7 +18,6 @@ import cv2
 import numpy as np
 import zivid
 import zivid.experimental.calibration
-import zivid.experimental.projection
 
 
 def _checkerboard_grid() -> List[np.ndarray]:
@@ -99,10 +100,10 @@ def _main() -> None:
     points_in_camera_frame = _transform_grid_to_calibration_board(grid, transform_camera_to_checkerboard)
 
     print("Getting projector pixels (2D) corresponding to points (3D) in the camera frame")
-    projector_pixels = zivid.experimental.projection.pixels_from_3d_points(camera, points_in_camera_frame)
+    projector_pixels = zivid.projection.pixels_from_3d_points(camera, points_in_camera_frame)
 
     print("Retrieving the projector resolution that the camera supports")
-    projector_resolution = zivid.experimental.projection.projector_resolution(camera)
+    projector_resolution = zivid.projection.projector_resolution(camera)
 
     print(f"Creating a blank projector image with resolution: {projector_resolution}")
     background_color = (0, 0, 0, 255)
@@ -120,7 +121,7 @@ def _main() -> None:
 
     print("Displaying the projector image")
 
-    with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image:
+    with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
         settings_2d = zivid.Settings2D()
         settings_2d.acquisitions.append(
             zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)

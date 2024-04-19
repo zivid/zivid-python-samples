@@ -54,7 +54,7 @@ def _main() -> None:
     settings.processing.filters.smoothing.gaussian.enabled = True
     settings.processing.filters.smoothing.gaussian.sigma = 1
     settings.processing.filters.reflection.removal.enabled = True
-    settings.processing.filters.reflection.removal.experimental.mode = "global"
+    settings.processing.filters.reflection.removal.mode = "global"
     settings.processing.color.balance.red = 1.0
     settings.processing.color.balance.green = 1.0
     settings.processing.color.balance.blue = 1.0

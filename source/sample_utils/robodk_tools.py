@@ -31,7 +31,6 @@ def connect_to_robot(robot_ip: str) -> Tuple[Any, Any]:
         callback_abort=None,
     )
     rdk.setRunMode(RUNMODE_RUN_ROBOT)
-    print("Connection with the robot established")
     return rdk, robot
 
 
