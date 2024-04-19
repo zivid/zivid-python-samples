@@ -12,8 +12,6 @@ from typing import Tuple
 import cv2
 import numpy as np
 import zivid
-import zivid.experimental.calibration
-import zivid.experimental.projection
 from sample_utils.paths import get_sample_data_path
 
 
@@ -74,7 +72,7 @@ def _main() -> None:
             print(f"Input image size: {input_image.shape[:2]}")
 
             print("Retrieving the projector resolution that the camera supports")
-            projector_resolution = zivid.experimental.projection.projector_resolution(camera)
+            projector_resolution = zivid.projection.projector_resolution(camera)
 
             print(f"Resizing input image to fit projector resolution:{projector_resolution}")
             projector_image = _resize_and_create_projector_image(
@@ -87,7 +85,7 @@ def _main() -> None:
 
             print("Displaying the projector image")
 
-            with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image_handle:
+            with zivid.projection.show_image_bgra(camera, projector_image) as projected_image_handle:
                 settings_2d = zivid.Settings2D()
                 settings_2d.acquisitions.append(
                     zivid.Settings2D.Acquisition(
@@ -111,7 +109,7 @@ def _main() -> None:
             )
             projector_image_for_given_camera = zivid.Image.load(projector_image_file_for_given_camera, "bgra")
 
-            with zivid.experimental.projection.show_image_bgra(
+            with zivid.projection.show_image_bgra(
                 camera, projector_image_for_given_camera.copy_data()
             ) as projected_image_handle:
                 input("Press enter to stop projecting ...")

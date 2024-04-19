@@ -15,6 +15,8 @@ must be modified to your scene. This is done in universal_robots_hand_eye_script
 Further explanation of this sample is found in our knowledge base:
 https://support.zivid.com/latest/academy/applications/hand-eye/ur5-robot-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
 
+Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
 """
 
 import argparse
@@ -26,6 +28,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import zivid
+import zivid.experimental.calibration
 from rtde import rtde, rtde_config
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from scipy.spatial.transform import Rotation
@@ -266,8 +269,7 @@ def _verify_good_capture(frame: zivid.Frame) -> None:
         RuntimeError: If no feature points are detected in frame
 
     """
-    point_cloud = frame.point_cloud()
-    detection_result = zivid.calibration.detect_feature_points(point_cloud)
+    detection_result = zivid.experimental.calibration.detect_feature_points(frame)
 
     if not detection_result.valid():
         raise RuntimeError("Failed to detect feature points from captured frame.")
@@ -390,8 +392,8 @@ def perform_hand_eye_calibration(
 
         if frame_file_path.is_file() and pose_file_path.is_file():
             print(f"Detect feature points from img{idata:02d}.zdf")
-            point_cloud = zivid.Frame(frame_file_path).point_cloud()
-            detection_result = zivid.calibration.detect_feature_points(point_cloud)
+            frame = zivid.Frame(frame_file_path)
+            detection_result = zivid.experimental.calibration.detect_feature_points(frame)
 
             if not detection_result.valid():
                 raise RuntimeError(f"Failed to detect feature points from frame {frame_file_path}")

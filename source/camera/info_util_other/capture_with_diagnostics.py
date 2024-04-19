@@ -29,12 +29,6 @@ def _settings_folder(camera: zivid.Camera) -> str:
 
     model = camera.info.model
 
-    if model == zivid.CameraInfo.Model.zividOnePlusSmall:
-        return "zividOne"
-    if model == zivid.CameraInfo.Model.zividOnePlusMedium:
-        return "zividOne"
-    if model == zivid.CameraInfo.Model.zividOnePlusLarge:
-        return "zividOne"
     if model == zivid.CameraInfo.Model.zividTwo:
         return "zivid2"
     if model == zivid.CameraInfo.Model.zividTwoL100:

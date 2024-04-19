@@ -13,7 +13,7 @@ from typing import Tuple
 import cv2
 import numpy as np
 import zivid
-import zivid.experimental.projection
+import zivid.projection
 
 
 def _create_background_image(resolution: Tuple[int, int], background_color: Tuple[int, ...]) -> np.ndarray:
@@ -144,11 +144,7 @@ def _projector_to_camera_scale_factor(camera_info: zivid.CameraInfo) -> float:
         zivid.CameraInfo.Model.zivid2PlusL110,
     ]:
         ratio = 2.47
-    elif model in [
-        zivid.CameraInfo.Model.zividOnePlusSmall,
-        zivid.CameraInfo.Model.zividOnePlusMedium,
-        zivid.CameraInfo.Model.zividOnePlusLarge,
-    ]:
+    else:
         raise ValueError("Invalid camera model")
 
     return ratio
@@ -210,7 +206,7 @@ def _capture_with_capture_assistant(camera: zivid.Camera) -> zivid.Frame:
     )
     settings: zivid.Settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
     settings.processing.filters.reflection.removal.enabled = True
-    settings.processing.filters.reflection.removal.experimental.mode = "global"
+    settings.processing.filters.reflection.removal.mode = "global"
     settings.processing.filters.smoothing.gaussian.enabled = True
     settings.processing.filters.smoothing.gaussian.sigma = 1.5
     settings.sampling.pixel = "all"
@@ -255,7 +251,7 @@ def _main() -> None:
     print("Connecting to camera")
     with app.connect_camera() as camera:
         print("Retrieving the projector resolution that the camera supports")
-        projector_resolution = zivid.experimental.projection.projector_resolution(camera)
+        projector_resolution = zivid.projection.projector_resolution(camera)
 
         print(f"Creating a projector image with resolution: {projector_resolution}")
         background_color = (0, 0, 0, 255)
@@ -274,7 +270,7 @@ def _main() -> None:
         cv2.imwrite(projector_image_file, projector_image)
 
         print("Displaying the projector image")
-        with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image:
+        with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
             input("Press enter to continue ...")
 
             settings_2d_zero_brightness = zivid.Settings2D()

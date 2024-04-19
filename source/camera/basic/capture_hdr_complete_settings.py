@@ -29,21 +29,10 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, t
         brightnesses: The projector brightness of each capture
 
     Raises:
-        ValueError: If the model is not Zivid One+, Zivid 2 or Zivid 2+
+        ValueError: If the model is not Zivid 2 or Zivid 2+
 
     """
-    if (
-        camera.info.model is zivid.CameraInfo.Model.zividOnePlusLarge
-        or camera.info.model is zivid.CameraInfo.Model.zividOnePlusMedium
-        or camera.info.model is zivid.CameraInfo.Model.zividOnePlusSmall
-    ):
-        apertures = (8.0, 4.0, 1.4)
-        gains = (1.0, 1.0, 2.0)
-        exposure_times = (timedelta(microseconds=6500), timedelta(microseconds=10000), timedelta(microseconds=40000))
-        brightnesses = (1.8, 1.8, 1.8)
-    elif (
-        camera.info.model is zivid.CameraInfo.Model.zividTwo or camera.info.model is zivid.CameraInfo.Model.zividTwoL100
-    ):
+    if camera.info.model is zivid.CameraInfo.Model.zividTwo or camera.info.model is zivid.CameraInfo.Model.zividTwoL100:
         apertures = (5.66, 2.38, 1.8)
         gains = (1.0, 1.0, 1.0)
         exposure_times = (timedelta(microseconds=1677), timedelta(microseconds=5000), timedelta(microseconds=100000))
@@ -71,7 +60,7 @@ def _main() -> None:
 
     print("Configuring settings for capture:")
     settings = zivid.Settings()
-    settings.experimental.engine = "phase"
+    settings.engine = "phase"
     settings.sampling.color = "rgb"
     settings.sampling.pixel = "all"
     settings.region_of_interest.box.enabled = True
@@ -91,7 +80,7 @@ def _main() -> None:
     filters.outlier.removal.enabled = True
     filters.outlier.removal.threshold = 5.0
     filters.reflection.removal.enabled = True
-    filters.reflection.removal.experimental.mode = "global"
+    filters.reflection.removal.mode = "global"
     filters.cluster.removal.enabled = True
     filters.cluster.removal.max_neighbor_distance = 10
     filters.cluster.removal.min_area = 100
@@ -99,9 +88,9 @@ def _main() -> None:
     filters.experimental.contrast_distortion.correction.strength = 0.4
     filters.experimental.contrast_distortion.removal.enabled = False
     filters.experimental.contrast_distortion.removal.threshold = 0.5
-    filters.experimental.hole_filling.enabled = True
-    filters.experimental.hole_filling.hole_size = 0.2
-    filters.experimental.hole_filling.strictness = 1
+    filters.hole.repair.enabled = True
+    filters.hole.repair.hole_size = 0.2
+    filters.hole.repair.strictness = 1
     color = settings.processing.color
     color.balance.red = 1.0
     color.balance.blue = 1.0

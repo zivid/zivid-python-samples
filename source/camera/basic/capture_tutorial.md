@@ -14,6 +14,7 @@ tutorial see:
 [**Connect**](#Connect) |
 [**Configure**](#Configure) |
 [**Capture**](#Capture) |
+[**Save**](#Save) |
 [**Multithreading**](#Multithreading) |
 [**Conclusion**](#Conclusion)
 
@@ -33,11 +34,12 @@ MATLAB](https://github.com/zivid/zivid-matlab-samples/blob/master/source/Camera/
 
 Tip:
 
-If you prefer watching a video, our webinar [Making 3D captures easy - A
-tour of Zivid Studio and Zivid
-SDK](https://www.zivid.com/webinars-page?wchannelid=ffpqbqc7sg&wmediaid=ce68dbjldk)
-covers the same content as the Capture Tutorial. .. rubric::
-Prerequisites
+> If you prefer watching a video, our webinar [Making 3D captures easy -
+> A tour of Zivid Studio and Zivid
+> SDK](https://www.zivid.com/webinars-page?wchannelid=ffpqbqc7sg&wmediaid=ce68dbjldk)
+> covers the same content as the Capture Tutorial.
+
+**Prerequisites**
 
   - Install [Zivid
     Software](https://support.zivid.com/latest//getting-started/software-installation.html).
@@ -90,7 +92,7 @@ camera = app.connect_camera(serial_number="2020C0DE")
 
 Note:
 
-The serial number of your camera is shown in the Zivid Studio.
+> The serial number of your camera is shown in the Zivid Studio.
 
 -----
 
@@ -144,7 +146,7 @@ settings.acquisitions.append(zivid.Settings.Acquisition())
 settings.processing.filters.smoothing.gaussian.enabled = True
 settings.processing.filters.smoothing.gaussian.sigma = 1
 settings.processing.filters.reflection.removal.enabled = True
-settings.processing.filters.reflection.removal.experimental.mode = "global"
+settings.processing.filters.reflection.removal.mode = "global"
 settings.processing.color.balance.red = 1.0
 settings.processing.color.balance.green = 1.0
 settings.processing.color.balance.blue = 1.0
@@ -206,8 +208,8 @@ There are only two parameters to configure with Capture Assistant:
 Another option is to configure settings manually. For more information
 about what each settings does, please see [Camera
 Settings](https://support.zivid.com/latest/reference-articles/camera-settings.html).
-Note that Zivid 2 has a set of [standard
-settings](https://support.zivid.com/latest//reference-articles/standard-acquisition-settings-zivid-two.html).
+Then, the next step it's [Capturing High Quality Point
+Clouds](https://support.zivid.com/latest/academy/camera/capturing-high-quality-point-clouds.html)
 
 #### Single Acquisition
 
@@ -236,12 +238,12 @@ settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum
 Fully configured settings are demonstrated below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L72-L123))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L61-L112))
 
 ``` sourceCode python
 print("Configuring settings for capture:")
 settings = zivid.Settings()
-settings.experimental.engine = "phase"
+settings.engine = "phase"
 settings.sampling.color = "rgb"
 settings.sampling.pixel = "all"
 settings.region_of_interest.box.enabled = True
@@ -261,7 +263,7 @@ filters.noise.repair.enabled = True
 filters.outlier.removal.enabled = True
 filters.outlier.removal.threshold = 5.0
 filters.reflection.removal.enabled = True
-filters.reflection.removal.experimental.mode = "global"
+filters.reflection.removal.mode = "global"
 filters.cluster.removal.enabled = True
 filters.cluster.removal.max_neighbor_distance = 10
 filters.cluster.removal.min_area = 100
@@ -269,9 +271,9 @@ filters.experimental.contrast_distortion.correction.enabled = True
 filters.experimental.contrast_distortion.correction.strength = 0.4
 filters.experimental.contrast_distortion.removal.enabled = False
 filters.experimental.contrast_distortion.removal.threshold = 0.5
-filters.experimental.hole_filling.enabled = True
-filters.experimental.hole_filling.hole_size = 0.2
-filters.experimental.hole_filling.strictness = 1
+filters.hole.repair.enabled = True
+filters.hole.repair.hole_size = 0.2
+filters.hole.repair.strictness = 1
 color = settings.processing.color
 color.balance.red = 1.0
 color.balance.blue = 1.0
@@ -323,7 +325,7 @@ Check out
 for recommended .yml files tuned for your application.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L135-L140))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L124-L129))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -336,7 +338,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L135-L137))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L124-L126))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -364,9 +366,7 @@ with camera.capture(settings) as frame:
 ```
 
 The `zivid.Frame` contains the point cloud and color image (stored on
-compute device memory) and the capture and camera information.
-
-### Load
+compute device memory) and the capture and camera information. Load ^^^^
 
 Once saved, the frame can be loaded from a ZDF file.
 
@@ -393,16 +393,7 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera
 with camera.capture(settings_2d) as frame_2d:
 ```
 
------
-
-Caution\!:
-
-> Zivid One+ camera has a time penalty when changing the capture mode
-> (2D and 3D) if the 2D capture settings use brightness \> 0.
-
-You can read more about it in [2D and 3D switching
-limitation](https://support.zivid.com/latest//support/2d-3d-switching-limitation.html).
-Save ----
+## Save
 
 We can now save our results.
 
@@ -418,9 +409,10 @@ frame.save(data_file)
 
 Tip:
 
-You can open and view `Frame.zdf` file in [Zivid
-Studio](https://support.zivid.com/latest//getting-started/studio-guide.html).
-Export ^^^^^^
+> You can open and view `Frame.zdf` file in [Zivid
+> Studio](https://support.zivid.com/latest//getting-started/studio-guide.html).
+
+### Export
 
 The API detects which format to use. See [Point
 Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html)
