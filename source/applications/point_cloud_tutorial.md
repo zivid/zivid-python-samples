@@ -33,12 +33,10 @@ data.
 
 Tip:
 
-> If you prefer watching a video, our webinar [Getting your point cloud
-> ready for your
-> application](https://www.zivid.com/webinars-page?wchannelid=ffpqbqc7sg&wmediaid=h66zph71vo)
-> covers the Point Cloud Tutorial.
-
-**Prerequisites**
+If you prefer watching a video, our webinar [Getting your point cloud
+ready for your
+application](https://www.zivid.com/webinars-page?wchannelid=ffpqbqc7sg&wmediaid=h66zph71vo)
+covers the Point Cloud Tutorial. .. rubric:: Prerequisites
 
   - Install [Zivid
     Software](https://support.zivid.com/latest//getting-started/software-installation.html).
@@ -102,13 +100,11 @@ from GPU memory.
 
 Note:
 
-`zivid.camera.capture()` method returns at some moment in time after the
-camera completes capturing raw images. The handle from
-`zivid.frame.point_cloud()` is available instantly. However, the actual
-point cloud data becomes available only after the processing on the GPU
-is finished. Any calls to data-copy functions (section below) will block
-and wait for processing to finish before proceeding with the requested
-copy operation.
+The handle from `zivid.frame.point_cloud()` is available instantly.
+However, the actual point cloud data becomes available only after the
+processing on the GPU is finished. Any calls to data-copy functions
+(section below) will block and wait for processing to finish before
+proceeding with the requested copy operation.
 
 For detailed explanation, see [Point Cloud Capture
 Process](https://support.zivid.com/latest/academy/camera/point-cloud-capture-process.html).
@@ -157,7 +153,7 @@ frame or, e.g., [scale the point cloud by transforming it from mm to
 m](https://support.zivid.com/latest//academy/applications/transform/transform-millimeters-to-meters.html).
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L119))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L117))
 
 ``` sourceCode python
 point_cloud.transform(transform_base_to_camera)
@@ -175,11 +171,10 @@ the point cloud.
 
 Note:
 
-> [Monochrome
-> Capture](https://support.zivid.com/latest/academy/camera/monochrome-capture.html)
-> is a hardware-based subsample method that reduces the resolution of
-> the point cloud during capture while also reducing the acquisition and
-> capture time.
+[Monochrome
+Capture](https://support.zivid.com/latest/academy/camera/monochrome-capture.html)
+is a hardware-based subsample method that reduces the resolution of the
+point cloud during capture while also reducing the capture time.
 
 -----
 

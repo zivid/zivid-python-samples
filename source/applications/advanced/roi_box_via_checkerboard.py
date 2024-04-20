@@ -3,15 +3,12 @@ Filter the point cloud based on a ROI box given relative to the Zivid Calibratio
 
 The ZFC file for this sample can be downloaded from https://support.zivid.com/en/latest/api-reference/samples/sample-data.html.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 from typing import List
 
 import numpy as np
 import zivid
-import zivid.experimental.calibration
 from sample_utils.display import display_depthmap, display_pointcloud
 from sample_utils.paths import get_sample_data_path
 
@@ -47,8 +44,7 @@ def _main() -> None:
 
     settings = zivid.Settings([zivid.Settings.Acquisition()])
 
-    original_frame = camera.capture(settings)
-    original_point_cloud = original_frame.point_cloud()
+    original_point_cloud = camera.capture(settings).point_cloud()
 
     print("Displaying the original point cloud")
     display_pointcloud(original_point_cloud.copy_data("xyz"), original_point_cloud.copy_data("rgba")[:, :, :3])
@@ -77,7 +73,7 @@ def _main() -> None:
     point_b_in_checkerboard_frame = roi_box_lower_left_corner
 
     print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
-    detection_result = zivid.experimental.calibration.detect_feature_points(original_frame)
+    detection_result = zivid.calibration.detect_feature_points(original_point_cloud)
     transform_checkerboard_to_camera = detection_result.pose().to_matrix()
 
     print("Transforming the ROI base frame points to the camera frame")

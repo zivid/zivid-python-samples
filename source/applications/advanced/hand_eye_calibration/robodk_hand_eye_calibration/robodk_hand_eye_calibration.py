@@ -14,8 +14,6 @@ For finding the best poses for hand-eye check out:
 https://support.zivid.com/latest/academy/applications/hand-eye/hand-eye-calibration-process.html
 Make sure to launch your RDK file and connect to robot through Robodk before running this script.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 import argparse
@@ -27,7 +25,6 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import zivid
-import zivid.experimental.calibration
 from robodk.robolink import Item
 from sample_utils.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
@@ -98,7 +95,7 @@ def _verify_good_capture(frame: zivid.Frame) -> None:
         RuntimeError: If no feature points are detected in frame
 
     """
-    detected_features = zivid.experimental.calibration.detect_feature_points(frame)
+    detected_features = zivid.calibration.detect_feature_points(frame.point_cloud())
     if not detected_features.valid():
         raise RuntimeError("Failed to detect feature points from captured frame.")
 
@@ -237,8 +234,8 @@ def perform_hand_eye_calibration(
 
         if frame_file_path.is_file() and pose_file_path.is_file():
             print(f"Detect feature points from img{pose_and_image_iterator:02d}.zdf")
-            frame = zivid.Frame(frame_file_path)
-            detected_features = zivid.experimental.calibration.detect_feature_points(frame)
+            point_cloud = zivid.Frame(frame_file_path).point_cloud()
+            detected_features = zivid.calibration.detect_feature_points(point_cloud)
             print(f"Read robot pose from pos{pose_and_image_iterator:02d}.yaml")
             transform = load_and_assert_affine_matrix(pose_file_path)
 
