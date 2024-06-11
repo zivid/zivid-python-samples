@@ -16,7 +16,7 @@ def _options() -> argparse.Namespace:
 
     """
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="mode", help="Select mode")
+    subparsers = parser.add_subparsers(dest="mode", help="Select mode", required=True)
     subparsers.add_parser(
         "read",
         help="read",
