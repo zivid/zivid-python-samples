@@ -17,15 +17,7 @@ def _options() -> argparse.Namespace:
         Arguments from user
 
     """
-    parser = argparse.ArgumentParser(
-        description=(
-            "Balance the color of a 2D image\n"
-            "Example:\n"
-            "\t $ python color_balance.py path/to/settings.yml\n\n"
-            "where path/to/settings.yml is the path to the 2D acquisition settings you want to find color balance for."
-        ),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument(
         dest="path",

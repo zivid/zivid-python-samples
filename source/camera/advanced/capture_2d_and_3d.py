@@ -24,11 +24,11 @@ def _main() -> None:
 
     print("Configuring 3D settings")
     settings = zivid.Settings()
-    settings.engine = "phase"
+    settings.engine = zivid.Settings.Engine.phase
     settings.acquisitions.append(zivid.Settings.Acquisition())
     settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample4x4
     settings.sampling.color = zivid.Settings.Sampling.Color.disabled
-    settings.processing.resampling = zivid.Settings.Processing.Resampling.Mode.upsample2x2
+    settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
 
     if camera.info.model in [zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100]:
         print(

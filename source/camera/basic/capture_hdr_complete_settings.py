@@ -60,9 +60,9 @@ def _main() -> None:
 
     print("Configuring settings for capture:")
     settings = zivid.Settings()
-    settings.engine = "phase"
-    settings.sampling.color = "rgb"
-    settings.sampling.pixel = "all"
+    settings.engine = zivid.Settings.Engine.phase
+    settings.sampling.color = zivid.Settings.Sampling.Color.rgb
+    settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
     settings.region_of_interest.box.enabled = True
     settings.region_of_interest.box.point_o = [1000, 1000, 1000]
     settings.region_of_interest.box.point_a = [1000, -1000, 1000]
@@ -80,7 +80,7 @@ def _main() -> None:
     filters.outlier.removal.enabled = True
     filters.outlier.removal.threshold = 5.0
     filters.reflection.removal.enabled = True
-    filters.reflection.removal.mode = "global"
+    filters.reflection.removal.mode = zivid.Settings.Processing.Filters.Reflection.Removal.Mode.global_
     filters.cluster.removal.enabled = True
     filters.cluster.removal.max_neighbor_distance = 10
     filters.cluster.removal.min_area = 100
@@ -91,12 +91,14 @@ def _main() -> None:
     filters.hole.repair.enabled = True
     filters.hole.repair.hole_size = 0.2
     filters.hole.repair.strictness = 1
+    resampling = settings.processing.resampling
+    resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
     color = settings.processing.color
     color.balance.red = 1.0
     color.balance.blue = 1.0
     color.balance.green = 1.0
     color.gamma = 1.0
-    settings.processing.color.experimental.mode = "automatic"
+    settings.processing.color.experimental.mode = zivid.Settings.Processing.Color.Experimental.Mode.automatic
     print(settings)
 
     print("Configuring acquisition settings different for all HDR acquisitions")

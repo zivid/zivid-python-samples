@@ -238,14 +238,14 @@ settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum
 Fully configured settings are demonstrated below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L61-L112))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L61-L114))
 
 ``` sourceCode python
 print("Configuring settings for capture:")
 settings = zivid.Settings()
-settings.engine = "phase"
-settings.sampling.color = "rgb"
-settings.sampling.pixel = "all"
+settings.engine = zivid.Settings.Engine.phase
+settings.sampling.color = zivid.Settings.Sampling.Color.rgb
+settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
 settings.region_of_interest.box.enabled = True
 settings.region_of_interest.box.point_o = [1000, 1000, 1000]
 settings.region_of_interest.box.point_a = [1000, -1000, 1000]
@@ -263,7 +263,7 @@ filters.noise.repair.enabled = True
 filters.outlier.removal.enabled = True
 filters.outlier.removal.threshold = 5.0
 filters.reflection.removal.enabled = True
-filters.reflection.removal.mode = "global"
+filters.reflection.removal.mode = zivid.Settings.Processing.Filters.Reflection.Removal.Mode.global_
 filters.cluster.removal.enabled = True
 filters.cluster.removal.max_neighbor_distance = 10
 filters.cluster.removal.min_area = 100
@@ -274,12 +274,14 @@ filters.experimental.contrast_distortion.removal.threshold = 0.5
 filters.hole.repair.enabled = True
 filters.hole.repair.hole_size = 0.2
 filters.hole.repair.strictness = 1
+resampling = settings.processing.resampling
+resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
 color = settings.processing.color
 color.balance.red = 1.0
 color.balance.blue = 1.0
 color.balance.green = 1.0
 color.gamma = 1.0
-settings.processing.color.experimental.mode = "automatic"
+settings.processing.color.experimental.mode = zivid.Settings.Processing.Color.Experimental.Mode.automatic
 print(settings)
 print("Configuring acquisition settings different for all HDR acquisitions")
 exposure_values = _get_exposure_values(camera)
@@ -325,7 +327,7 @@ Check out
 for recommended .yml files tuned for your application.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L124-L129))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L126-L131))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -338,7 +340,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L124-L126))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L126-L128))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
