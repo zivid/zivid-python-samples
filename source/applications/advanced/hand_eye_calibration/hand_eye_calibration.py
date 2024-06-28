@@ -1,8 +1,6 @@
 """
 Perform Hand-Eye calibration.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 import datetime
@@ -11,7 +9,6 @@ from typing import List
 
 import numpy as np
 import zivid
-import zivid.experimental.calibration
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save
 
 
@@ -49,12 +46,10 @@ def _perform_calibration(hand_eye_input: List[zivid.calibration.HandEyeInput]) -
         calibration_type = input("Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):").strip()
         if calibration_type.lower() == "eth":
             print("Performing eye-to-hand calibration")
-            print("The resulting transform is the camera pose in robot base frame")
             hand_eye_output = zivid.calibration.calibrate_eye_to_hand(hand_eye_input)
             return hand_eye_output
         if calibration_type.lower() == "eih":
             print("Performing eye-in-hand calibration")
-            print("The resulting transform is the camera pose in flange (end-effector) frame")
             hand_eye_output = zivid.calibration.calibrate_eye_in_hand(hand_eye_input)
             return hand_eye_output
         print(f"Unknown calibration type: '{calibration_type}'")
@@ -88,12 +83,6 @@ def _main() -> None:
     hand_eye_input = []
     calibrate = False
 
-    print(
-        "Zivid primarily operates with a (4x4) transformation matrix. To convert\n"
-        "from axis-angle, rotation vector, roll-pitch-yaw, or quaternion, check out\n"
-        "our pose_conversions sample."
-    )
-
     while not calibrate:
         command = input("Enter command, p (to add robot pose) or c (to perform calibration):").strip()
         if command == "p":
@@ -103,7 +92,7 @@ def _main() -> None:
                 frame = _assisted_capture(camera)
 
                 print("Detecting checkerboard in point cloud")
-                detection_result = zivid.experimental.calibration.detect_feature_points(frame)
+                detection_result = zivid.calibration.detect_feature_points(frame.point_cloud())
 
                 if detection_result.valid():
                     print("Calibration board detected")
@@ -124,12 +113,6 @@ def _main() -> None:
     transform = calibration_result.transform()
     transform_file_path = Path(Path(__file__).parent / "transform.yaml")
     assert_affine_matrix_and_save(transform, transform_file_path)
-
-    print(
-        "Zivid primarily operates with a (4x4) transformation matrix. To convert\n"
-        "to axis-angle, rotation vector, roll-pitch-yaw, or quaternion, check out\n"
-        "our pose_conversions sample."
-    )
 
     if calibration_result.valid():
         print("Hand-Eye calibration OK")
