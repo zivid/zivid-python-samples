@@ -56,7 +56,7 @@ def _collect_dataset(camera: zivid.Camera) -> List[zivid.experimental.calibratio
         print(print_line)
         if _yes_no_prompt("Capture (y) or finish (n)? "):
             print("Capturing calibration board")
-            detection_result = zivid.experimental.calibration.detect_feature_points(camera)
+            detection_result = zivid.calibration.detect_calibration_board(camera)
             infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
 
             if infield_input.valid():
@@ -93,7 +93,7 @@ def _main() -> None:
 
         print(
             "If written to the camera, this correction can be expected to yield a dimension accuracy error of",
-            f"{accuracy_estimate.dimension_accuracy()*100:.3f}% or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
+            f"{accuracy_estimate.dimension_accuracy() * 100:.3f}% or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
             "Accuracy close to where the correction data was collected is likely better.",
         )
 

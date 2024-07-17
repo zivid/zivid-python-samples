@@ -17,8 +17,6 @@ Tip: This sample saves the point clouds in PLY format in the same
 directory where this sample is stored. You can open the PLY point clouds
 in MeshLab for visual inspection.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 import argparse
@@ -28,7 +26,6 @@ from typing import List
 import numpy as np
 import open3d as o3d
 import zivid
-import zivid.experimental.calibration
 from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
 
@@ -120,7 +117,7 @@ def _path_list_creator(
         file_path = path / f"{file_prefix_name}{str(num).zfill(number_of_digits_zfill)}{file_suffix_name}"
         list_of_paths.append(file_path)
 
-        next_file_path = path / f"{file_prefix_name}{str(num+1).zfill(number_of_digits_zfill)}{file_suffix_name}"
+        next_file_path = path / f"{file_prefix_name}{str(num + 1).zfill(number_of_digits_zfill)}{file_suffix_name}"
 
         if not next_file_path.exists():
             return list_of_paths
@@ -162,7 +159,7 @@ def _main() -> None:
             list_of_open_3d_point_clouds = []
             for data_pair_id in range(number_of_dataset_pairs):
                 # Updating the user about the process status through the terminal
-                print(f"{data_pair_id} / {number_of_dataset_pairs} - {100*data_pair_id / number_of_dataset_pairs}%")
+                print(f"{data_pair_id} / {number_of_dataset_pairs} - {100 * data_pair_id / number_of_dataset_pairs}%")
 
                 # Reading point cloud from file
                 frame = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id])
@@ -182,7 +179,7 @@ def _main() -> None:
                 rgba = frame.point_cloud().copy_data("rgba")
 
                 # Finding Cartesian coordinates of the checkerboard center point
-                detection_result = zivid.experimental.calibration.detect_feature_points(frame)
+                detection_result = zivid.calibration.detect_calibration_board(frame)
 
                 if detection_result.valid():
                     # Extracting the points within the ROI (checkerboard)

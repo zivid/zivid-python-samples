@@ -433,8 +433,7 @@ frame.save(data_file_ply)
 
 We can get 2D color image from a 3D capture.
 
-No source available for {language\_name} 2D captures also produce 2D
-color images.
+2D captures also produce 2D color images.
 
 ([go to
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L33))

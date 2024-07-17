@@ -46,7 +46,7 @@ def _capture_and_estimate_calibration_board_pose(camera: zivid.Camera) -> np.nda
     settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
     frame = camera.capture(settings_list)
 
-    calibration_board_pose = zivid.calibration.detect_feature_points(frame).pose().to_matrix()
+    calibration_board_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
 
     return calibration_board_pose
 
@@ -66,6 +66,9 @@ def _get_robot_base_to_calibration_board_transform(
     Returns:
         robot_base_to_calibration_board_transform: A 4x4 numpy array containing the calibration board pose in the robot base frame
 
+    Raises:
+        ValueError: If an invalid calibration type is selected
+
     """
     if user_options.eih:
         print("Loading current robot pose")
@@ -75,12 +78,14 @@ def _get_robot_base_to_calibration_board_transform(
         robot_base_to_calibration_board_transform = (
             robot_base_to_flange_transform @ flange_to_camera_transform @ camera_to_calibration_board_transform
         )
-    if user_options.eth:
+    elif user_options.eth:
         robot_base_to_camera_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
 
         robot_base_to_calibration_board_transform = (
             robot_base_to_camera_transform @ camera_to_calibration_board_transform
         )
+    else:
+        raise ValueError("Invalid calibration type. Please choose either eye-in-hand or eye-to-hand.")
 
     return robot_base_to_calibration_board_transform
 

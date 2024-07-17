@@ -5,8 +5,6 @@ checkerboard pose and save the transformation matrix to a YAML file.
 The checkerboard point cloud is also visualized with a coordinate system.
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 from pathlib import Path
@@ -14,7 +12,6 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 import zivid
-import zivid.experimental.calibration
 from sample_utils.paths import get_sample_data_path
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save
 
@@ -75,9 +72,7 @@ def _main() -> None:
         point_cloud = frame.point_cloud()
 
         print("Detecting checkerboard and estimating its pose in camera frame")
-        transform_camera_to_checkerboard = (
-            zivid.experimental.calibration.detect_feature_points(frame).pose().to_matrix()
-        )
+        transform_camera_to_checkerboard = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
         print(f"Camera pose in checkerboard frame:\n{transform_camera_to_checkerboard}")
 
         transform_file_name = "CameraToCheckerboardTransform.yaml"

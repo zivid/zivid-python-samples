@@ -1,8 +1,6 @@
 """
 Perform Hand-Eye calibration.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 import datetime
@@ -11,7 +9,6 @@ from typing import List
 
 import numpy as np
 import zivid
-import zivid.experimental.calibration
 from sample_utils.save_load_matrix import assert_affine_matrix_and_save
 
 
@@ -103,7 +100,7 @@ def _main() -> None:
                 frame = _assisted_capture(camera)
 
                 print("Detecting checkerboard in point cloud")
-                detection_result = zivid.experimental.calibration.detect_feature_points(frame)
+                detection_result = zivid.calibration.detect_calibration_board(frame)
 
                 if detection_result.valid():
                     print("Calibration board detected")

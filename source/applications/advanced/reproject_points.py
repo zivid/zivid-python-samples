@@ -7,8 +7,6 @@ in the camera frame. These points are then passed to the API to get the correspo
 The projector pixel coordinates are then used to draw markers at the correct locations before displaying
 the image using the projector.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 from datetime import timedelta
@@ -17,7 +15,6 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import zivid
-import zivid.experimental.calibration
 
 
 def _checkerboard_grid() -> List[np.ndarray]:
@@ -85,7 +82,7 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Capturing and estimating pose of the Zivid checkerboard in the camera frame")
-    detection_result = zivid.experimental.calibration.detect_feature_points(camera)
+    detection_result = zivid.calibration.detect_calibration_board(camera)
     if not detection_result.valid():
         raise RuntimeError("Calibration board not detected!")
 
