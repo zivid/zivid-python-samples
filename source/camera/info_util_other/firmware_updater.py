@@ -23,7 +23,7 @@ def _main() -> None:
             zivid.firmware.update(
                 camera,
                 progress_callback=lambda progress, description: print(
-                    f'{progress}% : {description}{("","...") [progress < 100]}'
+                    f'{progress}% : {description}{("","...")[progress < 100]}'
                 ),
             )
         else:

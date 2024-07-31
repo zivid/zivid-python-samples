@@ -1,5 +1,5 @@
 """
-Filter the point cloud based on a ROI box given relative to the Zivid Calibration Board.
+Filter the point cloud based on a ROI box given relative to the ArUco marker on a Zivid Calibration Board.
 
 The ZFC file for this sample can be downloaded from https://support.zivid.com/en/latest/api-reference/samples/sample-data.html.
 
@@ -55,36 +55,45 @@ def _main() -> None:
         roi_box_width = 345
         roi_box_height = 150
 
-        # Coordinates are relative to the checkerboard origin which lies in the intersection between the four checkers
-        # in the top-left corner of the checkerboard: Positive x-axis is "East", y-axis is "South" and z-axis is "Down"
-        roi_box_lower_right_corner = np.array([240, 260, 0.5])
-        roi_box_upper_right_corner = np.array(
+        # Coordinates are relative to the ArUco marker origin which lies in the center of the ArUco marker.
+        # Positive x-axis is "East", y-axis is "South" and z-axis is "Down".
+        roi_box_lower_right_corner_in_aruco_frame = np.array([240, 30, 5])
+        roi_box_upper_right_corner_in_aruco_frame = np.array(
             [
-                roi_box_lower_right_corner[0],
-                roi_box_lower_right_corner[1] - roi_box_width,
-                roi_box_lower_right_corner[2],
+                roi_box_lower_right_corner_in_aruco_frame[0],
+                roi_box_lower_right_corner_in_aruco_frame[1] - roi_box_width,
+                roi_box_lower_right_corner_in_aruco_frame[2],
             ]
         )
-        roi_box_lower_left_corner = np.array(
+        roi_box_lower_left_corner_in_aruco_frame = np.array(
             [
-                roi_box_lower_right_corner[0] - roi_box_length,
-                roi_box_lower_right_corner[1],
-                roi_box_lower_right_corner[2],
+                roi_box_lower_right_corner_in_aruco_frame[0] - roi_box_length,
+                roi_box_lower_right_corner_in_aruco_frame[1],
+                roi_box_lower_right_corner_in_aruco_frame[2],
             ]
         )
 
-        point_o_in_checkerboard_frame = roi_box_lower_right_corner
-        point_a_in_checkerboard_frame = roi_box_upper_right_corner
-        point_b_in_checkerboard_frame = roi_box_lower_left_corner
+        point_o_in_aruco_frame = roi_box_lower_right_corner_in_aruco_frame
+        point_a_in_aruco_frame = roi_box_upper_right_corner_in_aruco_frame
+        point_b_in_aruco_frame = roi_box_lower_left_corner_in_aruco_frame
 
-        print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
-        detection_result = zivid.calibration.detect_feature_points(original_frame)
-        transform_camera_to_checkerboard = detection_result.pose().to_matrix()
+        print("Configuring ArUco marker")
+        marker_dictionary = zivid.calibration.MarkerDictionary.aruco4x4_50
+        marker_id = [1]
+
+        print("Detecting ArUco marker")
+        detection_result = zivid.calibration.detect_markers(original_frame, marker_id, marker_dictionary)
+
+        if not detection_result.valid():
+            raise RuntimeError("No ArUco markers detected")
+
+        print("Estimating pose of detected ArUco marker")
+        transform_camera_to_marker = detection_result.detected_markers()[0].pose.to_matrix()
 
         print("Transforming the ROI base frame points to the camera frame")
         roi_points_in_camera_frame = _transform_points(
-            [point_o_in_checkerboard_frame, point_a_in_checkerboard_frame, point_b_in_checkerboard_frame],
-            transform_camera_to_checkerboard,
+            [point_o_in_aruco_frame, point_a_in_aruco_frame, point_b_in_aruco_frame],
+            transform_camera_to_marker,
         )
 
         print("Setting the ROI")

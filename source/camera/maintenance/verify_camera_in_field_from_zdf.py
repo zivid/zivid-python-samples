@@ -33,7 +33,7 @@ def _main() -> None:
         # offline infield verification
 
         print("Capturing calibration board")
-        with zivid.experimental.calibration.capture_calibration_board(camera) as frame:
+        with zivid.calibration.capture_calibration_board(camera) as frame:
             data_file = "FrameWithCalibrationBoard.zdf"
             print(f"Saving frame to file: {data_file}, for later use in offline infield verification")
             frame.save(data_file)
@@ -44,7 +44,7 @@ def _main() -> None:
         print(f"Reading frame from file: {data_file}, for offline infield verification")
         with zivid.Frame(data_file) as frame:
             print("Detecting calibration board")
-            detection_result = zivid.experimental.calibration.detect_feature_points(frame)
+            detection_result = zivid.calibration.detect_calibration_board(frame)
 
         infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
         if not infield_input.valid():
@@ -55,7 +55,7 @@ def _main() -> None:
         print(f"Successful measurement at {detection_result.centroid()}")
         camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
         print(
-            f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness()*100:.3f}%"
+            f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness() * 100:.3f}%"
         )
 
 

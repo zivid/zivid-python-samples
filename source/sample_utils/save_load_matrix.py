@@ -1,3 +1,8 @@
+"""
+Save and load Zivid 4x4 transformation matrices from and to YAML files.
+
+"""
+
 from pathlib import Path
 from typing import Union
 
