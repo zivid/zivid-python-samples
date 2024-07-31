@@ -14,9 +14,7 @@ apt-yes dist-upgrade || exit
 
 apt-yes install \
     python3-pip \
-    build-essential \
     wget \
-    ninja-build \
     cmake ||
     exit $?
 
