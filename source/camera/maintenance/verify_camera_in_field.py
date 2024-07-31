@@ -29,7 +29,7 @@ def _main() -> None:
 
     # Gather data
     print("Capturing calibration board")
-    detection_result = zivid.experimental.calibration.detect_feature_points(camera)
+    detection_result = zivid.calibration.detect_calibration_board(camera)
 
     # Prepare data and check that it is appropriate for infield verification
     infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
@@ -42,7 +42,7 @@ def _main() -> None:
     print(f"Successful measurement at {detection_result.centroid()}")
     camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
     print(
-        f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness()*100:.3f}%"
+        f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness() * 100:.3f}%"
     )
 
 

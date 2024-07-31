@@ -10,14 +10,12 @@ the type of calibration made. Options:
 - eye-to-hand: The point clouds are transformed to the robot end-effector frame
 - eye-in-hand: The point clouds are transformed to the robot base frame
 
-The Hand-Eye calibration is good if the visualized checkerboards overlap
+The Hand-Eye calibration is good if the visualized calibration objects overlap
 accurately.
 
 Tip: This sample saves the point clouds in PLY format in the same
 directory where this sample is stored. You can open the PLY point clouds
 in MeshLab for visual inspection.
-
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
 """
 
@@ -28,23 +26,37 @@ from typing import List
 import numpy as np
 import open3d as o3d
 import zivid
-import zivid.experimental.calibration
 from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
 
-def _filter_checkerboard_roi(xyz: np.ndarray, centroid: np.ndarray) -> np.ndarray:
-    """Filters out the data outside the region of interest defined by the checkerboard centroid.
+def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace) -> np.ndarray:
+    """Filters out the data outside the region of interest defined by the calibration_object centroid.
 
     Args:
-        xyz: A numpy array of X, Y and Z point cloud coordinates
-        centroid: A numpy array of X, Y and Z checkerboard centroid coordinates
+        frame: Zivid frame
+        args: Input arguments
 
     Returns:
         xyz: A numpy array of X, Y and Z point cloud coordinates within the region of interest
 
     """
-    # the longest distance from the checkerboard centroid to the calibration board corner is < 245 mm
-    radius_threshold = 245
+
+    xyz = frame.point_cloud().copy_data("xyz")
+
+    if args.calibration_object == "checkerboard":
+        # Finding Cartesian coordinates of the checkerboard center point
+        detection_result = zivid.calibration.detect_calibration_board(frame)
+        centroid = detection_result.centroid()
+        # the longest distance from the checkerboard centroid to the calibration board corner is < 245 mm
+        radius_threshold = 245
+    else:
+        # Finding Cartesian coordinates of the ArUco marker center point
+        detection_result = zivid.calibration.detect_markers(frame, args.id, args.dictionary)
+        pose = detection_result.detected_markers()[0].pose.to_matrix()
+        translation = pose[:3, 3]
+        centroid = translation.flatten()
+        radius_threshold = args.size * np.sqrt(2) / 2
+
     radius = np.linalg.norm(centroid - xyz, axis=2)
     xyz[radius > radius_threshold] = np.NaN
 
@@ -65,6 +77,21 @@ def _options() -> argparse.Namespace:
         required=True,
         help="Path to the Hand-Eye dataset",
     )
+
+    subparsers = parser.add_subparsers(dest="calibration_object", required=True, help="Calibration object type")
+    subparsers.add_parser("checkerboard", help="Verify using Zivid calibration board")
+    marker_parser = subparsers.add_parser("marker", help="Verify using ArUco marker")
+    marker_parser.add_argument(
+        "--dictionary",
+        required=True,
+        choices=list(zivid.calibration.MarkerDictionary.valid_values()),
+        help="Dictionary of the targeted ArUco marker",
+    )
+    marker_parser.add_argument(
+        "--id", nargs=1, required=True, type=int, help="ID of ArUco marker to be used for verification"
+    )
+    marker_parser.add_argument("--size", required=True, type=float, help="ArUco marker size in mm")
+
     return parser.parse_args()
 
 
@@ -83,8 +110,8 @@ def _create_open3d_point_cloud(rgba: np.ndarray, xyz: np.ndarray) -> o3d.geometr
     xyz = xyz.reshape(-1, 3)
     rgb = rgba[:, :, 0:3].reshape(-1, 3)
 
-    point_cloud_open3d = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
-    point_cloud_open3d.colors = o3d.utility.Vector3dVector(rgb / 255)
+    point_cloud_open3d = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz.astype(np.float64)))
+    point_cloud_open3d.colors = o3d.utility.Vector3dVector(rgb.astype(np.float64) / 255)
 
     refined_point_cloud_open3d = o3d.geometry.PointCloud.remove_non_finite_points(
         point_cloud_open3d, remove_nan=True, remove_infinite=True
@@ -120,7 +147,7 @@ def _path_list_creator(
         file_path = path / f"{file_prefix_name}{str(num).zfill(number_of_digits_zfill)}{file_suffix_name}"
         list_of_paths.append(file_path)
 
-        next_file_path = path / f"{file_prefix_name}{str(num+1).zfill(number_of_digits_zfill)}{file_suffix_name}"
+        next_file_path = path / f"{file_prefix_name}{str(num + 1).zfill(number_of_digits_zfill)}{file_suffix_name}"
 
         if not next_file_path.exists():
             return list_of_paths
@@ -130,6 +157,8 @@ def _path_list_creator(
 
 def _main() -> None:
     with zivid.Application():
+        args = _options()
+
         while True:
             robot_camera_configuration = input(
                 "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
@@ -138,11 +167,8 @@ def _main() -> None:
                 break
             print("Entered unknown Hand-Eye calibration type")
 
-        args = _options()
         path = args.input_path
-
         list_of_paths_to_hand_eye_dataset_point_clouds = _path_list_creator(path, "img", 2, ".zdf")
-
         list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
 
         if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
@@ -162,7 +188,9 @@ def _main() -> None:
             list_of_open_3d_point_clouds = []
             for data_pair_id in range(number_of_dataset_pairs):
                 # Updating the user about the process status through the terminal
-                print(f"{data_pair_id} / {number_of_dataset_pairs} - {100*data_pair_id / number_of_dataset_pairs}%")
+                print(
+                    f"{data_pair_id} / {number_of_dataset_pairs} - {(100 * data_pair_id / number_of_dataset_pairs):.2f}%"
+                )
 
                 # Reading point cloud from file
                 frame = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id])
@@ -178,24 +206,17 @@ def _main() -> None:
                 if robot_camera_configuration.lower() == "eih":
                     frame.point_cloud().transform(np.matmul(robot_pose, hand_eye_transform))
 
-                xyz = frame.point_cloud().copy_data("xyz")
-                rgba = frame.point_cloud().copy_data("rgba")
+                # Extracting the points within the ROI (calibration object)
+                xyz_filtered = _filter_calibration_object_roi(frame, args)
 
-                # Finding Cartesian coordinates of the checkerboard center point
-                detection_result = zivid.experimental.calibration.detect_feature_points(frame)
+                # Converting from NumPy array to Open3D format
+                point_cloud_open3d = _create_open3d_point_cloud(frame.point_cloud().copy_data("rgba"), xyz_filtered)
 
-                if detection_result.valid():
-                    # Extracting the points within the ROI (checkerboard)
-                    xyz_filtered = _filter_checkerboard_roi(xyz, detection_result.centroid())
+                # Saving point cloud to PLY file
+                o3d.io.write_point_cloud(f"img{data_pair_id + 1}.ply", point_cloud_open3d)
 
-                    # Converting from NumPy array to Open3D format
-                    point_cloud_open3d = _create_open3d_point_cloud(rgba, xyz_filtered)
-
-                    # Saving point cloud to PLY file
-                    o3d.io.write_point_cloud(f"img{data_pair_id + 1}.ply", point_cloud_open3d)
-
-                    # Appending the Open3D point cloud to a list for visualization
-                    list_of_open_3d_point_clouds.append(point_cloud_open3d)
+                # Appending the Open3D point cloud to a list for visualization
+                list_of_open_3d_point_clouds.append(point_cloud_open3d)
 
         print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100.0%")
         print("\nAll done!\n")

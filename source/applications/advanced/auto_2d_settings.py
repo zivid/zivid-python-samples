@@ -16,8 +16,6 @@ Change the steps in _adjust_acquisition_settings_2d() if you want to re-prioriti
 first. If you want to use your own white reference (white wall, piece of paper, etc.) instead of using the calibration
 board, you can provide your own mask in _main(). Then you will have to specify the lower limit for f-number yourself.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 import argparse
@@ -29,7 +27,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import zivid
-import zivid.experimental.calibration
 from sample_utils.calibration_board_utils import find_white_mask_from_checkerboard
 from sample_utils.white_balance_calibration import compute_mean_rgb_from_mask, white_balance_calibration
 
@@ -152,7 +149,7 @@ def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple
         settings = _capture_assistant_settings(camera)
         frame = camera.capture(settings)
 
-        checkerboard_pose = zivid.experimental.calibration.detect_feature_points(frame).pose().to_matrix()
+        checkerboard_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
         distance_to_checkerboard = checkerboard_pose[2, 3]
 
         rgb = frame.point_cloud().copy_data("rgba")[:, :, :3]
@@ -520,10 +517,10 @@ def _print_poor_pixel_distribution(rgb: np.ndarray) -> None:
     black_and = np.sum(np.logical_and(np.logical_and(rgb[:, :, 0] == 0, rgb[:, :, 1] == 0), rgb[:, :, 2] == 0))
 
     print("Distribution of saturated (255) and black (0) pixels with final settings:")
-    print(f"Saturated pixels (at least one channel): {saturated_or}\t ({100*saturated_or/total_num_pixels:.2f}%)")
-    print(f"Saturated pixels (all channels):\t {saturated_and}\t ({100*saturated_and/total_num_pixels:.2f}%)")
-    print(f"Black pixels (at least one channel):\t {black_or}\t ({100*black_or/total_num_pixels:.2f}%)")
-    print(f"Black pixels (all channels):\t\t {black_and}\t ({100*black_and/total_num_pixels:.2f}%)")
+    print(f"Saturated pixels (at least one channel): {saturated_or}\t ({100 * saturated_or / total_num_pixels:.2f}%)")
+    print(f"Saturated pixels (all channels):\t {saturated_and}\t ({100 * saturated_and / total_num_pixels:.2f}%)")
+    print(f"Black pixels (at least one channel):\t {black_or}\t ({100 * black_or / total_num_pixels:.2f}%)")
+    print(f"Black pixels (all channels):\t\t {black_and}\t ({100 * black_and / total_num_pixels:.2f}%)")
 
 
 def _plot_image_with_histogram(rgb: np.ndarray, settings_2d: zivid.Settings2D) -> None:

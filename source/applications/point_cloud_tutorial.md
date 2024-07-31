@@ -12,7 +12,6 @@ tutorial see:
 [**Introduction**](#Introduction) |
 [**Frame**](#Frame) |
 [**Point**](#Point-Cloud) |
-[**Transform**](#Transform) |
 [**Downsample**](#Downsample) |
 [**Normals**](#Normals) |
 [**Visualize**](#Visualize) |
@@ -148,7 +147,7 @@ In terms of memory allocation, there are two ways to copy data:
   - A user can pass a pointer to a pre-allocated memory buffer, and the
     Zivid SDK will copy the data to the pre-allocated memory buffer.
 
-## Transform
+-----
 
 You may want to
 [transform](https://support.zivid.com/latest//academy/applications/transform.html)
@@ -230,10 +229,10 @@ The size of normals is equal to the size of the input point cloud.
 
 Having the frame allows you to visualize the point cloud.
 
-No source available for {language\_name} You can visualize the point
+No source available for {language\_name}You can visualize the point
 cloud from the point cloud object as well.
 
-No source available for {language\_name} For more information, check out
+No source available for {language\_name}For more information, check out
 [Visualization
 Tutorial](https://support.zivid.com/latest/academy/applications/visualization-tutorial.html),
 where we cover point cloud, color image, depth map, and normals

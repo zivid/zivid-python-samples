@@ -12,8 +12,6 @@ The sample requires:
 
 Note: Make sure to launch RoboDK and connect to the robot before running this sample.
 
-Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
-
 """
 
 import argparse
@@ -23,7 +21,6 @@ import cv2
 import numpy as np
 import robodk
 import zivid
-import zivid.experimental.calibration
 from sample_utils.robodk_tools import connect_to_robot, set_robot_speed_and_acceleration
 from sample_utils.save_load_matrix import load_and_assert_affine_matrix
 
@@ -145,7 +142,7 @@ def _generate_tool_poses_from_checkerboard(
         List of poses (4x4) for the tool path in the robot base
 
     """
-    detection_result = zivid.experimental.calibration.detect_feature_points(camera)
+    detection_result = zivid.calibration.detect_calibration_board(camera)
     if not detection_result.valid():
         raise RuntimeError("Calibration board not detected!")
 
