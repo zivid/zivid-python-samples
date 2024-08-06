@@ -36,23 +36,23 @@ def _checkerboard_grid() -> List[np.ndarray]:
     return list(points)
 
 
-def _transform_grid_to_calibration_board(
-    grid: List[np.ndarray], transform_camera_to_checkerboard: np.ndarray
+def _transform_grid_to_camera_frame(
+    grid: List[np.ndarray], camera_to_checkerboard_transform: np.ndarray
 ) -> List[np.ndarray]:
     """Transform a list of grid points to the camera frame.
 
     Args:
         grid: List of 4D points (X,Y,Z,W) for each corner in the checkerboard, in the checkerboard frame
-        transform_camera_to_checkerboard: 4x4 transformation matrix
+        camera_to_checkerboard_transform: 4x4 transformation matrix
 
     Returns:
         List of 3D grid points in the camera frame
 
     """
     points_in_camera_frame = []
-    for point in grid:
-        transformed_point = transform_camera_to_checkerboard @ point
-        points_in_camera_frame.append(transformed_point[:3])
+    for point_in_checkerboard_frame in grid:
+        point_in_camera_frame = camera_to_checkerboard_transform @ point_in_checkerboard_frame
+        points_in_camera_frame.append(point_in_camera_frame[:3])
 
     return points_in_camera_frame
 
@@ -87,17 +87,19 @@ def _main() -> None:
         raise RuntimeError("Calibration board not detected!")
 
     print("Estimating checkerboard pose")
-    transform_camera_to_checkerboard = detection_result.pose().to_matrix()
-    print(transform_camera_to_checkerboard)
+    camera_to_checkerboard_transform = detection_result.pose().to_matrix()
+    print(camera_to_checkerboard_transform)
 
     print("Creating a grid of 7 x 6 points (3D) with 30 mm spacing to match checkerboard corners")
-    grid = _checkerboard_grid()
+    grid_points_in_checkerboard_frame = _checkerboard_grid()
 
     print("Transforming the grid to the camera frame")
-    points_in_camera_frame = _transform_grid_to_calibration_board(grid, transform_camera_to_checkerboard)
+    grid_points_in_camera_frame = _transform_grid_to_camera_frame(
+        grid_points_in_checkerboard_frame, camera_to_checkerboard_transform
+    )
 
     print("Getting projector pixels (2D) corresponding to points (3D) in the camera frame")
-    projector_pixels = zivid.projection.pixels_from_3d_points(camera, points_in_camera_frame)
+    projector_pixels = zivid.projection.pixels_from_3d_points(camera, grid_points_in_camera_frame)
 
     print("Retrieving the projector resolution that the camera supports")
     projector_resolution = zivid.projection.projector_resolution(camera)

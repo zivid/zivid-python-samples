@@ -18,7 +18,7 @@ def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[n
 
     Args:
         points: list of 3D points to be transformed
-        transform: homogenous transform (4x4)
+        transform: homogenous transformation matrix (4x4)
 
     Returns:
         transformed_points: list of transformed 3D points
@@ -79,12 +79,12 @@ def _main() -> None:
 
         print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
         detection_result = zivid.calibration.detect_feature_points(original_frame)
-        transform_camera_to_checkerboard = detection_result.pose().to_matrix()
+        camera_to_checkerboard_transform = detection_result.pose().to_matrix()
 
         print("Transforming the ROI base frame points to the camera frame")
         roi_points_in_camera_frame = _transform_points(
             [point_o_in_checkerboard_frame, point_a_in_checkerboard_frame, point_b_in_checkerboard_frame],
-            transform_camera_to_checkerboard,
+            camera_to_checkerboard_transform,
         )
 
         print("Setting the ROI")

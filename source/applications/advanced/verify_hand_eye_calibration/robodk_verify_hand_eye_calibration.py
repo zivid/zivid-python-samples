@@ -5,8 +5,8 @@ The touch test is performed by a robot equipped with the Pointed Hand-Eye Verifi
 The robot touches the Zivid calibration object to verify hand-eye calibration.
 The sample requires as follows:
 - Type of calibration used (eye-in-hand or eye-to-hand)
-- YAML file with Hand-Eye transformation
-- YAML file with Pointed Hand-Eye Verification Tool transformation
+- YAML file with Hand-Eye transformation matrix
+- YAML file with Pointed Hand-Eye Verification Tool transformation matrix
 - Capture pose target name used in RoboDK
 - Calibration object used (Zivid calibration board or ArUco marker)
 
@@ -84,20 +84,20 @@ def _estimate_calibration_object_pose(frame: zivid.Frame, user_options: argparse
     return calibration_object_pose
 
 
-def _get_robot_base_to_calibration_object_transform(
+def _get_base_to_calibration_object_transform(
     user_options: argparse.Namespace,
     camera_to_calibration_object_transform: np.ndarray,
     robot: Item,
 ) -> np.ndarray:
-    """Calculating the robot base to the calibration object transform matrix.
+    """Calculating the robot base to the calibration object transformation matrix.
 
     Args:
-        user_options: Arguments from user that contain the type of hand-eye calibration done and the path to the matrix that resulted from that calibration
+        user_options: Arguments from user that contain the type of hand-eye calibration done and the path to the transformation matrix that resulted from that calibration
         camera_to_calibration_object_transform: A 4x4 numpy array containing the calibration object pose in the camera frame
         robot: Robot item in open RoboDK rdk file
 
     Returns:
-        robot_base_to_calibration_object_transform: A 4x4 numpy array containing the calibration object pose in the robot base frame
+        base_to_calibration_object_transform: A 4x4 numpy array containing the calibration object pose in the robot base frame
 
     Raises:
         ValueError: If an invalid calibration type is selected
@@ -105,22 +105,20 @@ def _get_robot_base_to_calibration_object_transform(
     """
     if user_options.eih:
         print("Loading current robot pose")
-        robot_base_to_flange_transform = np.array(robot.Pose()).T
+        base_to_flange_transform = np.array(robot.Pose()).T
         flange_to_camera_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
 
-        robot_base_to_calibration_object_transform = (
-            robot_base_to_flange_transform @ flange_to_camera_transform @ camera_to_calibration_object_transform
+        base_to_calibration_object_transform = (
+            base_to_flange_transform @ flange_to_camera_transform @ camera_to_calibration_object_transform
         )
     elif user_options.eth:
-        robot_base_to_camera_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
+        base_to_camera_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
 
-        robot_base_to_calibration_object_transform = (
-            robot_base_to_camera_transform @ camera_to_calibration_object_transform
-        )
+        base_to_calibration_object_transform = base_to_camera_transform @ camera_to_calibration_object_transform
     else:
         raise ValueError("Invalid calibration type. Please choose either eye-in-hand or eye-to-hand.")
 
-    return robot_base_to_calibration_object_transform
+    return base_to_calibration_object_transform
 
 
 def _yes_no_prompt(question: str) -> str:
@@ -342,15 +340,15 @@ def _main() -> None:
     set_robot_speed_and_acceleration(robot, speed=100, joint_speed=100, acceleration=50, joint_acceleration=50)
 
     print("Loading the Pointed Hand-Eye Verification Tool transformation matrix from a YAML file")
-    pointed_hand_eye_verification_tool_matrix = load_and_assert_affine_matrix(user_options.tool_yaml)
+    tool_base_to_tool_tip_transform = load_and_assert_affine_matrix(user_options.tool_yaml)
 
     if user_options.mounts_yaml:
         print("Loading the on-arm mounts transformation matrix from a YAML file")
-        flange_to_on_arm_mounts_transform = load_and_assert_affine_matrix(user_options.mounts_yaml)
+        flange_to_tool_base_transform = load_and_assert_affine_matrix(user_options.mounts_yaml)
 
-        tcp = flange_to_on_arm_mounts_transform @ pointed_hand_eye_verification_tool_matrix
+        flange_to_tcp_transform = flange_to_tool_base_transform @ tool_base_to_tool_tip_transform
     else:
-        tcp = pointed_hand_eye_verification_tool_matrix
+        flange_to_tcp_transform = tool_base_to_tool_tip_transform
 
     capture_pose = get_robot_targets(rdk, target_keyword=user_options.target_keyword)
     if not capture_pose:
@@ -368,14 +366,14 @@ def _main() -> None:
             camera_to_calibration_object_transform = _estimate_calibration_object_pose(frame, user_options)
 
             print("Calculating the calibration object pose in robot base frame")
-            robot_base_to_calibration_object_transform = _get_robot_base_to_calibration_object_transform(
+            base_to_calibration_object_transform = _get_base_to_calibration_object_transform(
                 user_options,
                 camera_to_calibration_object_transform,
                 robot,
             )
 
             print("Calculating pose for robot to touch the calibration object")
-            touch_pose = robot_base_to_calibration_object_transform @ np.linalg.inv(tcp)
+            touch_pose = base_to_calibration_object_transform @ np.linalg.inv(flange_to_tcp_transform)
 
             print("Calculating pose for the robot to approach the calibration object")
             touch_pose_offset = np.identity(4)

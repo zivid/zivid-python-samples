@@ -50,7 +50,7 @@ def _visualize_checkerboard_point_cloud_with_coordinate_system(
 
     Args:
         point_cloud_open3d: An Open3d point cloud of a checkerboard
-        transform: Transformation matrix
+        transform: Transformation matrix (4x4)
 
     """
     coord_system_mesh = o3d.geometry.TriangleMesh.create_coordinate_frame(size=30)
@@ -72,18 +72,18 @@ def _main() -> None:
         point_cloud = frame.point_cloud()
 
         print("Detecting checkerboard and estimating its pose in camera frame")
-        transform_camera_to_checkerboard = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
-        print(f"Camera pose in checkerboard frame:\n{transform_camera_to_checkerboard}")
+        camera_to_checkerboard_transform = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
+        print(f"Camera pose in checkerboard frame:\n{camera_to_checkerboard_transform}")
 
         transform_file_name = "CameraToCheckerboardTransform.yaml"
         print(f"Saving detected checkerboard pose to YAML file: {transform_file_name}")
         transform_file_path = Path(__file__).parent / transform_file_name
-        assert_affine_matrix_and_save(transform_camera_to_checkerboard, transform_file_path)
+        assert_affine_matrix_and_save(camera_to_checkerboard_transform, transform_file_path)
 
         print("Visualizing checkerboard with coordinate system")
         checkerboard_point_cloud = _create_open3d_point_cloud(point_cloud)
         _visualize_checkerboard_point_cloud_with_coordinate_system(
-            checkerboard_point_cloud, transform_camera_to_checkerboard
+            checkerboard_point_cloud, camera_to_checkerboard_transform
         )
 
 
