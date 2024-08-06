@@ -44,7 +44,7 @@ def _options() -> argparse.Namespace:
     parser.add_argument(
         "--tool-yaml",
         required=True,
-        help="Path to YAML file that contains the tool tip to robot flange transformation matrix",
+        help="Path to YAML file that contains the tool tip transformation matrix (tool tip in robot flange frame)",
     )
     parser.add_argument(
         "--hand-eye-yaml",
@@ -78,7 +78,7 @@ def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[n
 
     Args:
         points: List of 3D points to be transformed
-        transform: Homogenous transform (4x4)
+        transform: Transformation matrix (4x4)
 
     Returns:
         List of transformed 3D points
@@ -127,13 +127,13 @@ def _zivid_logo_from_grid() -> List[int]:
 
 
 def _generate_tool_poses_from_checkerboard(
-    camera: zivid.Camera, camera_to_base_transform: np.ndarray
+    camera: zivid.Camera, base_to_camera_transform: np.ndarray
 ) -> List[np.ndarray]:
     """Generate a tool path as a list of poses in the camera frame using the checkerboard.
 
     Args:
         camera: Zivid camera
-        camera_to_base_transform: Homogenous transform (4x4) from the camera frame to the robot base
+        base_to_camera_transform: Camera pose in robot base frame (4x4)
 
     Raises:
         RuntimeError: If the calibration board is not detected
@@ -146,12 +146,12 @@ def _generate_tool_poses_from_checkerboard(
     if not detection_result.valid():
         raise RuntimeError("Calibration board not detected!")
 
-    checkerboard_to_camera_transform = detection_result.pose().to_matrix()
-    checkerboard_to_base_transform = camera_to_base_transform @ checkerboard_to_camera_transform
+    camera_to_checkerboard_transform = detection_result.pose().to_matrix()
+    base_to_checkerboard_transform = base_to_camera_transform @ camera_to_checkerboard_transform
 
-    grid_points = _checkerboard_grid()
-    grid_points_in_base_frame = _transform_points(grid_points, checkerboard_to_base_transform)
-    grid_poses_in_base_frame = _points_to_poses(grid_points_in_base_frame, checkerboard_to_base_transform[:3, :3])
+    grid_points_in_checkerboard_frame = _checkerboard_grid()
+    grid_points_in_base_frame = _transform_points(grid_points_in_checkerboard_frame, base_to_checkerboard_transform)
+    grid_poses_in_base_frame = _points_to_poses(grid_points_in_base_frame, base_to_checkerboard_transform[:3, :3])
 
     tool_poses_in_base_frame = [grid_poses_in_base_frame[idx] for idx in _zivid_logo_from_grid()]
 
@@ -242,25 +242,25 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Generating tool path from the checkerboard")
-    tool_to_flange_transform = load_and_assert_affine_matrix(user_options.tool_yaml)
-    flange_to_base_transform = np.array(robot.Pose()).T
+    flange_to_tcp_transform = load_and_assert_affine_matrix(user_options.tool_yaml)
+    base_to_flange_transform = np.array(robot.Pose()).T
 
     if user_options.eih:
-        camera_to_flange_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
-        camera_to_base_transform = flange_to_base_transform @ camera_to_flange_transform
+        flange_to_camera_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
+        base_to_camera_transform = base_to_flange_transform @ flange_to_camera_transform
     else:
-        camera_to_base_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
+        base_to_camera_transform = load_and_assert_affine_matrix(user_options.hand_eye_yaml)
 
-    tool_poses_in_robot_base = _generate_tool_poses_from_checkerboard(camera, camera_to_base_transform)
-    flange_poses_in_robot_base = [
-        tool_pose_in_robot_base @ np.linalg.inv(tool_to_flange_transform)
-        for tool_pose_in_robot_base in tool_poses_in_robot_base
+    tool_poses_in_base_frame = _generate_tool_poses_from_checkerboard(camera, base_to_camera_transform)
+    flange_poses_in_base_frame = [
+        tool_pose_in_base_frame @ np.linalg.inv(flange_to_tcp_transform)
+        for tool_pose_in_base_frame in tool_poses_in_base_frame
     ]
 
     print("Displaying the tool path on the checkerboard")
     tool_poses_in_camera_frame = [
-        np.linalg.inv(camera_to_base_transform) @ tool_pose_in_robot_base
-        for tool_pose_in_robot_base in tool_poses_in_robot_base
+        np.linalg.inv(base_to_camera_transform) @ tool_pose_in_base_frame
+        for tool_pose_in_base_frame in tool_poses_in_base_frame
     ]
 
     projector_image = _projected_tool_path(camera, tool_poses_in_camera_frame)
@@ -270,9 +270,9 @@ def _main() -> None:
     if user_options.eih:
         projected_image_handle.stop()
 
-    _approach_target_pose(robot, flange_poses_in_robot_base[0], offset=np.array([0, 0, -100]))
+    _approach_target_pose(robot, flange_poses_in_base_frame[0], offset=np.array([0, 0, -100]))
 
-    _follow_linear_path(robot, flange_poses_in_robot_base)
+    _follow_linear_path(robot, flange_poses_in_base_frame)
 
     robot.MoveJ(robot.JointsHome())
 

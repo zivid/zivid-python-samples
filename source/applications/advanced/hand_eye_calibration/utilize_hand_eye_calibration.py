@@ -53,7 +53,7 @@ def _main() -> None:
                 eye_to_hand_transform_file_path = get_sample_data_path() / "EyeToHandTransform.yaml"
 
                 print("Reading camera pose in robot base reference frame (result of eye-to-hand calibration)")
-                transform_base_to_camera = load_and_assert_affine_matrix(eye_to_hand_transform_file_path)
+                base_to_camera_transform = load_and_assert_affine_matrix(eye_to_hand_transform_file_path)
 
                 break
 
@@ -71,13 +71,13 @@ def _main() -> None:
                 print(
                     "Reading camera pose in flange (end-effector) reference frame (result of eye-in-hand calibration)"
                 )
-                transform_flange_to_camera = load_and_assert_affine_matrix(eye_in_hand_transform_file_path)
+                flange_to_camera_transform = load_and_assert_affine_matrix(eye_in_hand_transform_file_path)
 
                 print("Reading flange (end-effector) pose in robot base reference frame")
-                transform_base_to_flange = load_and_assert_affine_matrix(robot_transform_file_path)
+                base_to_flange_transform = load_and_assert_affine_matrix(robot_transform_file_path)
 
                 print("Computing camera pose in robot base reference frame")
-                transform_base_to_camera = np.matmul(transform_base_to_flange, transform_flange_to_camera)
+                base_to_camera_transform = np.matmul(base_to_flange_transform, flange_to_camera_transform)
 
                 break
 
@@ -107,7 +107,7 @@ def _main() -> None:
                 print(f"Point coordinates in camera reference frame: {point_in_camera_frame[0:3]}")
 
                 print("Transforming (picking) point from camera to robot base reference frame")
-                point_in_base_frame = np.matmul(transform_base_to_camera, point_in_camera_frame)
+                point_in_base_frame = np.matmul(base_to_camera_transform, point_in_camera_frame)
 
                 print(f"Point coordinates in robot base reference frame: {point_in_base_frame[0:3]}")
 
@@ -116,7 +116,7 @@ def _main() -> None:
             if command.lower() == "p":
                 print("Transforming point cloud")
 
-                point_cloud.transform(transform_base_to_camera)
+                point_cloud.transform(base_to_camera_transform)
 
                 save_file = "ZividGemTransformed.zdf"
                 print(f"Saving point cloud to file: {save_file}")

@@ -127,7 +127,7 @@ def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, trans
         save_dir: Directory to save data
         image_num: Image number
         frame: Point cloud stored as ZDF
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
 
     """
     frame.save(save_dir / f"img{image_num:02d}.zdf")
@@ -164,7 +164,7 @@ def _get_frame_and_transform_matrix(
 
     Returns:
         frame: Zivid frame
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
 
     """
     frame = camera.capture(settings)
@@ -222,7 +222,7 @@ def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: Lis
 
     Args:
         save_dir: Path to where data will be saved
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
         residuals: List of residuals
 
     """
@@ -392,7 +392,7 @@ def perform_hand_eye_calibration(
         data_dir: Path to dataset
 
     Returns:
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
         residuals: List of residuals
 
     Raises:

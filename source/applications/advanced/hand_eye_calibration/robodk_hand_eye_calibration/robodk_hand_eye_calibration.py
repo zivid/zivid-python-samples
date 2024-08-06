@@ -57,7 +57,7 @@ def _get_frame_and_transform(robot: Item, camera: zivid.Camera) -> Tuple[zivid.F
 
     Returns:
         Zivid frame
-        4x4 transformation matrix
+        Transformation matrix (4x4)
 
     """
     frame = _assisted_capture(camera)
@@ -77,7 +77,7 @@ def _save_point_cloud_and_pose(
         save_directory: Path to where data will be saved
         image_and_pose_iterator: Image number
         frame: Point cloud stored as ZDF
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
 
     """
     frame.save(save_directory / f"img{image_and_pose_iterator:02d}.zdf")
@@ -143,7 +143,7 @@ def _save_hand_eye_results(save_directory: Path, transform: np.ndarray, residual
 
     Args:
         save_directory: Path to where data will be saved
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
         residuals: List of residuals
 
     """
@@ -232,7 +232,7 @@ def perform_hand_eye_calibration(
         user_options: Input arguments
 
     Returns:
-        transform: 4x4 transformation matrix
+        transform: Transformation matrix (4x4)
         residuals: List of residuals
 
     Raises:

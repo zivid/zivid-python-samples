@@ -18,7 +18,7 @@ def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[n
 
     Args:
         points: list of 3D points to be transformed
-        transform: homogenous transform (4x4)
+        transform: homogenous transformation matrix (4x4)
 
     Returns:
         transformed_points: list of transformed 3D points
@@ -88,12 +88,12 @@ def _main() -> None:
             raise RuntimeError("No ArUco markers detected")
 
         print("Estimating pose of detected ArUco marker")
-        transform_camera_to_marker = detection_result.detected_markers()[0].pose.to_matrix()
+        camera_to_marker_transform = detection_result.detected_markers()[0].pose.to_matrix()
 
         print("Transforming the ROI base frame points to the camera frame")
         roi_points_in_camera_frame = _transform_points(
             [point_o_in_aruco_frame, point_a_in_aruco_frame, point_b_in_aruco_frame],
-            transform_camera_to_marker,
+            camera_to_marker_transform,
         )
 
         print("Setting the ROI")
