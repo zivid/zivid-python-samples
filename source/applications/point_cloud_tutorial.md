@@ -159,7 +159,7 @@ m](https://support.zivid.com/latest//academy/applications/transform/transform-mi
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L119))
 
 ``` sourceCode python
-point_cloud.transform(transform_base_to_camera)
+point_cloud.transform(base_to_camera_transform)
 ```
 
 ## Downsample

@@ -125,7 +125,7 @@ def _get_coordinate_system_points(
     }
 
 
-def _draw_coordinae_system(frame: zivid.Frame, checkerboard_pose: np.ndarray, bgra_image: np.ndarray) -> None:
+def _draw_coordinate_system(frame: zivid.Frame, checkerboard_pose: np.ndarray, bgra_image: np.ndarray) -> None:
     """Draw a coordinate system on a BGRA image.
 
     Args:
@@ -164,24 +164,24 @@ def _main() -> None:
 
         print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
         detection_result = zivid.calibration.detect_calibration_board(frame)
-        transform_camera_to_checkerboard = detection_result.pose().to_matrix()
-        print(transform_camera_to_checkerboard)
+        camera_to_checkerboard_transform = detection_result.pose().to_matrix()
+        print(camera_to_checkerboard_transform)
         print("Camera pose in checkerboard frame:")
-        transform_checkerboard_to_camera = np.linalg.inv(transform_camera_to_checkerboard)
-        print(transform_checkerboard_to_camera)
+        checkerboard_to_camera_transform = np.linalg.inv(camera_to_checkerboard_transform)
+        print(checkerboard_to_camera_transform)
 
         transform_file = Path("CheckerboardToCameraTransform.yaml")
         print("Saving a YAML file with Inverted checkerboard pose to file: ")
-        assert_affine_matrix_and_save(transform_checkerboard_to_camera, transform_file)
+        assert_affine_matrix_and_save(checkerboard_to_camera_transform, transform_file)
 
         print("Transforming point cloud from camera frame to Checkerboard frame")
-        point_cloud.transform(transform_checkerboard_to_camera)
+        point_cloud.transform(checkerboard_to_camera_transform)
 
         print("Converting to OpenCV image format")
         bgra_image = point_cloud.copy_data("bgra")
 
         print("Visualizing checkerboard with coordinate system")
-        _draw_coordinae_system(frame, transform_camera_to_checkerboard, bgra_image)
+        _draw_coordinate_system(frame, camera_to_checkerboard_transform, bgra_image)
         display_bgr(bgra_image, "Checkerboard transformation frame")
 
         checkerboard_transformed_file = "CalibrationBoardInCheckerboardOrigin.zdf"
