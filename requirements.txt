@@ -5,3 +5,4 @@ opencv-python
 pyyaml
 robodk
 scipy
+zivid
