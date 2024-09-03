@@ -114,7 +114,9 @@ def _get_coordinate_system_points(
     z_axis_direction = _move_point(origin_position, np.array([0.0, 0.0, size_of_axis]), checkerboard_pose)
 
     points_to_project = np.array([origin_position, x_axis_direction, y_axis_direction, z_axis_direction])
-    projected_points = cv2.projectPoints(points_to_project, np.zeros(3), np.zeros(3), cv_camera_matrix, cv_dist_coeffs)
+    projected_points = cv2.projectPoints(points_to_project, np.zeros(3), np.zeros(3), cv_camera_matrix, cv_dist_coeffs)[
+        0
+    ]
 
     projected_points = projected_points.reshape(-1, 2)
     return {
