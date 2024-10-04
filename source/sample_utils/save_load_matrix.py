@@ -1,8 +1,3 @@
-"""
-Save and load Zivid 4x4 transformation matrices from and to YAML files.
-
-"""
-
 from pathlib import Path
 from typing import Union
 
@@ -14,7 +9,7 @@ def assert_affine(matrix: Union[np.ndarray, zivid.Matrix4x4]) -> None:
     """Ensures that the matrix is affine.
 
     Args:
-        matrix: Transformation matrix (4x4), np.ndarray or zivid.Matrix4x4
+        matrix: 4x4 transformation matrix, np.ndarray or zivid.Matrix4x4
 
     Raises:
         RuntimeError: If matrix is not affine
@@ -30,7 +25,7 @@ def assert_affine_matrix_and_save(matrix: Union[np.ndarray, zivid.Matrix4x4], ya
     """Save transformation matrix to YAML.
 
     Args:
-        matrix: Transformation matrix (4x4), np.ndarray or zivid.Matrix4x4
+        matrix: 4x4 transformation matrix, np.ndarray or zivid.Matrix4x4
         yaml_path: Path to the YAML file
 
     """

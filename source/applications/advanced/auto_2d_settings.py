@@ -147,12 +147,12 @@ def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple
     """
     try:
         settings = _capture_assistant_settings(camera)
-        frame = camera.capture(settings)
+        point_cloud = camera.capture(settings).point_cloud()
 
-        checkerboard_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
+        checkerboard_pose = zivid.calibration.detect_feature_points(point_cloud).pose().to_matrix()
         distance_to_checkerboard = checkerboard_pose[2, 3]
 
-        rgb = frame.point_cloud().copy_data("rgba")[:, :, :3]
+        rgb = point_cloud.copy_data("rgba")[:, :, :3]
         white_squares_mask = find_white_mask_from_checkerboard(rgb)
     except RuntimeError as exc:
         raise RuntimeError("Unable to find checkerboard, make sure it is in view of the camera.") from exc
@@ -175,7 +175,37 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
         Lowest acceptable f-number that gives a focused image
 
     """
-    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+    if camera.info.model == zivid.CameraInfo.Model.zividOnePlusSmall:
+        focus_distance = 500
+        focal_length = 16
+        circle_of_confusion = 0.015
+        fnum_min = 1.4
+        if image_distance_near < 300 or image_distance_far > 1000:
+            print(
+                f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
+                f"({image_distance_far:.2f}) is outside recommended working distance for camera [300, 1000]"
+            )
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusMedium:
+        focus_distance = 1000
+        focal_length = 16
+        circle_of_confusion = 0.015
+        fnum_min = 1.4
+        if image_distance_near < 500 or image_distance_far > 2000:
+            print(
+                f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
+                f"({image_distance_far:.2f}) is outside recommended working distance for camera [500, 2000]"
+            )
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusLarge:
+        focus_distance = 1800
+        focal_length = 16
+        circle_of_confusion = 0.015
+        fnum_min = 1.4
+        if image_distance_near < 1200 or image_distance_far > 3000:
+            print(
+                f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
+                f"({image_distance_far:.2f}) is outside recommended working distance for camera [1200, 3000]"
+            )
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwo:
         focus_distance = 700
         focal_length = 8
         circle_of_confusion = 0.015
@@ -258,7 +288,13 @@ def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
         Lowest exposure time [us] for given camera
 
     """
-    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+    if camera.info.model == zivid.CameraInfo.Model.zividOnePlusSmall:
+        exposure_time = 6500
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusMedium:
+        exposure_time = 6500
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusLarge:
+        exposure_time = 6500
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwo:
         exposure_time = 1677
     elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
         exposure_time = 1677
@@ -287,7 +323,13 @@ def _find_max_brightness(camera: zivid.Camera) -> float:
         Highest projector brightness value for given camera
 
     """
-    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+    if camera.info.model == zivid.CameraInfo.Model.zividOnePlusSmall:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusMedium:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividOnePlusLarge:
+        brightness = 1.8
+    elif camera.info.model == zivid.CameraInfo.Model.zividTwo:
         brightness = 1.8
     elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
         brightness = 1.8
@@ -517,10 +559,10 @@ def _print_poor_pixel_distribution(rgb: np.ndarray) -> None:
     black_and = np.sum(np.logical_and(np.logical_and(rgb[:, :, 0] == 0, rgb[:, :, 1] == 0), rgb[:, :, 2] == 0))
 
     print("Distribution of saturated (255) and black (0) pixels with final settings:")
-    print(f"Saturated pixels (at least one channel): {saturated_or}\t ({100 * saturated_or / total_num_pixels:.2f}%)")
-    print(f"Saturated pixels (all channels):\t {saturated_and}\t ({100 * saturated_and / total_num_pixels:.2f}%)")
-    print(f"Black pixels (at least one channel):\t {black_or}\t ({100 * black_or / total_num_pixels:.2f}%)")
-    print(f"Black pixels (all channels):\t\t {black_and}\t ({100 * black_and / total_num_pixels:.2f}%)")
+    print(f"Saturated pixels (at least one channel): {saturated_or}\t ({100*saturated_or/total_num_pixels:.2f}%)")
+    print(f"Saturated pixels (all channels):\t {saturated_and}\t ({100*saturated_and/total_num_pixels:.2f}%)")
+    print(f"Black pixels (at least one channel):\t {black_or}\t ({100*black_or/total_num_pixels:.2f}%)")
+    print(f"Black pixels (all channels):\t\t {black_and}\t ({100*black_and/total_num_pixels:.2f}%)")
 
 
 def _plot_image_with_histogram(rgb: np.ndarray, settings_2d: zivid.Settings2D) -> None:

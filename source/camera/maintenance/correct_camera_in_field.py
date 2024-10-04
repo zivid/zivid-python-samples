@@ -16,7 +16,7 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 from typing import List
 
 import zivid
-import zivid.experimental.calibration
+from zivid.experimental import calibration
 
 
 def _yes_no_prompt(question: str) -> bool:
@@ -38,7 +38,7 @@ def _yes_no_prompt(question: str) -> bool:
         print("Invalid response. Please respond with either 'y' or 'n'.")
 
 
-def _collect_dataset(camera: zivid.Camera) -> List[zivid.experimental.calibration.InfieldCorrectionInput]:
+def _collect_dataset(camera: zivid.Camera) -> List[calibration.InfieldCorrectionInput]:
     """Collects input-data needed by infield verification and correction function.
 
     Args:
@@ -56,8 +56,8 @@ def _collect_dataset(camera: zivid.Camera) -> List[zivid.experimental.calibratio
         print(print_line)
         if _yes_no_prompt("Capture (y) or finish (n)? "):
             print("Capturing calibration board")
-            detection_result = zivid.calibration.detect_calibration_board(camera)
-            infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
+            detection_result = calibration.detect_feature_points(camera)
+            infield_input = calibration.InfieldCorrectionInput(detection_result)
 
             if infield_input.valid():
                 dataset.append(infield_input)
@@ -88,19 +88,19 @@ def _main() -> None:
     print(f"Collected {len(dataset)} valid measurements.")
     if len(dataset) > 0:
         print("Computing new camera correction...")
-        correction = zivid.experimental.calibration.compute_camera_correction(dataset)
+        correction = calibration.compute_camera_correction(dataset)
         accuracy_estimate = correction.accuracy_estimate()
 
         print(
-            "If written to the camera, this correction can be expected to yield a dimension accuracy error of",
-            f"{accuracy_estimate.dimension_accuracy() * 100:.3f}% or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
+            "If written to the camera, this correction can be expected to yield a dimension accuracy error of ",
+            f"{accuracy_estimate.dimension_accuracy()*100:.3f} or better in the range of z=[{accuracy_estimate.z_min():.3f}, {accuracy_estimate.z_max():.3f}] across the full FOV.",
             "Accuracy close to where the correction data was collected is likely better.",
         )
 
         # Optionally save to camera
         if _yes_no_prompt("Save to camera?"):
             print("Writing correction to camera")
-            zivid.experimental.calibration.write_camera_correction(camera, correction)
+            calibration.write_camera_correction(camera, correction)
             print("Success")
 
 

@@ -15,6 +15,8 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import zivid
+import zivid.experimental.calibration
+import zivid.experimental.projection
 
 
 def _checkerboard_grid() -> List[np.ndarray]:
@@ -36,23 +38,23 @@ def _checkerboard_grid() -> List[np.ndarray]:
     return list(points)
 
 
-def _transform_grid_to_camera_frame(
-    grid: List[np.ndarray], camera_to_checkerboard_transform: np.ndarray
+def _transform_grid_to_calibration_board(
+    grid: List[np.ndarray], transform_camera_to_checkerboard: np.ndarray
 ) -> List[np.ndarray]:
     """Transform a list of grid points to the camera frame.
 
     Args:
         grid: List of 4D points (X,Y,Z,W) for each corner in the checkerboard, in the checkerboard frame
-        camera_to_checkerboard_transform: 4x4 transformation matrix
+        transform_camera_to_checkerboard: 4x4 transformation matrix
 
     Returns:
         List of 3D grid points in the camera frame
 
     """
     points_in_camera_frame = []
-    for point_in_checkerboard_frame in grid:
-        point_in_camera_frame = camera_to_checkerboard_transform @ point_in_checkerboard_frame
-        points_in_camera_frame.append(point_in_camera_frame[:3])
+    for point in grid:
+        transformed_point = transform_camera_to_checkerboard @ point
+        points_in_camera_frame.append(transformed_point[:3])
 
     return points_in_camera_frame
 
@@ -82,27 +84,25 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Capturing and estimating pose of the Zivid checkerboard in the camera frame")
-    detection_result = zivid.calibration.detect_calibration_board(camera)
+    detection_result = zivid.experimental.calibration.detect_feature_points(camera)
     if not detection_result.valid():
         raise RuntimeError("Calibration board not detected!")
 
     print("Estimating checkerboard pose")
-    camera_to_checkerboard_transform = detection_result.pose().to_matrix()
-    print(camera_to_checkerboard_transform)
+    transform_camera_to_checkerboard = detection_result.pose().to_matrix()
+    print(transform_camera_to_checkerboard)
 
     print("Creating a grid of 7 x 6 points (3D) with 30 mm spacing to match checkerboard corners")
-    grid_points_in_checkerboard_frame = _checkerboard_grid()
+    grid = _checkerboard_grid()
 
     print("Transforming the grid to the camera frame")
-    grid_points_in_camera_frame = _transform_grid_to_camera_frame(
-        grid_points_in_checkerboard_frame, camera_to_checkerboard_transform
-    )
+    points_in_camera_frame = _transform_grid_to_calibration_board(grid, transform_camera_to_checkerboard)
 
     print("Getting projector pixels (2D) corresponding to points (3D) in the camera frame")
-    projector_pixels = zivid.projection.pixels_from_3d_points(camera, grid_points_in_camera_frame)
+    projector_pixels = zivid.experimental.projection.pixels_from_3d_points(camera, points_in_camera_frame)
 
     print("Retrieving the projector resolution that the camera supports")
-    projector_resolution = zivid.projection.projector_resolution(camera)
+    projector_resolution = zivid.experimental.projection.projector_resolution(camera)
 
     print(f"Creating a blank projector image with resolution: {projector_resolution}")
     background_color = (0, 0, 0, 255)
@@ -120,7 +120,7 @@ def _main() -> None:
 
     print("Displaying the projector image")
 
-    with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
+    with zivid.experimental.projection.show_image_bgra(camera, projector_image) as projected_image:
         settings_2d = zivid.Settings2D()
         settings_2d.acquisitions.append(
             zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)

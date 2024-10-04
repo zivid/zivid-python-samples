@@ -44,17 +44,6 @@ def _options() -> argparse.Namespace:
     mode_group.add_argument("--eth", "--eye-to-hand", action="store_true", help="eye-to-hand calibration")
     parser.add_argument("--ip", required=True, help="IP address to robot")
 
-    subparsers = parser.add_subparsers(dest="calibration_object", required=True, help="Calibration object type")
-    subparsers.add_parser("checkerboard", help="Use checkerboard for calibration")
-    marker_parser = subparsers.add_parser("marker", help="Use marker for calibration")
-    marker_parser.add_argument(
-        "--dictionary",
-        required=True,
-        choices=list(zivid.calibration.MarkerDictionary.valid_values()),
-        help="Dictionary used for marker calibration",
-    )
-    marker_parser.add_argument("--ids", nargs="+", required=True, type=int, help="IDs used for marker calibration")
-
     return parser.parse_args()
 
 
@@ -127,7 +116,7 @@ def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, trans
         save_dir: Directory to save data
         image_num: Image number
         frame: Point cloud stored as ZDF
-        transform: Transformation matrix (4x4)
+        transform: 4x4 transformation matrix
 
     """
     frame.save(save_dir / f"img{image_num:02d}.zdf")
@@ -164,7 +153,7 @@ def _get_frame_and_transform_matrix(
 
     Returns:
         frame: Zivid frame
-        transform: Transformation matrix (4x4)
+        transform: 4x4 transformation matrix
 
     """
     frame = camera.capture(settings)
@@ -222,7 +211,7 @@ def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: Lis
 
     Args:
         save_dir: Path to where data will be saved
-        transform: Transformation matrix (4x4)
+        transform: 4x4 transformation matrix
         residuals: List of residuals
 
     """
@@ -267,35 +256,31 @@ def _ready_for_capture(robot_state: rtde.serialize.DataObject) -> bool:
     return robot_state.output_bit_register_64
 
 
-def _verify_good_capture(frame: zivid.Frame, user_options: argparse.Namespace) -> None:
-    """Verify that calibration object feature points are detected in the frame.
+def _verify_good_capture(frame: zivid.Frame) -> None:
+    """Verify that checkerboard feature-points are detected in the frame.
 
     Args:
         frame: Zivid frame containing point cloud
-        user_options: Input arguments
 
     Raises:
         RuntimeError: If no feature points are detected in frame
 
     """
-    if user_options.calibration_object == "checkerboard":
-        detected_features = zivid.calibration.detect_calibration_board(frame)
-        if not detected_features.valid():
-            raise RuntimeError("Failed to detect Zivid checkerboard from captured frame.")
-    if user_options.calibration_object == "marker":
-        detected_features = zivid.calibration.detect_markers(frame, user_options.ids, user_options.dictionary)
-        if not detected_features.valid():
-            raise RuntimeError("Failed to detect feature any ArUco markers from captured frame.")
+    point_cloud = frame.point_cloud()
+    detection_result = zivid.calibration.detect_feature_points(point_cloud)
+
+    if not detection_result.valid():
+        raise RuntimeError("Failed to detect feature points from captured frame.")
 
 
 def _capture_one_frame_and_robot_pose(
     con: rtde.RTDE,
     camera: zivid.Camera,
+    settings: zivid.Settings,
     save_dir: Path,
     input_data: rtde.serialize.DataObject,
     image_num: int,
     ready_to_capture: bool,
-    user_options: argparse.Namespace,
 ) -> None:
     """Capture 3D image and robot pose for a given robot posture,
     then signals robot to move to next posture.
@@ -303,16 +288,15 @@ def _capture_one_frame_and_robot_pose(
     Args:
         con: Connection between computer and robot
         camera: Zivid camera
+        settings: Zivid settings
         save_dir: Path to where data will be saved
         input_data: Input package containing the specific input data registers
         image_num: Image number
         ready_to_capture: Boolean value to robot_state that camera is ready to capture images
-        user_options: Input arguments
 
     """
-    settings = _camera_settings(camera)
     frame, transform = _get_frame_and_transform_matrix(con, camera, settings)
-    _verify_good_capture(frame, user_options)
+    _verify_good_capture(frame)
 
     # Signal robot to move to next position, then set signal to low again.
     _write_robot_state(con, input_data, finish_capture=True, camera_ready=ready_to_capture)
@@ -322,22 +306,20 @@ def _capture_one_frame_and_robot_pose(
     print("Image and pose saved")
 
 
-def _generate_dataset(
-    app: zivid.Application, con: rtde.RTDE, input_data: rtde.serialize.DataObject, user_options: argparse.Namespace
-) -> Path:
+def _generate_dataset(app: zivid.Application, con: rtde.RTDE, input_data: rtde.serialize.DataObject) -> Path:
     """Generate dataset based on predefined robot poses.
 
     Args:
         app: Zivid application instance
         con: Connection between computer and robot
         input_data: Input package containing the specific input data registers
-        user_options: Input arguments
 
     Returns:
         Path: Save_dir to where dataset is saved
 
     """
     with app.connect_camera() as camera:
+        settings = _camera_settings(camera)
         save_dir = _generate_folder()
 
         # Signal robot that camera is ready
@@ -361,11 +343,11 @@ def _generate_dataset(
                 _capture_one_frame_and_robot_pose(
                     con,
                     camera,
+                    settings,
                     save_dir,
                     input_data,
                     images_captured,
                     ready_to_capture,
-                    user_options,
                 )
                 images_captured += 1
 
@@ -392,7 +374,7 @@ def perform_hand_eye_calibration(
         data_dir: Path to dataset
 
     Returns:
-        transform: Transformation matrix (4x4)
+        transform: 4x4 transformation matrix
         residuals: List of residuals
 
     Raises:
@@ -408,8 +390,8 @@ def perform_hand_eye_calibration(
 
         if frame_file_path.is_file() and pose_file_path.is_file():
             print(f"Detect feature points from img{idata:02d}.zdf")
-            frame = zivid.Frame(frame_file_path)
-            detection_result = zivid.calibration.detect_calibration_board(frame)
+            point_cloud = zivid.Frame(frame_file_path).point_cloud()
+            detection_result = zivid.calibration.detect_feature_points(point_cloud)
 
             if not detection_result.valid():
                 raise RuntimeError(f"Failed to detect feature points from frame {frame_file_path}")
@@ -456,7 +438,7 @@ def _main() -> None:
     con, input_data = _initialize_robot_sync(robot_ip_address)
     con.send_start()
 
-    dataset_dir = _generate_dataset(app, con, input_data, user_options)
+    dataset_dir = _generate_dataset(app, con, input_data)
 
     if user_options.eih:
         transform, residuals = perform_hand_eye_calibration("eye-in-hand", dataset_dir)
