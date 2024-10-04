@@ -12,6 +12,8 @@ from typing import Tuple
 
 import numpy as np
 import zivid
+import zivid.experimental.calibration
+import zivid.experimental.projection
 
 
 def create_projector_image(resolution: Tuple, color: Tuple) -> np.ndarray:
@@ -34,25 +36,25 @@ def _main() -> None:
         print("Connecting to camera")
         with app.connect_camera() as camera:
             print("Retrieving the projector resolution that the camera supports")
-            projector_resolution = zivid.projection.projector_resolution(camera)
+            projector_resolution = zivid.experimental.projection.projector_resolution(camera)
 
             red_color = (0, 0, 255, 255)
 
             projector_image = create_projector_image(projector_resolution, red_color)
 
-            project_image_handle = zivid.projection.show_image_bgra(camera, projector_image)
+            project_image_handle = zivid.experimental.projection.show_image_bgra(camera, projector_image)
 
             input('Press enter to stop projecting using the ".stop()" function')
             project_image_handle.stop()
 
             green_color = (0, 255, 0, 255)
             projector_image = create_projector_image(projector_resolution, green_color)
-            with zivid.projection.show_image_bgra(camera, projector_image):
+            with zivid.experimental.projection.show_image_bgra(camera, projector_image):
                 input("Press enter to stop projecting with context manager")
 
             pink_color = (114, 52, 237, 255)
             projector_image = create_projector_image(projector_resolution, pink_color)
-            project_image_handle = zivid.projection.show_image_bgra(camera, projector_image)
+            project_image_handle = zivid.experimental.projection.show_image_bgra(camera, projector_image)
 
             input("Press enter to stop projecting by performing a 3D capture")
             settings = zivid.Settings()

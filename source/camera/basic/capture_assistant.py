@@ -28,7 +28,7 @@ def _main() -> None:
 
     print("Manually configuring processing settings (Capture Assistant only suggests acquisition settings)")
     settings.processing.filters.reflection.removal.enabled = True
-    settings.processing.filters.reflection.removal.mode = "global"
+    settings.processing.filters.reflection.removal.experimental.mode = "global"
     settings.processing.filters.smoothing.gaussian.enabled = True
     settings.processing.filters.smoothing.gaussian.sigma = 1.5
 

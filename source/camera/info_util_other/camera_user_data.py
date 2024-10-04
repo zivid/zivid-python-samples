@@ -16,7 +16,7 @@ def _options() -> argparse.Namespace:
 
     """
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="mode", help="Select mode", required=True)
+    subparsers = parser.add_subparsers(dest="mode", help="Select mode")
     subparsers.add_parser(
         "read",
         help="read",
@@ -59,8 +59,14 @@ def _write(camera: zivid.Camera, string: str) -> None:
         camera: Zivid camera instance
         string: The data that is going to be written on the user data
 
+    Raises:
+        RuntimeError: If the camera used is Zivid One+ and the user tries to write on it again before rebooting it
+
     """
-    camera.write_user_data(str.encode(string))
+    try:
+        camera.write_user_data(str.encode(string))
+    except RuntimeError as ex:
+        raise RuntimeError("Camera must be rebooted to allow another write operation!") from ex
 
 
 def _clear(camera: zivid.Camera) -> None:
@@ -104,10 +110,12 @@ def _main() -> None:
     if mode == "write":
         print(f"Writing '{args.user_data}' to the camera")
         _write(camera, args.user_data)
+        print("Done. Note! Camera must be rebooted to allow another write operation")
 
     if mode == "clear":
         print("Clearing user data from camera")
         _clear(camera)
+        print("Done. Note! Camera must be rebooted to allow another clear operation")
 
 
 if __name__ == "__main__":

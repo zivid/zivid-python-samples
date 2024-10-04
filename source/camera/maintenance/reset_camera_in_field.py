@@ -6,7 +6,7 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 """
 
 import zivid
-import zivid.experimental.calibration
+from zivid.experimental import calibration
 
 
 def _main() -> None:
@@ -16,7 +16,7 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Reset infield correction on the camera")
-    zivid.experimental.calibration.reset_camera_correction(camera)
+    calibration.reset_camera_correction(camera)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.13.1. For
+This repository contains python code samples for Zivid SDK v2.11.1. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -60,9 +60,6 @@ from the camera can be used.
           - [capture\_hdr\_print\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_print_normals.py) - Capture Zivid point clouds, compute normals and print a
             subset.
       - **info\_util\_other**
-          - [automatic\_network\_configuration\_for\_cameras](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/automatic_network_configuration_for_cameras.py) - Automatically set the IP addresses of any number of
-            cameras to be in the same subnet as the provided IP address
-            of the network interface.
           - [camera\_info](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_info.py) - Print version information for Python, zivid-python and
             Zivid SDK, then list cameras and print camera info and state
             for each connected camera.
@@ -72,8 +69,6 @@ from the camera can be used.
           - [firmware\_updater](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/firmware_updater.py) - Update firmware on the Zivid camera.
           - [get\_camera\_intrinsics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/get_camera_intrinsics.py) - Read intrinsic parameters from the Zivid camera (OpenCV
             model) or estimate them from the point cloud.
-          - [network\_configuration](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/network_configuration.py) - Uses Zivid API to change the IP address of the Zivid
-            camera.
           - [warmup](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/warmup.py) - A basic warm-up method for a Zivid camera with specified
             time and capture cycle.
       - **maintenance**
@@ -119,23 +114,15 @@ from the camera can be used.
             images to find the marker coordinates (2D and 3D).
           - [reproject\_points](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/reproject_points.py) - Illuminate checkerboard (Zivid Calibration Board) corners
             by getting checkerboard pose
-          - [roi\_box\_via\_aruco\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_aruco_marker.py) - Filter the point cloud based on a ROI box given relative
-            to the ArUco marker on a Zivid Calibration Board.
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
             to the Zivid Calibration Board.
-          - [transform\_point\_cloud\_via\_aruco\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform_point_cloud_via_aruco_marker.py) - Transform a point cloud from camera to ArUco marker
-            coordinate frame by estimating the marker's pose from the
-            point cloud.
-          - [transform\_point\_cloud\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform_point_cloud_via_checkerboard.py) - Transform a point cloud from camera to checkerboard (Zivid
-            Calibration Board) coordinate frame by getting checkerboard
-            pose from the API.
           - **hand\_eye\_calibration**
               - [pose\_conversions](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/pose_conversions.py) - Convert to/from Transformation Matrix (Rotation Matrix
                 + Translation Vector).
               - [robodk\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robodk_hand_eye_calibration.py) - Generate a dataset and perform hand-eye calibration
                 using the Robodk interface.
               - [utilize\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py) - Transform single data point or entire point cloud from
-                camera to robot base reference frame using Hand-Eye
+                camera frame to robot base frame using Hand-Eye
                 calibration
               - [verify\_hand\_eye\_with\_visualization](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/verify_hand_eye_with_visualization.py) - Verify hand-eye calibration by transforming all
                 dataset point clouds and
@@ -147,14 +134,10 @@ from the camera can be used.
       - [display](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/display.py) - Display relevant data for Zivid Samples.
       - [paths](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
       - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/robodk_tools.py) - Robot Control Module
-      - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/save_load_matrix.py) - Save and load Zivid 4x4 transformation matrices from and to
-        YAML files.
+      - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/save_load_matrix.py) - try:
       - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/white_balance_calibration.py) - Balance color for 2D capture using white surface as reference.
   - **applications**
       - **advanced**
-          - **robot\_guidance**
-              - [robodk\_robot\_guidance](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/robot_guidance/robodk_robot_guidance.py) - Guide the robot to follow a path on the Zivid
-                Calibration Board.
           - **verify\_hand\_eye\_calibration**
               - [robodk\_verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/verify_hand_eye_calibration/robodk_verify_hand_eye_calibration.py) - Perform a touch test with a robot to verify Hand-Eye
                 Calibration using the RoboDK interface.
