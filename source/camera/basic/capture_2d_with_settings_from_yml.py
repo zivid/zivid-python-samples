@@ -7,7 +7,7 @@ import argparse
 from pathlib import Path
 
 import zivid
-from sample_utils.display import display_rgb
+from zividsamples.display import display_rgb
 
 
 def _options() -> argparse.Namespace:

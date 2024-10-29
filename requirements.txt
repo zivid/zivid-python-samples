@@ -1,3 +1,4 @@
+./modules
 matplotlib
 numpy
 open3d

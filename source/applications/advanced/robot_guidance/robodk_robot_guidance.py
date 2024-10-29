@@ -21,8 +21,8 @@ import cv2
 import numpy as np
 import robodk
 import zivid
-from sample_utils.robodk_tools import connect_to_robot, set_robot_speed_and_acceleration
-from sample_utils.save_load_matrix import load_and_assert_affine_matrix
+from zividsamples.robodk_tools import connect_to_robot, set_robot_speed_and_acceleration
+from zividsamples.save_load_matrix import load_and_assert_affine_matrix
 
 
 def _options() -> argparse.Namespace:
@@ -166,7 +166,7 @@ def _draw_tool_path(image: np.ndarray, positions: List[List[float]]) -> None:
         positions: List of 2D positions (X,Y) to draw lines between
 
     """
-    for current_position, next_position in zip(positions[:-1], positions[1:]):
+    for current_position, next_position in zip(positions[:-1], positions[1:]):  # noqa: B905
         if np.nan not in current_position and np.nan not in next_position:
             current_point = (round(current_position[0]), round(current_position[1]))
             next_point = (round(next_position[0]), round(next_position[1]))

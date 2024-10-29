@@ -12,7 +12,7 @@ from typing import Tuple
 import cv2
 import numpy as np
 import zivid
-from sample_utils.paths import get_sample_data_path
+from zividsamples.paths import get_sample_data_path
 
 
 def _resize_and_create_projector_image(image_to_resize: np.ndarray, final_resolution: Tuple) -> np.ndarray:

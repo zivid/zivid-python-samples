@@ -9,8 +9,8 @@ from typing import List
 
 import numpy as np
 import zivid
-from sample_utils.display import display_depthmap, display_pointcloud
-from sample_utils.paths import get_sample_data_path
+from zividsamples.display import display_depthmap, display_pointcloud
+from zividsamples.paths import get_sample_data_path
 
 
 def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[np.ndarray]:

@@ -9,7 +9,7 @@ import argparse
 from pathlib import Path
 
 import zivid
-from sample_utils.paths import get_sample_data_path
+from zividsamples.paths import get_sample_data_path
 
 
 def _settings_folder(camera: zivid.Camera) -> str:

@@ -26,9 +26,9 @@ import cv2
 import numpy as np
 import zivid
 from robodk.robolink import Item
-from sample_utils.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
-from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from zivid.capture_assistant import SuggestSettingsParameters
+from zividsamples.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
+from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 
 
 def _generate_directory() -> Path:

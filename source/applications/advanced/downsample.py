@@ -9,8 +9,8 @@ import argparse
 from pathlib import Path
 
 import zivid
-from sample_utils.display import display_pointcloud
-from sample_utils.paths import get_sample_data_path
+from zividsamples.display import display_pointcloud
+from zividsamples.paths import get_sample_data_path
 
 
 def _options() -> argparse.Namespace:
@@ -69,5 +69,4 @@ def _main() -> None:
 
 
 if __name__ == "__main__":
-    # If running the script from Spyder IDE, first run '%gui qt'
     _main()

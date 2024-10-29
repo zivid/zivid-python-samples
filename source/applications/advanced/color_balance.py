@@ -14,9 +14,9 @@ import argparse
 from pathlib import Path
 
 import zivid
-from sample_utils.calibration_board_utils import find_white_mask_from_checkerboard
-from sample_utils.display import display_rgb
-from sample_utils.white_balance_calibration import white_balance_calibration
+from zividsamples.calibration_board_utils import find_white_mask_from_checkerboard
+from zividsamples.display import display_rgb
+from zividsamples.white_balance_calibration import white_balance_calibration
 
 
 def _options() -> argparse.Namespace:

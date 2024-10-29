@@ -9,7 +9,7 @@ from typing import List, Tuple
 
 import numpy as np
 import zivid
-from sample_utils.save_load_matrix import assert_affine_matrix_and_save
+from zividsamples.save_load_matrix import assert_affine_matrix_and_save
 
 
 def _enter_robot_pose(index: int) -> zivid.calibration.Pose:

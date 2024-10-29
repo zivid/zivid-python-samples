@@ -6,7 +6,7 @@ The ZDF file for this sample can be found under the main instructions for Zivid 
 """
 
 import zivid
-from sample_utils.paths import get_sample_data_path
+from zividsamples.paths import get_sample_data_path
 
 
 def _main() -> None:

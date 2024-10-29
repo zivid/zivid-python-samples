@@ -1,0 +1,41 @@
+[tool.black]
+line-length = 120
+
+[project]
+name = "zivid_samples_extra_modules"
+version = "0.1.0"
+description = "Extra modules for Zivid Python samples"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "importlib_resources; python_version < '3.9'",
+    "matplotlib",
+    "nptyping",
+    "numpy",
+    "open3d; python_version <= '3.11'",
+    "opencv-python",
+    "pyyaml",
+    "pyqt5",
+    "robodk",
+    "scipy",
+    "zivid"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+"zividsamples" = ["images/*.png", "images/**/*.png", "images/*.ico", "images/**/*.ico"]
