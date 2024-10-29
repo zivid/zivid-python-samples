@@ -123,6 +123,7 @@ from the camera can be used.
             to the ArUco marker on a Zivid Calibration Board.
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
             to the Zivid Calibration Board.
+          - [transform\_point\_cloud\_from\_millimeters\_to\_meters](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform_point_cloud_from_millimeters_to_meters.py) - Transform point cloud data from millimeters to meters.
           - [transform\_point\_cloud\_via\_aruco\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform_point_cloud_via_aruco_marker.py) - Transform a point cloud from camera to ArUco marker
             coordinate frame by estimating the marker's pose from the
             point cloud.
@@ -130,6 +131,8 @@ from the camera can be used.
             Calibration Board) coordinate frame by getting checkerboard
             pose from the API.
           - **hand\_eye\_calibration**
+              - [hand\_eye\_gui](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/hand_eye_gui.py) - Hand-Eye Calibration GUI
+              - [pose\_conversion\_gui](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/pose_conversion_gui.py) - Convert between different rotation formats with a GUI:
               - [pose\_conversions](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/pose_conversions.py) - Convert to/from Transformation Matrix (Rotation Matrix
                 + Translation Vector).
               - [robodk\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robodk_hand_eye_calibration.py) - Generate a dataset and perform hand-eye calibration
@@ -142,14 +145,18 @@ from the camera can be used.
               - **ur\_hand\_eye\_calibration**
                   - [universal\_robots\_perform\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/ur_hand_eye_calibration/universal_robots_perform_hand_eye_calibration.py) - Script to generate a dataset and perform hand-eye
                     calibration using a Universal Robot UR5e robot.
-  - **sample\_utils**
-      - [calibration\_board\_utils](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/calibration_board_utils.py) - Utility functions for the Zivid calibration board.
-      - [display](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/display.py) - Display relevant data for Zivid Samples.
-      - [paths](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/paths.py) - Get relevant paths for Zivid Samples.
-      - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/robodk_tools.py) - Robot Control Module
-      - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/save_load_matrix.py) - Save and load Zivid 4x4 transformation matrices from and to
-        YAML files.
-      - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/sample_utils/white_balance_calibration.py) - Balance color for 2D capture using white surface as reference.
+  - **modules**
+      - **zividsamples**
+          - [calibration\_board\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/calibration_board_utils.py) - Utility functions for the Zivid calibration board.
+          - [display](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/display.py) - Display relevant data for Zivid Samples.
+          - [paths](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/paths.py) - Get relevant paths for Zivid Samples.
+          - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/robodk_tools.py) - Robot Control Module
+          - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_load_matrix.py) - Save and load Zivid 4x4 transformation matrices from and
+            to YAML files.
+          - [transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/transformation_matrix.py) - Convenience functions and a class for 4x4 transformation
+            matrices.
+          - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/white_balance_calibration.py) - Balance color for 2D capture using white surface as
+            reference.
   - **applications**
       - **advanced**
           - **robot\_guidance**
@@ -175,20 +182,30 @@ The recommended Python version for these samples is 3.7 - 3.9.
 2.  [Download Zivid Sample
     Data](https://support.zivid.com/latest//api-reference/samples/sample-data.html).
 
-3.  Install the runtime requirements using IDE or command line:
+3.  Check out the Zivid Python samples repository:
     
     ``` sourceCode bash
-    pip install -r requirements.txt
+    git clone http://github.com/zivid/zivid-python-samples.git
     ```
 
-4.  Add the directory source to PYTHONPATH. Navigate to the root of the
-    repository and run:
-    
-      - PowerShell: `$env:PYTHONPATH=$env:PYTHONPATH + ";$PWD\\source"`
-      - cmd: `set PYTHONPATH="$PYTHONPATH;$PWD\\source"`
-      - bash: `export PYTHONPATH="$PYTHONPATH:$PWD/source"`
+4.  Install the runtime requirements using IDE or command line:
+
+> 
+> 
+> ``` sourceCode bash
+> cd zivid-python-samples
+> pip install -r requirements.txt
+> ```
 
 5.  Open and run one of the samples.
+    
+    -----
+    
+    Note:
+    
+    Running GUI samples on Windows should be done via `pythonw`.
+    
+    -----
 
 ## Support
 

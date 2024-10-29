@@ -8,7 +8,7 @@ Then use color from 2D when visualizing the 3D point cloud.
 """
 
 import zivid
-from sample_utils.display import display_pointcloud
+from zividsamples.display import display_pointcloud
 
 
 def _main() -> None:

@@ -16,9 +16,9 @@ from typing import Dict, List, Optional
 
 import numpy as np
 import zivid
-from sample_utils.paths import get_sample_data_path
-from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from scipy.spatial.transform import Rotation as R
+from zividsamples.paths import get_sample_data_path
+from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 
 
 class RotationConvention(enum.Enum):

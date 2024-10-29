@@ -4,6 +4,7 @@ disable=consider-using-enumerate,
         missing-docstring,
         no-member,
         duplicate-code,
+        no-name-in-module,
 
 [TYPE CHECK]
 generated-members=cv2.*

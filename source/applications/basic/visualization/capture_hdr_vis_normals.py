@@ -6,7 +6,7 @@ For scenes with high dynamic range we combine multiple acquisitions to get an HD
 """
 
 import zivid
-from sample_utils.display import display_pointcloud_with_downsampled_normals, display_rgb
+from zividsamples.display import display_pointcloud_with_downsampled_normals, display_rgb
 
 
 def _main() -> None:

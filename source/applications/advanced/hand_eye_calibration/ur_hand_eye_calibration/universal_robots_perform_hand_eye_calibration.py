@@ -27,8 +27,8 @@ import cv2
 import numpy as np
 import zivid
 from rtde import rtde, rtde_config
-from sample_utils.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 from scipy.spatial.transform import Rotation
+from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 
 
 def _options() -> argparse.Namespace:

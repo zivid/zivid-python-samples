@@ -10,9 +10,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 import zivid
-from sample_utils.display import display_bgr
-from sample_utils.paths import get_sample_data_path
-from sample_utils.save_load_matrix import assert_affine_matrix_and_save
+from zividsamples.display import display_bgr
+from zividsamples.paths import get_sample_data_path
+from zividsamples.save_load_matrix import assert_affine_matrix_and_save
 
 
 def _draw_detected_marker(bgra_image: np.ndarray, detection_result: zivid.calibration.DetectionResult) -> np.ndarray:

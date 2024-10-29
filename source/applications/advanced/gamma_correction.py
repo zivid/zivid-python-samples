@@ -8,7 +8,7 @@ import argparse
 import cv2
 import numpy as np
 import zivid
-from sample_utils.display import display_bgr
+from zividsamples.display import display_bgr
 
 
 def _options() -> argparse.Namespace:

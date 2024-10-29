@@ -31,6 +31,8 @@ function install_www_deb {
 install_www_deb "https://downloads.zivid.com/sdk/releases/2.13.1+18e79e79-1/u${VERSION_ID:0:2}/zivid_2.13.1+18e79e79-1_amd64.deb" || exit
 
 python3 -m pip install --upgrade pip || exit
-python3 -m pip install --requirement "$ROOT_DIR/requirements.txt" || exit
+pushd "$ROOT_DIR" || exit
+python3 -m pip install --requirement "./requirements.txt" || exit
+popd || exit
 
 echo Success! ["$(basename $0)"]

@@ -27,8 +27,8 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import zivid
-from sample_utils.calibration_board_utils import find_white_mask_from_checkerboard
-from sample_utils.white_balance_calibration import compute_mean_rgb_from_mask, white_balance_calibration
+from zividsamples.calibration_board_utils import find_white_mask_from_checkerboard
+from zividsamples.white_balance_calibration import compute_mean_rgb_from_mask, white_balance_calibration
 
 
 def _options() -> argparse.Namespace:

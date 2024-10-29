@@ -4,7 +4,7 @@ Capture point clouds, with color, from the Zivid camera, and visualize it.
 """
 
 import zivid
-from sample_utils.display import display_pointcloud
+from zividsamples.display import display_pointcloud
 
 
 def _main() -> None:

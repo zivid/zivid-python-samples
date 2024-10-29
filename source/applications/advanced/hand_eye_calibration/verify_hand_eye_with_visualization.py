@@ -26,7 +26,7 @@ from typing import List
 import numpy as np
 import open3d as o3d
 import zivid
-from sample_utils.save_load_matrix import load_and_assert_affine_matrix
+from zividsamples.save_load_matrix import load_and_assert_affine_matrix
 
 
 def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace) -> np.ndarray:

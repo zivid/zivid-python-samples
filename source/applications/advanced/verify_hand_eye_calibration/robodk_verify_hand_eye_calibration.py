@@ -28,9 +28,9 @@ import zivid
 import zivid.experimental.calibration
 from robodk import Mat
 from robodk.robolink import Item
-from sample_utils.display import display_rgb
-from sample_utils.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
-from sample_utils.save_load_matrix import load_and_assert_affine_matrix
+from zividsamples.display import display_rgb
+from zividsamples.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
+from zividsamples.save_load_matrix import load_and_assert_affine_matrix
 
 
 def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:

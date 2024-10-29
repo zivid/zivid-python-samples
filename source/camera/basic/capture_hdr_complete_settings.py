@@ -49,7 +49,7 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, t
     else:
         raise ValueError(f"Unhandled enum value {camera.info.model}")
 
-    return zip(apertures, gains, exposure_times, brightnesses)
+    return zip(apertures, gains, exposure_times, brightnesses)  # noqa: B905
 
 
 def _main() -> None:

@@ -8,8 +8,8 @@ The ZDF files for this sample can be found under the main instructions for Zivid
 import cv2
 import numpy as np
 import zivid
-from sample_utils.display import display_bgr
-from sample_utils.paths import get_sample_data_path
+from zividsamples.display import display_bgr
+from zividsamples.paths import get_sample_data_path
 
 
 def _point_cloud_to_cv_z(point_cloud: zivid.PointCloud) -> np.ndarray:
@@ -86,5 +86,4 @@ def _main() -> None:
 
 
 if __name__ == "__main__":
-    # If running the script from Spyder IDE, first run '%gui qt'
     _main()

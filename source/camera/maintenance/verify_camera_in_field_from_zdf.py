@@ -20,7 +20,7 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 
 import zivid
 import zivid.experimental.calibration
-from sample_utils.paths import get_sample_data_path
+from zividsamples.paths import get_sample_data_path
 
 
 def _main() -> None:
