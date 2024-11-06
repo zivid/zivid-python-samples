@@ -285,6 +285,9 @@ class HandEyeVerificationGUI(QWidget):
         )
         self.markers_in_camera_frame_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
         self.markers_in_robot_base_frame_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
+        self.markers_in_robot_base_frame_pose_widget.set_title(
+            f"Marker Poses In Robot {('Base' if self.hand_eye_configuration.eye_in_hand else 'Tool')} Frame"
+        )
         self.detection_visualization_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
 
     def confirm_robot_pose(self):

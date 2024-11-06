@@ -185,9 +185,6 @@ class BasePoseWidget(QWidget):
         if self.display_mode != PoseWidgetDisplayMode.OnlyPose:
             self.rotation_format_selection_widget.rotation_format_update.connect(self.on_rotation_format_update)
 
-    def set_title(self, title: str):
-        self.title = title
-
     def get_rotation_format(self) -> RotationInformation:
         return self.rotation_information
 
@@ -787,6 +784,9 @@ class MarkerPosesWidget(BasePoseWidget):
         else:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+    def set_title(self, title: str):
+        self.group_box.setTitle(title)
+
     def update_markers(self):
         self.translation_parameters = {}
         self.rotation_parameters = {}
@@ -850,7 +850,7 @@ class MarkerPosesWidget(BasePoseWidget):
             "hand-eye-robot-and-calibration-board-ee-object-pose-low-res.png"
         )
         return cls(
-            title="Marker Poses In Robot Base Frame",
+            title=f"Marker Poses In Robot {('Base' if eye_in_hand else 'Tool')} Frame",
             initial_rotation_information=initial_rotation_information,
             eye_in_hand=eye_in_hand,
             display_mode=display_mode,

@@ -278,8 +278,8 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.load_from_directory.triggered.connect(self.on_load_from_data_directory_action_triggered)
         self.save_to_directory.triggered.connect(self.on_save_to_data_directory_action_triggered)
         self.save_frame_action.triggered.connect(self.on_save_last_frame_action_triggered)
-        self.select_eye_in_hand_action.triggered.connect(self.on_hand_eye_action_triggered)
-        self.select_eye_to_hand_action.triggered.connect(self.on_hand_eye_action_triggered)
+        self.select_eye_in_hand_action.triggered.connect(lambda: self.on_hand_eye_action_triggered(True))
+        self.select_eye_to_hand_action.triggered.connect(lambda: self.on_hand_eye_action_triggered(False))
         self.select_checkerboard_action.triggered.connect(
             lambda: self.on_calibration_object_action_triggered(CalibrationObject.Checkerboard)
         )
@@ -547,8 +547,8 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.setup_settings()
         self.live2d_widget.settings_2d = self.settings.settings_2d
 
-    def on_hand_eye_action_triggered(self, action: QAction) -> None:
-        self.hand_eye_configuration.eye_in_hand = action == self.select_eye_in_hand_action
+    def on_hand_eye_action_triggered(self, eye_in_hand: bool) -> None:
+        self.hand_eye_configuration.eye_in_hand = eye_in_hand
         self.hand_eye_calibration_gui.hand_eye_configuration_update(self.hand_eye_configuration)
         self.hand_eye_verification_gui.hand_eye_configuration_update(self.hand_eye_configuration)
 
