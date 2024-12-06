@@ -289,6 +289,7 @@ def _verify_good_capture(frame: zivid.Frame, user_options: argparse.Namespace) -
 
 
 def _capture_one_frame_and_robot_pose(
+    *,
     con: rtde.RTDE,
     camera: zivid.Camera,
     save_dir: Path,
@@ -359,13 +360,13 @@ def _generate_dataset(
             if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
                 print(f"Capture image {_image_count(robot_state)}")
                 _capture_one_frame_and_robot_pose(
-                    con,
-                    camera,
-                    save_dir,
-                    input_data,
-                    images_captured,
-                    ready_to_capture,
-                    user_options,
+                    con=con,
+                    camera=camera,
+                    save_dir=save_dir,
+                    input_data=input_data,
+                    image_num=images_captured,
+                    ready_to_capture=ready_to_capture,
+                    user_options=user_options,
                 )
                 images_captured += 1
 

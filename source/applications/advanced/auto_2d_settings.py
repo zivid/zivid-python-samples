@@ -28,7 +28,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import zivid
 from zividsamples.calibration_board_utils import find_white_mask_from_checkerboard
-from zividsamples.white_balance_calibration import compute_mean_rgb_from_mask, white_balance_calibration
+from zividsamples.white_balance_calibration import (
+    camera_may_need_color_balancing,
+    compute_mean_rgb_from_mask,
+    white_balance_calibration,
+)
 
 
 def _options() -> argparse.Namespace:
@@ -195,7 +199,7 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
                 f"({image_distance_far:.2f}) is outside recommended working distance for camera [600, 1600]"
             )
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+    elif camera.info.model in (zivid.CameraInfo.Model.zivid2PlusM130, zivid.CameraInfo.Model.zivid2PlusMR130):
         focus_distance = 1300
         focal_length = 11
         circle_of_confusion = 0.008
@@ -205,7 +209,7 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
                 f"({image_distance_far:.2f}) is outside recommended working distance for camera [800, 2000]"
             )
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+    elif camera.info.model in (zivid.CameraInfo.Model.zivid2PlusM60, zivid.CameraInfo.Model.zivid2PlusMR60):
         focus_distance = 600
         focal_length = 11
         circle_of_confusion = 0.008
@@ -215,7 +219,7 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
                 f"({image_distance_far:.2f}) is outside recommended working distance for camera [300, 1100]"
             )
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+    elif camera.info.model in (zivid.CameraInfo.Model.zivid2PlusL110, zivid.CameraInfo.Model.zivid2PlusLR110):
         focus_distance = 1100
         focal_length = 11
         circle_of_confusion = 0.008
@@ -258,16 +262,20 @@ def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
         Lowest exposure time [us] for given camera
 
     """
-    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+    if camera.info.model in (
+        zivid.CameraInfo.Model.zividTwo,
+        zivid.CameraInfo.Model.zividTwoL100,
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ):
         exposure_time = 1677
-    elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
-        exposure_time = 1677
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
-        exposure_time = 1677
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
-        exposure_time = 1677
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
-        exposure_time = 1677
+    elif camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    ):
+        exposure_time = 900
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -287,16 +295,20 @@ def _find_max_brightness(camera: zivid.Camera) -> float:
         Highest projector brightness value for given camera
 
     """
-    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+    if camera.info.model in (zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100):
         brightness = 1.8
-    elif camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
-        brightness = 1.8
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+    elif camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ):
         brightness = 2.2
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
-        brightness = 2.2
-    elif camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
-        brightness = 2.2
+    elif camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    ):
+        brightness = 2.5
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -490,11 +502,14 @@ def _find_2d_settings_from_mask(
             raise RuntimeError("Unable to find settings in current lighting")
 
     if find_color_balance:
-        red_balance, green_balance, blue_balance = white_balance_calibration(camera, settings_2d, white_mask)
+        if camera_may_need_color_balancing(camera):
+            red_balance, green_balance, blue_balance = white_balance_calibration(camera, settings_2d, white_mask)
 
-        settings_2d.processing.color.balance.red = red_balance
-        settings_2d.processing.color.balance.green = green_balance
-        settings_2d.processing.color.balance.blue = blue_balance
+            settings_2d.processing.color.balance.red = red_balance
+            settings_2d.processing.color.balance.green = green_balance
+            settings_2d.processing.color.balance.blue = blue_balance
+        else:
+            print(f"{camera.info.model_name} does not need color balancing, skipping ...")
 
     return settings_2d
 

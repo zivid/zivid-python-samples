@@ -26,7 +26,7 @@ class CaptureAtPose:
     def _translation_to_string(self, translation: NDArray[Shape["3"], Float32]) -> str:  # type: ignore
         return f"{translation[0]:.1f}, {translation[1]:.1f}, {translation[2]:.1f}"
 
-    # pylint: disable=W0012
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         poseID: int,
