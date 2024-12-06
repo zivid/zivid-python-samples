@@ -16,7 +16,7 @@ from pathlib import Path
 import zivid
 from zividsamples.calibration_board_utils import find_white_mask_from_checkerboard
 from zividsamples.display import display_rgb
-from zividsamples.white_balance_calibration import white_balance_calibration
+from zividsamples.white_balance_calibration import camera_may_need_color_balancing, white_balance_calibration
 
 
 def _options() -> argparse.Namespace:
@@ -52,6 +52,10 @@ def _main() -> None:
 
     print("Connecting to camera")
     camera = app.connect_camera()
+
+    if not camera_may_need_color_balancing(camera):
+        print(f"{camera.info.model_name} does not need color balancing, skipping ...")
+        return
 
     settings_2d = zivid.Settings2D.load(user_options.path)
 

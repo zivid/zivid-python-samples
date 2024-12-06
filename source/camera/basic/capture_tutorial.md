@@ -238,14 +238,13 @@ settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum
 Fully configured settings are demonstrated below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L61-L114))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L99-L152))
 
 ``` sourceCode python
 print("Configuring settings for capture:")
 settings = zivid.Settings()
 settings.engine = zivid.Settings.Engine.phase
 settings.sampling.color = zivid.Settings.Sampling.Color.rgb
-settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
 settings.region_of_interest.box.enabled = True
 settings.region_of_interest.box.point_o = [1000, 1000, 1000]
 settings.region_of_interest.box.point_a = [1000, -1000, 1000]
@@ -282,6 +281,7 @@ color.balance.blue = 1.0
 color.balance.green = 1.0
 color.gamma = 1.0
 settings.processing.color.experimental.mode = zivid.Settings.Processing.Color.Experimental.Mode.automatic
+_set_sampling_pixel(settings, camera)
 print(settings)
 print("Configuring acquisition settings different for all HDR acquisitions")
 exposure_values = _get_exposure_values(camera)
@@ -302,13 +302,13 @@ It is possible to only capture a 2D image. This is faster than a 3D
 capture. 2D settings are configured as follows.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L19-L28))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L35-L44))
 
 ``` sourceCode python
 settings_2d = zivid.Settings2D()
 settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
-settings_2d.acquisitions[0].exposure_time = datetime.timedelta(microseconds=30000)
-settings_2d.acquisitions[0].aperture = 11.31
+settings_2d.acquisitions[0].exposure_time = datetime.timedelta(microseconds=20000)
+settings_2d.acquisitions[0].aperture = 9.51
 settings_2d.acquisitions[0].brightness = 1.80
 settings_2d.acquisitions[0].gain = 2.0
 settings_2d.processing.color.balance.red = 1.0
@@ -327,7 +327,7 @@ Check out
 for recommended .yml files tuned for your application.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L126-L131))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L164-L169))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -340,7 +340,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L126-L128))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L164-L166))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -389,7 +389,7 @@ If we only want to capture a 2D image, which is faster than 3D, we can
 do so via the 2D API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L31))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L47))
 
 ``` sourceCode python
 with camera.capture(settings_2d) as frame_2d:
@@ -433,10 +433,11 @@ frame.save(data_file_ply)
 
 We can get 2D color image from a 3D capture.
 
-2D captures also produce 2D color images.
+No source available for {language\_name}2D captures also produce 2D
+color images.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L33))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L49))
 
 ``` sourceCode python
 image = frame_2d.image_rgba()
@@ -445,11 +446,11 @@ image = frame_2d.image_rgba()
 Then, we can save the 2D image.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L41-L43))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_2d.py#L57-L59))
 
 ``` sourceCode python
-image_file = "Image.png"
-print(f"Saving 2D color image to file: {image_file}")
+image_file = "ImageRGB.png"
+print(f"Saving 2D color image (linear RGB color space) to file: {image_file}")
 image.save(image_file)
 ```
 

@@ -142,12 +142,34 @@ def _projector_to_camera_scale_factor(camera_info: zivid.CameraInfo) -> float:
         zivid.CameraInfo.Model.zivid2PlusM130,
         zivid.CameraInfo.Model.zivid2PlusM60,
         zivid.CameraInfo.Model.zivid2PlusL110,
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
     ]:
         ratio = 2.47
     else:
-        raise ValueError("Invalid camera model")
+        raise ValueError(f"Invalid camera model '{model}'")
 
     return ratio
+
+
+def _get_color_settings_for_camera(camera: zivid.Camera) -> zivid.Settings2D.Sampling.Color:
+    """Get sampling.color based on camera model.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        Sampling color to use for camera
+
+    """
+    if camera.info.model in [
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+    ]:
+        return zivid.Settings2D.Sampling.Color.grayscale
+    return zivid.Settings2D.Sampling.Color.rgb
 
 
 def _find_marker(
@@ -273,14 +295,22 @@ def _main() -> None:
         with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
             input("Press enter to continue ...")
 
-            settings_2d_zero_brightness = zivid.Settings2D()
-            settings_2d_zero_brightness.acquisitions.append(
-                zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=40000), aperture=2.83)
+            settings_2d_zero_brightness = zivid.Settings2D(
+                acquisitions=[
+                    zivid.Settings2D.Acquisition(
+                        brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.38
+                    )
+                ],
+                sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
             )
 
-            settings_2d_max_brightness = zivid.Settings2D()
-            settings_2d_max_brightness.acquisitions.append(
-                zivid.Settings2D.Acquisition(brightness=1.8, exposure_time=timedelta(microseconds=40000), aperture=2.83)
+            settings_2d_max_brightness = zivid.Settings2D(
+                acquisitions=[
+                    zivid.Settings2D.Acquisition(
+                        brightness=1.8, exposure_time=timedelta(microseconds=20000), aperture=2.38
+                    )
+                ],
+                sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
             )
 
             print("Capture a 2D frame with the marker")

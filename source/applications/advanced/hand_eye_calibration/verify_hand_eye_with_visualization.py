@@ -58,7 +58,7 @@ def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace)
         radius_threshold = args.size * np.sqrt(2) / 2
 
     radius = np.linalg.norm(centroid - xyz, axis=2)
-    xyz[radius > radius_threshold] = np.NaN
+    xyz[radius > radius_threshold] = np.nan
 
     return xyz
 
@@ -188,9 +188,8 @@ def _main() -> None:
             list_of_open_3d_point_clouds = []
             for data_pair_id in range(number_of_dataset_pairs):
                 # Updating the user about the process status through the terminal
-                print(
-                    f"{data_pair_id} / {number_of_dataset_pairs} - {(100 * data_pair_id / number_of_dataset_pairs):.2f}%"
-                )
+                percentage = int(100 * data_pair_id / number_of_dataset_pairs)
+                print(f"{data_pair_id} / {number_of_dataset_pairs} - {percentage:>3}%")
 
                 # Reading point cloud from file
                 frame = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id])
@@ -218,7 +217,7 @@ def _main() -> None:
                 # Appending the Open3D point cloud to a list for visualization
                 list_of_open_3d_point_clouds.append(point_cloud_open3d)
 
-        print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100.0%")
+        print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100%")
         print("\nAll done!\n")
 
         if data_pair_id > 1:

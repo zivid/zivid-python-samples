@@ -75,6 +75,46 @@ def _draw_filled_circles(
             cv2.circle(image, point, circle_size_in_pixels, circle_color, -1)
 
 
+def _get_2d_capture_settings(camera: zivid.Camera) -> zivid.Settings2D:
+    """Get 2D capture settings based on the camera model.
+
+    Args:
+        camera: Zivid camera
+
+    Raises:
+        ValueError: If the camera model is not supported
+
+    Returns:
+        2D capture settings
+
+    """
+    settings_2d = zivid.Settings2D(
+        acquisitions=[
+            zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)
+        ]
+    )
+
+    model = camera.info.model
+    if model in [
+        zivid.CameraInfo.Model.zividTwo,
+        zivid.CameraInfo.Model.zividTwoL100,
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ]:
+        settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.rgb
+    elif model in [
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    ]:
+        settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
+    else:
+        raise ValueError(f"Unsupported camera model '{model}'")
+
+    return settings_2d
+
+
 def _main() -> None:
     app = zivid.Application()
 
@@ -121,10 +161,7 @@ def _main() -> None:
     print("Displaying the projector image")
 
     with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
-        settings_2d = zivid.Settings2D()
-        settings_2d.acquisitions.append(
-            zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)
-        )
+        settings_2d = _get_2d_capture_settings(camera)
 
         print("Capturing a 2D image with the projected image")
         frame_2d = projected_image.capture(settings_2d)

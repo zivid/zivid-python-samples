@@ -107,6 +107,7 @@ def _verify_good_capture(frame: zivid.Frame, user_options: argparse.Namespace) -
 
 
 def _capture_one_frame_and_robot_pose(
+    *,
     robot: Item,
     camera: zivid.Camera,
     save_directory: Path,
@@ -186,12 +187,12 @@ def generate_hand_eye_dataset(
         while not image_and_pose_iterator > num_targets:
             print(f"Capturing calibration object at robot pose {num_targets - len(targets)}")
             _capture_one_frame_and_robot_pose(
-                robot,
-                camera,
-                save_directory,
-                image_and_pose_iterator,
-                targets.pop(0) if targets else None,
-                user_options,
+                robot=robot,
+                camera=camera,
+                save_directory=save_directory,
+                image_and_pose_iterator=image_and_pose_iterator,
+                next_target=targets.pop(0) if targets else None,
+                user_options=user_options,
             )
             image_and_pose_iterator += 1
 

@@ -16,8 +16,37 @@ from typing import Iterable, Tuple
 import zivid
 
 
+def _set_sampling_pixel(settings: zivid.Settings, camera: zivid.Camera) -> None:
+    """Get sampling pixel setting based on the camera model.
+
+    Args:
+        settings: Zivid settings instance
+        camera: Zivid camera instance
+
+    Raises:
+        ValueError: If the camera model is not supported
+
+    """
+    if (
+        camera.info.model is zivid.CameraInfo.Model.zividTwo
+        or camera.info.model is zivid.CameraInfo.Model.zividTwoL100
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusM130
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusM60
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusL110
+    ):
+        settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
+    elif (
+        camera.info.model is zivid.CameraInfo.Model.zivid2PlusMR130
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusMR60
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusLR110
+    ):
+        settings.sampling.pixel = zivid.Settings.Sampling.Pixel.by2x2
+    else:
+        raise ValueError(f"Unhandled enum value {camera.info.model}")
+
+
 def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, timedelta, float]]:
-    """Print normal XYZ values of the 10 x 10 central pixels.
+    """Get exposure values based on the camera model.
 
     Args:
         camera: Zivid camera instance
@@ -29,7 +58,7 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, t
         brightnesses: The projector brightness of each capture
 
     Raises:
-        ValueError: If the model is not Zivid 2 or Zivid 2+
+        ValueError: If the camera model is not supported
 
     """
     if camera.info.model is zivid.CameraInfo.Model.zividTwo or camera.info.model is zivid.CameraInfo.Model.zividTwoL100:
@@ -46,6 +75,15 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, t
         gains = (1.0, 1.0, 1.0)
         exposure_times = (timedelta(microseconds=1677), timedelta(microseconds=5000), timedelta(microseconds=100000))
         brightnesses = (2.2, 2.2, 2.2)
+    elif (
+        camera.info.model is zivid.CameraInfo.Model.zivid2PlusMR130
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusMR60
+        or camera.info.model is zivid.CameraInfo.Model.zivid2PlusLR110
+    ):
+        apertures = (5.66, 2.8, 2.37)
+        gains = (1.0, 1.0, 1.0)
+        exposure_times = (timedelta(microseconds=900), timedelta(microseconds=1500), timedelta(microseconds=20000))
+        brightnesses = (2.5, 2.5, 2.5)
     else:
         raise ValueError(f"Unhandled enum value {camera.info.model}")
 
@@ -62,7 +100,6 @@ def _main() -> None:
     settings = zivid.Settings()
     settings.engine = zivid.Settings.Engine.phase
     settings.sampling.color = zivid.Settings.Sampling.Color.rgb
-    settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
     settings.region_of_interest.box.enabled = True
     settings.region_of_interest.box.point_o = [1000, 1000, 1000]
     settings.region_of_interest.box.point_a = [1000, -1000, 1000]
@@ -99,6 +136,7 @@ def _main() -> None:
     color.balance.green = 1.0
     color.gamma = 1.0
     settings.processing.color.experimental.mode = zivid.Settings.Processing.Color.Experimental.Mode.automatic
+    _set_sampling_pixel(settings, camera)
     print(settings)
 
     print("Configuring acquisition settings different for all HDR acquisitions")

@@ -36,6 +36,12 @@ def _settings_folder(camera: zivid.Camera) -> str:
         return "zivid2Plus"
     if model == zivid.CameraInfo.Model.zivid2PlusL110:
         return "zivid2Plus"
+    if model == zivid.CameraInfo.Model.zivid2PlusMR130:
+        return "zivid2Plus/R"
+    if model == zivid.CameraInfo.Model.zivid2PlusMR60:
+        return "zivid2Plus/R"
+    if model == zivid.CameraInfo.Model.zivid2PlusLR110:
+        return "zivid2Plus/R"
     raise RuntimeError(f"Unhandled enum value {camera.info.model}")
 
 
