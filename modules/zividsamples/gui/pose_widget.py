@@ -73,7 +73,7 @@ class AspectRatioLabel(QLabel):
         constrained_height = min(max(self.minimumHeight(), height), self.maximumHeight())
         super().setFixedHeight(constrained_height)
 
-    # pylint: disable=W0012
+    # pylint: disable=too-many-positional-arguments
     def setHeightFromGrid(self, grid_layout, row_start, row_span, col_start, col_span):
         max_height = 0 if row_start > 0 else grid_layout.verticalSpacing()
         for row in range(row_start, row_start + row_span):
@@ -126,7 +126,7 @@ class BasePoseWidget(QWidget):
     pose_updated = pyqtSignal()
     rotation_information: RotationInformation
 
-    # pylint: disable=W0012
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         title: str,
@@ -290,7 +290,7 @@ class PoseWidget(BasePoseWidget):
     pose_updated = pyqtSignal()
     rotation_vector_user_parameters: List[float] = [0.0, 0.0, 0.0]
 
-    # pylint: disable=W0012
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         title: str,
@@ -663,7 +663,7 @@ class MarkerPosesWidget(BasePoseWidget):
     max_rows_before_scrolling: int = 5
     pose_updated = pyqtSignal()
 
-    # pylint: disable=W0012
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         title: str,

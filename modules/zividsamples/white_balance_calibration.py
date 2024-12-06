@@ -51,6 +51,25 @@ def compute_mean_rgb_from_mask(rgb: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return mean_rgb
 
 
+def camera_may_need_color_balancing(camera: zivid.Camera) -> bool:
+    """Check if camera may need color balancing.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        True if camera may need color balance, False otherwise
+
+    """
+    if camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    ):
+        return False
+    return True
+
+
 def white_balance_calibration(
     camera: zivid.Camera, settings_2d: zivid.Settings2D, mask: np.ndarray
 ) -> Tuple[float, float, float]:
@@ -61,12 +80,18 @@ def white_balance_calibration(
         settings_2d: 2D capture settings
         mask: (H, W) of bools masking the white surface
 
+    Raises:
+        RuntimeError: If camera does not need color balancing
+
     Returns:
         corrected_red_balance: Corrected red balance
         corrected_green_balance: Corrected green balance
         corrected_blue_balance: Corrected blue balance
 
     """
+    if not camera_may_need_color_balancing(camera):
+        raise RuntimeError(f"{camera.info.model} does not need color balancing.")
+
     corrected_red_balance = 1.0
     corrected_green_balance = 1.0
     corrected_blue_balance = 1.0
