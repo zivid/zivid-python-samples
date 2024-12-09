@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.13.1. For
+This repository contains python code samples for Zivid SDK v2.14.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -70,6 +70,7 @@ from the camera can be used.
           - [capture\_with\_diagnostics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/capture_with_diagnostics.py) - Capture point clouds, with color, from the Zivid camera,
             with settings from YML file and diagnostics enabled.
           - [firmware\_updater](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/firmware_updater.py) - Update firmware on the Zivid camera.
+          - [frame\_info](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/frame_info.py) - Read frame info from the Zivid camera.
           - [get\_camera\_intrinsics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/get_camera_intrinsics.py) - Read intrinsic parameters from the Zivid camera (OpenCV
             model) or estimate them from the point cloud.
           - [network\_configuration](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/network_configuration.py) - Uses Zivid API to change the IP address of the Zivid
@@ -145,6 +146,12 @@ from the camera can be used.
               - **ur\_hand\_eye\_calibration**
                   - [universal\_robots\_perform\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/ur_hand_eye_calibration/universal_robots_perform_hand_eye_calibration.py) - Script to generate a dataset and perform hand-eye
                     calibration using a Universal Robot UR5e robot.
+              - **robodk\_hand\_eye\_calibration**
+                  - [robodk\_verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robodk_verify_hand_eye_calibration.py) - Perform a touch test with a robot to verify
+                    Hand-Eye Calibration using the RoboDK interface.
+          - **robot\_guidance**
+              - [robodk\_robot\_guidance](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/robot_guidance/robodk_robot_guidance.py) - Guide the robot to follow a path on the Zivid
+                Calibration Board.
   - **modules**
       - **zividsamples**
           - [calibration\_board\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/calibration_board_utils.py) - Utility functions for the Zivid calibration board.
@@ -157,14 +164,6 @@ from the camera can be used.
             matrices.
           - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/white_balance_calibration.py) - Balance color for 2D capture using white surface as
             reference.
-  - **applications**
-      - **advanced**
-          - **robot\_guidance**
-              - [robodk\_robot\_guidance](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/robot_guidance/robodk_robot_guidance.py) - Guide the robot to follow a path on the Zivid
-                Calibration Board.
-          - **verify\_hand\_eye\_calibration**
-              - [robodk\_verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/verify_hand_eye_calibration/robodk_verify_hand_eye_calibration.py) - Perform a touch test with a robot to verify Hand-Eye
-                Calibration using the RoboDK interface.
 
 ## Installation
 

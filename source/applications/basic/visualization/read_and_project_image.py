@@ -59,6 +59,37 @@ def get_projector_image_file_for_camera(camera: zivid.Camera) -> Path:
     raise RuntimeError("Invalid camera model")
 
 
+def make_settings_2d(camera: zivid.Camera) -> zivid.Settings2D:
+    """Creates 2D settings for a given camera.
+
+    Args:
+        camera: Zivid camera
+
+    Returns:
+        2D settings
+    """
+    model = camera.info.model
+    if model in [
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+    ]:
+        color_mode = zivid.Settings2D.Sampling.Color.grayscale
+    else:
+        color_mode = zivid.Settings2D.Sampling.Color.rgb
+
+    return zivid.Settings2D(
+        acquisitions=[
+            zivid.Settings2D.Acquisition(
+                brightness=0.0,
+                exposure_time=timedelta(microseconds=20000),
+                aperture=2.83,
+            )
+        ],
+        sampling=zivid.Settings2D.Sampling(color=color_mode),
+    )
+
+
 def _main() -> None:
     with zivid.Application() as app:
         print("Connecting to camera")
@@ -86,12 +117,7 @@ def _main() -> None:
             print("Displaying the projector image")
 
             with zivid.projection.show_image_bgra(camera, projector_image) as projected_image_handle:
-                settings_2d = zivid.Settings2D()
-                settings_2d.acquisitions.append(
-                    zivid.Settings2D.Acquisition(
-                        brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83
-                    )
-                )
+                settings_2d = make_settings_2d(camera)
 
                 print("Capturing a 2D image with the projected image")
                 frame_2d = projected_image_handle.capture(settings_2d)

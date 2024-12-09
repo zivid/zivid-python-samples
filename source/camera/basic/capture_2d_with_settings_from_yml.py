@@ -1,6 +1,12 @@
 """
 Capture 2D images from the Zivid camera, with settings from YML file.
 
+The color information is provided in linear RGB and sRGB color spaces.
+Color represented in linear RGB space is suitable as input to traditional computer vision algorithms.
+Color represented in sRGB color space is suitable for showing an image on a display.
+More information about linear RGB and sRGB color spaces is available at:
+https://support.zivid.com/en/latest/reference-articles/color-spaces-and-output-formats.html#color-spaces
+
 """
 
 import argparse
@@ -42,15 +48,25 @@ def _main() -> None:
 
     print("Capturing 2D frame")
     with camera.capture(settings_2d) as frame_2d:
-        print("Getting RGBA image")
-        image = frame_2d.image_rgba()
-        rgba = image.copy_data()
+        print("Getting color image (linear RGB color space)")
+        image_rgba = frame_2d.image_rgba()
+        rgba = image_rgba.copy_data()
 
-        display_rgb(rgba[:, :, 0:3], title="RGB image", block=True)
+        display_rgb(rgba[:, :, 0:3], title="Color image (Linear RGB color space)", block=True)
 
-        image_file = "Image.png"
-        print(f"Saving 2D color image to file: {image_file}")
-        image.save(image_file)
+        image_rgb_file = "ImageRGB.png"
+        print(f"Saving 2D color image (linear RGB color space) to file: {image_rgb_file}")
+        image_rgba.save(image_rgb_file)
+
+        print("Getting color image (sRGB color space)")
+        image_srgb = frame_2d.image_srgb()
+        srgb = image_srgb.copy_data()
+
+        display_rgb(srgb[:, :, 0:3], title="Color image (sRGB color space)", block=True)
+
+        image_srgb_file = "ImageSRGB.png"
+        print(f"Saving 2D color image  (sRGB color space) to file: {image_srgb_file}")
+        image_srgb.save(image_srgb_file)
 
 
 if __name__ == "__main__":

@@ -19,7 +19,6 @@ class RobotControlRoboDK(RobotControl):
     robot_handle: Optional[Any]
     information_update = pyqtSignal(str)
     custom_target: Item
-    targets: Dict[str, RobotTarget] = {}
     robodk_targets: Dict[str, Item] = {}
     target_name_mapping: Dict[str, str] = {}
     current_target: RobotTarget = RobotTarget(name="CustomTarget", pose=TransformationMatrix())
@@ -138,6 +137,7 @@ class RobotControlRoboDK(RobotControl):
     def setup_targets(self):
         assert self.rdk
         list_items = self.rdk.ItemList()
+        self.targets = {}
         robodk_items = {item.Name(): item for item in list_items}
         self.robodk_targets = {
             key: value for key, value in robodk_items.items() if key.startswith("Target") or key.startswith("HE-Pose")

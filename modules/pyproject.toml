@@ -21,6 +21,7 @@ dependencies = [
     "open3d; python_version <= '3.11'",
     "opencv-python",
     "pyyaml",
+    "pyqt5-sip==12.15.0",
     "pyqt5",
     "robodk",
     "scipy",

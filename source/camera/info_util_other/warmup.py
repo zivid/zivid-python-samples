@@ -24,7 +24,7 @@ def _options() -> argparse.Namespace:
     parser.add_argument(
         "--settings-path",
         required=False,
-        help="Path to the YAML file that contains Camera Settings",
+        help="Path to the YML file that contains camera settings",
     )
 
     parser.add_argument(
@@ -38,6 +38,29 @@ def _options() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _load_or_suggest_settings(camera: zivid.Camera, settings_path: str) -> zivid.Settings:
+    """Load settings from YML file or find them with the assisted capture
+
+    Args:
+        camera: Zivid camera
+        settings_path: Path to the YML file that contains camera settings
+
+    Returns:
+        Camera Settings
+
+    """
+
+    if settings_path:
+        print("Loading settings from file")
+        return zivid.Settings.load(Path(settings_path))
+    print("Getting camera settings from capture assistant")
+    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
+        max_capture_time=timedelta(milliseconds=1000),
+        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
+    )
+    return zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+
+
 def _main() -> None:
     user_options = _options()
     app = zivid.Application()
@@ -47,17 +70,7 @@ def _main() -> None:
 
     warmup_time = timedelta(minutes=10)
     capture_cycle = timedelta(seconds=user_options.capture_cycle)
-
-    if user_options.settings_path:
-        print("Loading settings from file")
-        settings = zivid.Settings.load(Path(user_options.settings_path))
-    else:
-        print("Getting camera settings from capture assistant")
-        suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-            max_capture_time=timedelta(milliseconds=1000),
-            ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-        )
-        settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+    settings = _load_or_suggest_settings(camera, user_options.settings_path)
 
     before_warmup = datetime.now()
 

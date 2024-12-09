@@ -44,7 +44,7 @@ class HandEyeCalibrationGUI(QWidget):
     description: List[str]
     instruction_steps: Dict[str, bool]
 
-    # pylint: disable=W0012
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         data_directory: Path,
