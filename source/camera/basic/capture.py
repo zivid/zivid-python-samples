@@ -1,5 +1,5 @@
 """
-Capture point clouds, with color, from the Zivid camera.
+Capture colored point cloud, save 2D image, save 3D ZDF, and export PLY, using the Zivid camera.
 
 """
 
@@ -13,11 +13,18 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Creating default capture settings")
-    settings = zivid.Settings()
-    settings.acquisitions.append(zivid.Settings.Acquisition())
+    settings = zivid.Settings(
+        acquisitions=[zivid.Settings.Acquisition()],
+        color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),
+    )
 
     print("Capturing frame")
-    with camera.capture(settings) as frame:
+    with camera.capture_2d_3d(settings) as frame:
+        image_bgra = frame.frame_2d().image_rgba()
+        image_file = "ImageRGBA.png"
+        print(f"Saving 2D color image (linear RGB color space) to file: {image_file}")
+        image_bgra.save(image_file)
+
         data_file = "Frame.zdf"
         print(f"Saving frame to file: {data_file}")
         frame.save(data_file)

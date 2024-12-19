@@ -30,7 +30,7 @@ def _options() -> argparse.Namespace:
         "--file-camera",
         required=False,
         type=Path,
-        default=get_sample_data_path() / "FileCameraZivid2M70.zfc",
+        default=get_sample_data_path() / "FileCameraZivid2PlusMR60.zfc",
         help="Path to the file camera .zfc file",
     )
 
@@ -54,12 +54,17 @@ def _main() -> None:
     settings.processing.filters.smoothing.gaussian.sigma = 1
     settings.processing.filters.reflection.removal.enabled = True
     settings.processing.filters.reflection.removal.mode = "global"
-    settings.processing.color.balance.red = 1.0
-    settings.processing.color.balance.green = 1.0
-    settings.processing.color.balance.blue = 1.0
+
+    settings_2d = zivid.Settings2D()
+    settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
+    settings_2d.processing.color.balance.blue = 1.0
+    settings_2d.processing.color.balance.green = 1.0
+    settings_2d.processing.color.balance.red = 1.0
+
+    settings.color = settings_2d
 
     print("Capturing frame")
-    with camera.capture(settings) as frame:
+    with camera.capture_2d_3d(settings) as frame:
         data_file = "Frame.zdf"
         print(f"Saving frame to file: {data_file}")
         frame.save(data_file)

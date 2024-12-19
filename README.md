@@ -39,19 +39,14 @@ from the camera can be used.
 
   - **camera**
       - **basic**
-          - [capture](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture.py) - Capture point clouds, with color, from the Zivid camera.
-          - [capture\_2d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_2d.py) - Capture 2D images from the Zivid camera.
-          - [capture\_2d\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_2d_with_settings_from_yml.py) - Capture 2D images from the Zivid camera, with settings
-            from YML file.
-          - [capture\_assistant](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_assistant.py) - Use Capture Assistant to capture point clouds, with color,
-            from the Zivid camera.
+          - [capture](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture.py) - Capture colored point cloud, save 2D image, save 3D ZDF,
+            and export PLY, using the Zivid camera.
           - [capture\_from\_file\_camera](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_from_file_camera.py) - Capture point clouds, with color, with the Zivid file
             camera.
-          - [capture\_hdr](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_hdr.py) - Capture point clouds, with color, from the Zivid camera.
           - [capture\_hdr\_complete\_settings](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_hdr_complete_settings.py) - Capture point clouds, with color, from the Zivid camera
             with fully configured settings.
-          - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture point clouds, with color, from the Zivid camera,
-            with settings from YML file.
+          - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture images and point clouds, with or without color,
+            from the Zivid camera with settings from YML file.
       - **advanced**
           - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D separately with the Zivid camera.
           - [capture\_hdr\_loop](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_loop.py) - Cover the same dynamic range in a scene with different
