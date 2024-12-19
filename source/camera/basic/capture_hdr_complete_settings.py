@@ -97,45 +97,67 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Configuring settings for capture:")
+    settings_2d = zivid.Settings2D()
+
+    settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.rgb
+    settings_2d.sampling.pixel = zivid.Settings2D.Sampling.Pixel.all
+
+    settings_2d.processing.color.balance.red = 1.0
+    settings_2d.processing.color.balance.blue = 1.0
+    settings_2d.processing.color.balance.green = 1.0
+    settings_2d.processing.color.gamma = 1.0
+
+    settings_2d.processing.color.experimental.mode = zivid.Settings2D.Processing.Color.Experimental.Mode.automatic
+
     settings = zivid.Settings()
     settings.engine = zivid.Settings.Engine.phase
-    settings.sampling.color = zivid.Settings.Sampling.Color.rgb
+
     settings.region_of_interest.box.enabled = True
     settings.region_of_interest.box.point_o = [1000, 1000, 1000]
     settings.region_of_interest.box.point_a = [1000, -1000, 1000]
     settings.region_of_interest.box.point_b = [-1000, 1000, 1000]
     settings.region_of_interest.box.extents = [-1000, 1000]
+
     settings.region_of_interest.depth.enabled = True
     settings.region_of_interest.depth.range = [200, 2000]
-    filters = settings.processing.filters
-    filters.smoothing.gaussian.enabled = True
-    filters.smoothing.gaussian.sigma = 1.5
-    filters.noise.removal.enabled = True
-    filters.noise.removal.threshold = 7.0
-    filters.noise.suppression.enabled = True
-    filters.noise.repair.enabled = True
-    filters.outlier.removal.enabled = True
-    filters.outlier.removal.threshold = 5.0
-    filters.reflection.removal.enabled = True
-    filters.reflection.removal.mode = zivid.Settings.Processing.Filters.Reflection.Removal.Mode.global_
-    filters.cluster.removal.enabled = True
-    filters.cluster.removal.max_neighbor_distance = 10
-    filters.cluster.removal.min_area = 100
-    filters.experimental.contrast_distortion.correction.enabled = True
-    filters.experimental.contrast_distortion.correction.strength = 0.4
-    filters.experimental.contrast_distortion.removal.enabled = False
-    filters.experimental.contrast_distortion.removal.threshold = 0.5
-    filters.hole.repair.enabled = True
-    filters.hole.repair.hole_size = 0.2
-    filters.hole.repair.strictness = 1
-    resampling = settings.processing.resampling
-    resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
-    color = settings.processing.color
-    color.balance.red = 1.0
-    color.balance.blue = 1.0
-    color.balance.green = 1.0
-    color.gamma = 1.0
-    settings.processing.color.experimental.mode = zivid.Settings.Processing.Color.Experimental.Mode.automatic
+
+    settings.processing.filters.cluster.removal.enabled = True
+    settings.processing.filters.cluster.removal.max_neighbor_distance = 10
+    settings.processing.filters.cluster.removal.min_area = 100
+
+    settings.processing.filters.hole.repair.enabled = True
+    settings.processing.filters.hole.repair.hole_size = 0.2
+    settings.processing.filters.hole.repair.strictness = 1
+
+    settings.processing.filters.noise.removal.enabled = True
+    settings.processing.filters.noise.removal.threshold = 7.0
+
+    settings.processing.filters.noise.suppression.enabled = True
+    settings.processing.filters.noise.repair.enabled = True
+
+    settings.processing.filters.outlier.removal.enabled = True
+    settings.processing.filters.outlier.removal.threshold = 5.0
+
+    settings.processing.filters.reflection.removal.enabled = True
+    settings.processing.filters.reflection.removal.mode = (
+        zivid.Settings.Processing.Filters.Reflection.Removal.Mode.global_
+    )
+
+    settings.processing.filters.smoothing.gaussian.enabled = True
+    settings.processing.filters.smoothing.gaussian.sigma = 1.5
+
+    settings.processing.filters.experimental.contrast_distortion.correction.enabled = True
+    settings.processing.filters.experimental.contrast_distortion.correction.strength = 0.4
+
+    settings.processing.filters.experimental.contrast_distortion.removal.enabled = False
+    settings.processing.filters.experimental.contrast_distortion.removal.threshold = 0.5
+
+    settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
+
+    settings.diagnostics.enabled = False
+
+    settings.color = settings_2d
+
     _set_sampling_pixel(settings, camera)
     print(settings)
 
@@ -151,10 +173,19 @@ def _main() -> None:
             )
         )
 
+    settings_2d.acquisitions.append(
+        zivid.Settings2D.Acquisition(
+            aperture=2.83,
+            exposure_time=timedelta(microseconds=10000),
+            brightness=1.8,
+            gain=1.0,
+        )
+    )
+
     for acquisition in settings.acquisitions:
         print(acquisition)
     print("Capturing frame (HDR)")
-    with camera.capture(settings) as frame:
+    with camera.capture_2d_3d(settings) as frame:
         print("Complete settings used:")
         print(frame.settings)
         data_file = "Frame.zdf"

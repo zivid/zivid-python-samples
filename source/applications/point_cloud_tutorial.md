@@ -53,10 +53,10 @@ compute device memory) and the capture and camera information. Capture
 When you capture with Zivid, you get a frame in return.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L20))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22))
 
 ``` sourceCode python
-with camera.capture(settings) as frame:
+with camera.capture_2d_3d(settings) as frame:
 ```
 
 Check
