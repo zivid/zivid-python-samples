@@ -26,7 +26,7 @@ from zividsamples.gui.marker_widget import TouchMarkerWidget, generate_marker_di
 from zividsamples.gui.pose_widget import MarkerPosesWidget, PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
-from zividsamples.gui.settings_selector import Settings
+from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -148,7 +148,7 @@ class TouchGUI(QWidget):
     def on_actual_pose_updated(self, robot_target: RobotTarget):
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: Settings):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
         detection_result = zivid.calibration.detect_markers(
             frame, [self.marker_selection.marker_id], self.marker_selection.marker_dictionary
         )

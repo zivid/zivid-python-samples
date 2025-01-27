@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.14.0. For
+This repository contains python code samples for Zivid SDK v2.14.1. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -55,9 +55,8 @@ from the camera can be used.
           - [capture\_hdr\_print\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_print_normals.py) - Capture Zivid point clouds, compute normals and print a
             subset.
       - **info\_util\_other**
-          - [automatic\_network\_configuration\_for\_cameras](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/automatic_network_configuration_for_cameras.py) - Automatically set the IP addresses of any number of
-            cameras to be in the same subnet as the provided IP address
-            of the network interface.
+          - [automatic\_network\_configuration\_for\_cameras](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/automatic_network_configuration_for_cameras.py) - Automatically configure the IP addresses of connected
+            cameras to match the network of the user's PC.
           - [camera\_info](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_info.py) - Print version information for Python, zivid-python and
             Zivid SDK, then list cameras and print camera info and state
             for each connected camera.

@@ -226,7 +226,7 @@ class RobotControlWidget(QWidget):
     def move_robot_in_separate_thread(self, emit_signal_when_done: bool = False, moveL: bool = False) -> None:
         assert self.result_queue is not None
         if self.current_robot_target is None:
-            QMessageBox.warning(self, "Robot Control", "No target set")
+            QMessageBox.warning(None, "Robot Control", "No target set")
             self.result_queue.put(False)
             return
         try:
@@ -238,7 +238,7 @@ class RobotControlWidget(QWidget):
             self.result_queue.put(True)
         except Exception as ex:
             print(f"Warning: {ex}")
-            QMessageBox.warning(self, "Robot Control", str(ex))
+            QMessageBox.warning(None, "Robot Control", str(ex))
             self.result_queue.put(False)
         if emit_signal_when_done:
             self.robot_move_thread_done.emit()
