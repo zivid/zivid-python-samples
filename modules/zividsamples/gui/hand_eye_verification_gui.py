@@ -22,7 +22,7 @@ from zividsamples.gui.marker_widget import MarkerConfiguration, generate_marker_
 from zividsamples.gui.pose_widget import MarkerPosesWidget, PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
-from zividsamples.gui.settings_selector import Settings
+from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -315,7 +315,7 @@ class HandEyeVerificationGUI(QWidget):
         self.calculate_calibration_object_in_camera_frame_pose()
         self.update_projection.emit()
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: Settings):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
         self.detected_markers = {}
         detection_result = (
             zivid.calibration.detect_calibration_board(frame)
@@ -382,7 +382,7 @@ class HandEyeVerificationGUI(QWidget):
             self.cv2_handler.draw_circles(projector_image, non_nan_projector_image_indices, color)
         else:
             self.cv2_handler.draw_polygons(projector_image, non_nan_projector_image_indices, color)
-        projector_image[0, 0] = [1, 1, 1, 255]  # TODO(ZIVID-8760): Remove workaround
+        # projector_image[0, 0] = [1, 1, 1, 255]  # TODO(ZIVID-8760): Remove workaround
         return projector_image
 
     def calculate_calibration_object_in_camera_frame_pose(self):

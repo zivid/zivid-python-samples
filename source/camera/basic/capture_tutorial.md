@@ -188,12 +188,6 @@ print(f"Saving settings to file: {settings_file}")
 settings.save(settings_file)
 ```
 
------
-
-Caution\!:
-
-> Zivid settings files must use .yml file extension ( not .yaml).
-
 ### Manual configuration
 
 Another option is to configure settings manually. For more information

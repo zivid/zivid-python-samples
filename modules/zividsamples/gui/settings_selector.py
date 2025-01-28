@@ -27,17 +27,21 @@ from zivid.experimental import PixelMapping, calibration
 
 
 @dataclass
-class Settings:
-    settings_3d: Optional[zivid.Settings] = None
-    settings_3d_for_hand_eye: Optional[zivid.Settings] = None
-    settings_2d: Optional[zivid.Settings2D] = None
-    pixel_mapping: Optional[PixelMapping] = None
-    intrinsics: Optional[zivid.CameraIntrinsics] = None
+class SettingsPixelMappingIntrinsics:
+    settings_2d3d: zivid.Settings
+    pixel_mapping: PixelMapping
+    intrinsics: zivid.CameraIntrinsics
+
+
+@dataclass
+class SettingsForHandEyeGUI:
+    production: SettingsPixelMappingIntrinsics
+    hand_eye: SettingsPixelMappingIntrinsics
 
 
 def validate_settings(camera: zivid.Camera, settings: zivid.Settings) -> bool:
     try:
-        camera.capture(settings)
+        camera.capture_2d_3d(settings)
     except Exception as error:
         QMessageBox.critical(None, "Invalid Settings", str(error))
         return False
@@ -80,6 +84,19 @@ def _settings_for_hand_eye(
                 timedelta(microseconds=100000),
             )
             brightnesses = (2.2, 2.2, 2.2)
+        elif camera.info.model in [
+            zivid.CameraInfo.Model.zivid2PlusMR130,
+            zivid.CameraInfo.Model.zivid2PlusMR60,
+            zivid.CameraInfo.Model.zivid2PlusLR110,
+        ]:
+            apertures = (5.66, 2.83, 2.83)
+            gains = (1.0, 1.0, 1.0)
+            exposure_times = (
+                timedelta(microseconds=900),
+                timedelta(microseconds=5000),
+                timedelta(microseconds=20000),
+            )
+            brightnesses = (2.5, 2.5, 2.5)
         else:
             raise ValueError(f"Unhandled enum value {camera.info.model}")
 
@@ -87,8 +104,23 @@ def _settings_for_hand_eye(
 
     updated_settings = zivid.Settings()
     updated_settings.engine = engine
-    updated_settings.sampling.color = zivid.Settings.Sampling.Color.rgb
-    updated_settings.sampling.pixel = sampling_pixel
+    # Avoid 4x4 sampling for hand-eye calibration
+    if str(sampling_pixel) in [
+        zivid.Settings.Sampling.Pixel.blueSubsample4x4,
+        zivid.Settings.Sampling.Pixel.redSubsample4x4,
+        zivid.Settings.Sampling.Pixel.by4x4,
+    ]:
+        updated_settings.sampling.pixel = {
+            zivid.Settings.Sampling.Pixel.blueSubsample4x4: zivid.Settings.Sampling.Pixel.blueSubsample2x2,
+            zivid.Settings.Sampling.Pixel.redSubsample4x4: zivid.Settings.Sampling.Pixel.redSubsample2x2,
+            zivid.Settings.Sampling.Pixel.by4x4: zivid.Settings.Sampling.Pixel.by2x2,
+        }[str(sampling_pixel)]
+        if updated_settings.processing.resampling.mode == zivid.Settings.Processing.Resampling.Mode.upsample4x4:
+            updated_settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
+        elif updated_settings.processing.resampling.mode == zivid.Settings.Processing.Resampling.Mode.upsample2x2:
+            updated_settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.disabled
+    else:
+        updated_settings.sampling.pixel = sampling_pixel
     exposure_values = _get_exposure_values(camera)
     for aperture, gain, exposure_time, brightness in exposure_values:
         updated_settings.acquisitions.append(
@@ -119,9 +151,35 @@ def _settings_for_hand_eye(
     filters.hole.repair.enabled = True
     filters.hole.repair.hole_size = 0.2
     filters.hole.repair.strictness = 1
-    color = updated_settings.processing.color
-    color.gamma = 1.0
-    updated_settings.processing.color.experimental.mode = zivid.Settings.Processing.Color.Experimental.Mode.automatic
+    if camera.info.model in [
+        zivid.CameraInfo.Model.zividTwo,
+        zivid.CameraInfo.Model.zividTwoL100,
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ]:
+        updated_settings.color = zivid.Settings2D(
+            [
+                zivid.Settings2D.Acquisition(
+                    brightness=updated_settings.acquisitions[0].brightness,
+                    exposure_time=timedelta(microseconds=20000),
+                    aperture=2.43,
+                )
+            ],
+        )
+    else:
+        updated_settings.color = zivid.Settings2D(
+            [
+                zivid.Settings2D.Acquisition(
+                    brightness=updated_settings.acquisitions[0].brightness,
+                    exposure_time=timedelta(microseconds=5000),
+                    aperture=2.83,
+                    gain=1.0,
+                )
+            ],
+        )
+    updated_settings.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.all
+    updated_settings.color.sampling.color = zivid.Settings2D.Sampling.Color.rgb
     return updated_settings
 
 
@@ -141,7 +199,19 @@ class EngineAndSamplingSelectionDialog(QDialog):
         form_layout.addRow("Select Engine", self.engine_selector)
         self.sampling_mode_selector = QComboBox(self)
         self.sampling_mode_selector.addItems(zivid.Settings.Sampling.Pixel.valid_values())
-        self.sampling_mode_selector.setCurrentText(zivid.Settings.Sampling.Pixel.blueSubsample2x2)
+        default_sampling_mode = (
+            zivid.Settings.Sampling.Pixel.blueSubsample2x2
+            if camera.info.model
+            in [
+                zivid.CameraInfo.Model.zividTwo,
+                zivid.CameraInfo.Model.zividTwoL100,
+                zivid.CameraInfo.Model.zivid2PlusM130,
+                zivid.CameraInfo.Model.zivid2PlusM60,
+                zivid.CameraInfo.Model.zivid2PlusL110,
+            ]
+            else zivid.Settings.Sampling.Pixel.by2x2
+        )
+        self.sampling_mode_selector.setCurrentText(default_sampling_mode)
         form_layout.addRow("Select Sampling Mode", self.sampling_mode_selector)
         layout.addLayout(form_layout)
 
@@ -274,26 +344,35 @@ def select_settings(camera: zivid.Camera) -> Optional[zivid.Settings]:
     return get_settings_from_file(camera) if settings is None else settings
 
 
-def select_settings_for_hand_eye(camera: zivid.Camera) -> Settings:
+def _correct_pixel_mapping(camera: zivid.Camera, settings: zivid.Settings) -> PixelMapping:
+    pixel_mapping = calibration.pixel_mapping(camera, settings)
+    factor = 1
+    if settings.color:
+        if settings.color.sampling.pixel:
+            sampling_pixel = settings.color.sampling.pixel
+            factor = {"all": 1, "by2x2": 2, "by4x4": 4}.get(sampling_pixel, 1)
+    col_stride = int(pixel_mapping.col_stride / factor)
+    row_stride = int(pixel_mapping.row_stride / factor)
+    return PixelMapping(row_stride, col_stride, pixel_mapping.row_offset, pixel_mapping.col_offset)
+
+
+def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
     settings = select_settings(camera)
     engine, sampling_pixel = (
         get_engine_and_sampling_pixel(camera) if settings is None else (settings.engine, settings.sampling.pixel)
     )
     hand_eye_settings = _settings_for_hand_eye(camera, engine, sampling_pixel)
-    settings_3d = hand_eye_settings if settings is None else settings
-    settings_2d = zivid.Settings2D(
-        [
-            zivid.Settings2D.Acquisition(
-                brightness=0.0,
-                exposure_time=timedelta(microseconds=20000),
-                aperture=2.43,
-            )
-        ]
-    )
-    return Settings(
-        settings_3d=settings_3d,
-        settings_3d_for_hand_eye=hand_eye_settings,
-        settings_2d=settings_2d,
-        pixel_mapping=calibration.pixel_mapping(camera, settings_3d),
-        intrinsics=calibration.intrinsics(camera, settings_2d),
+    settings_2d3d = zivid.Settings(hand_eye_settings) if settings is None else settings
+    settings_2d3d.sampling.color = None
+    return SettingsForHandEyeGUI(
+        production=SettingsPixelMappingIntrinsics(
+            settings_2d3d=settings_2d3d,
+            pixel_mapping=_correct_pixel_mapping(camera, settings_2d3d),
+            intrinsics=calibration.intrinsics(camera, settings_2d3d),
+        ),
+        hand_eye=SettingsPixelMappingIntrinsics(
+            settings_2d3d=hand_eye_settings,
+            pixel_mapping=_correct_pixel_mapping(camera, hand_eye_settings),
+            intrinsics=calibration.intrinsics(camera, hand_eye_settings),
+        ),
     )

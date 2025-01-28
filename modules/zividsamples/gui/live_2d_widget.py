@@ -1,3 +1,4 @@
+import datetime
 import threading
 import time
 from typing import Callable, Optional
@@ -16,17 +17,20 @@ class Live2DWidget(QWidget):
     live_active: bool = False
     live_thread: Optional[threading.Thread] = None
     current_rgba: Optional[NDArray[Shape["H, W, 4"], UInt8]] = None  # type: ignore
+    settings_2d: Optional[zivid.Settings2D] = None
 
     def __init__(
         self,
-        capture_function: Optional[Callable[[zivid.Settings2D], zivid.Frame2D]],
-        settings_2d: zivid.Settings2D,
+        capture_function: Optional[Callable[[zivid.Settings2D], zivid.Frame2D]] = None,
+        settings_2d: Optional[zivid.Settings2D] = None,
+        camera_model: Optional[str] = None,
         parent=None,
     ):
         super().__init__(parent)
 
         self.capture_function = capture_function
-        self.settings_2d = settings_2d
+        if settings_2d is not None and camera_model is not None:
+            self.update_settings_2d(settings_2d, camera_model)
 
         self.group_box = QGroupBox()
         self.group_box.setTitle("Live 2D")
@@ -43,6 +47,25 @@ class Live2DWidget(QWidget):
     def setMinimumHeight(self, height, aspect_ratio: float = 4 / 3):
         self.live_2d_image.setMinimumHeight(height)
         self.live_2d_image.setMinimumWidth(int(height * aspect_ratio))
+
+    def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str):
+        self.settings_2d = zivid.Settings2D.from_serialized(zivid.Settings2D.serialize(settings_2d))
+        assert self.settings_2d is not None
+        self.settings_2d.acquisitions[0].brightness = 0.0
+        if camera_model in [
+            zivid.CameraInfo.Model.zivid2PlusMR60,
+            zivid.CameraInfo.Model.zivid2PlusMR130,
+            zivid.CameraInfo.Model.zivid2PlusLR110,
+        ]:
+            self.settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
+            self.settings_2d.sampling.pixel = zivid.Settings2D.Sampling.Pixel.by2x2
+            # To match the projector frequency of 120 Hz we set it to 8333. This could
+            # be dynamically adjusted based on use case (with and without looking at a
+            # projected image). In other words, this only matters if you the projector
+            # if projecting an image.
+            self.settings_2d.acquisitions[0].exposure_time = datetime.timedelta(microseconds=8333)
+            self.settings_2d.acquisitions[0].aperture = 4
+            self.settings_2d.acquisitions[0].gain = 2.0
 
     def start_live_2d(self):
         if self.live_thread:

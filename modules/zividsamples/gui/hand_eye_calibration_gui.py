@@ -15,6 +15,7 @@ import zivid
 from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import QSignalBlocker, pyqtSignal
 from PyQt5.QtWidgets import QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout, QWidget
+from zivid.experimental.hand_eye_low_dof import calibrate_eye_in_hand_low_dof, calibrate_eye_to_hand_low_dof
 from zividsamples.gui.buttons_widget import HandEyeCalibrationButtonsWidget
 from zividsamples.gui.cv2_handler import CV2Handler
 from zividsamples.gui.detection_visualization import DetectionVisualizationWidget
@@ -24,7 +25,8 @@ from zividsamples.gui.pose_pair_selection_widget import PosePair, PosePairSelect
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
-from zividsamples.gui.settings_selector import Settings
+from zividsamples.gui.set_fixed_objects import FixedCalibrationObjectsData, set_fixed_objects
+from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.gui.show_yaml_dialog import show_yaml_dialog
 from zividsamples.transformation_matrix import TransformationMatrix
 
@@ -42,6 +44,7 @@ class HandEyeCalibrationGUI(QWidget):
     calibration_finished = pyqtSignal(TransformationMatrix)
     instructions_updated: pyqtSignal = pyqtSignal()
     description: List[str]
+    fixed_objects: FixedCalibrationObjectsData
     instruction_steps: Dict[str, bool]
 
     # pylint: disable=too-many-positional-arguments
@@ -69,6 +72,9 @@ class HandEyeCalibrationGUI(QWidget):
         self.use_robot = use_robot
         self.hand_eye_configuration = hand_eye_configuration
         self.marker_configuration = marker_configuration
+        self.fixed_objects = FixedCalibrationObjectsData(
+            hand_eye_configuration=self.hand_eye_configuration, marker_configuration=self.marker_configuration
+        )
 
         self.cv2_handler = cv2_handler
 
@@ -130,6 +136,7 @@ class HandEyeCalibrationGUI(QWidget):
     def connect_signals(self):
         self.hand_eye_calibration_buttons.use_data_button_clicked.connect(self.on_use_data_button_clicked)
         self.hand_eye_calibration_buttons.calibrate_button_clicked.connect(self.on_calibrate_button_clicked)
+        self.hand_eye_calibration_buttons.use_fixed_objects_toggled.connect(self.on_use_fixed_objects_toggled)
         self.confirm_robot_pose_button.clicked.connect(self.on_confirm_robot_pose_button_clicked)
         self.robot_pose_widget.pose_updated.connect(self.on_robot_pose_manually_updated)
         self.pose_pair_selection_widget.pose_pair_clicked.connect(self.on_pose_pair_clicked)
@@ -173,12 +180,19 @@ class HandEyeCalibrationGUI(QWidget):
         self.minimum_pose_pairs_for_calibration = (
             4 if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard else 6
         )
+        self.fixed_objects.update_hand_eye_configuration(self.hand_eye_configuration)
 
     def marker_configuration_update(self, marker_configuration: MarkerConfiguration):
         self.marker_configuration = marker_configuration
+        self.fixed_objects.update_marker_configuration(self.marker_configuration)
 
     def rotation_format_update(self, rotation_format: RotationInformation):
         self.robot_pose_widget.set_rotation_format(rotation_format)
+
+    def on_select_fixed_objects_action_triggered(self):
+        updated_fixed_objects = set_fixed_objects(self.fixed_objects, self.robot_pose_widget.rotation_information)
+        if updated_fixed_objects is not None:
+            self.fixed_objects = updated_fixed_objects
 
     def toggle_advanced_view(self, checked):
         self.robot_pose_widget.toggle_advanced_section(checked)
@@ -218,7 +232,7 @@ class HandEyeCalibrationGUI(QWidget):
         )
         self.pose_pair_selection_widget.setVisible(number_of_pose_pairs > 0)
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: Settings):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
         try:
             detection_result = (
                 zivid.calibration.detect_calibration_board(frame)
@@ -278,13 +292,30 @@ class HandEyeCalibrationGUI(QWidget):
             calibrated=False,
         )
 
+    def on_use_fixed_objects_toggled(self, checked: bool):
+        if checked:
+            updated_fixed_objects = set_fixed_objects(self.fixed_objects, self.robot_pose_widget.rotation_information)
+            if updated_fixed_objects is None:
+                self.hand_eye_calibration_buttons.use_fixed_objects_checkbox.setChecked(False)
+            else:
+                self.hand_eye_calibration_buttons.use_fixed_objects_checkbox.setChecked(self.fixed_objects.has_data())
+                self.fixed_objects = updated_fixed_objects
+
     def on_calibrate_button_clicked(self):
         try:
             detection_results = self.pose_pair_selection_widget.get_detection_results()
             calibration_result = (
-                zivid.calibration.calibrate_eye_in_hand(detection_results)
+                (
+                    calibrate_eye_in_hand_low_dof(detection_results, self.fixed_objects.to_fixed_calibration_objects())
+                    if self.hand_eye_calibration_buttons.use_fixed_objects_checkbox.isChecked()
+                    else zivid.calibration.calibrate_eye_in_hand(detection_results)
+                )
                 if self.hand_eye_configuration.eye_in_hand
-                else zivid.calibration.calibrate_eye_to_hand(detection_results)
+                else (
+                    calibrate_eye_to_hand_low_dof(detection_results, self.fixed_objects.to_fixed_calibration_objects())
+                    if self.hand_eye_calibration_buttons.use_fixed_objects_checkbox.isChecked()
+                    else zivid.calibration.calibrate_eye_to_hand(detection_results)
+                )
             )
             if calibration_result is not None and calibration_result.valid():
                 print("Hand-Eye calibration OK")
