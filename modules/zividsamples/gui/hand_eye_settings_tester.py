@@ -12,7 +12,7 @@ import numpy as np
 import zivid
 from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QImage, QPainter, QPixmap
+from PyQt5.QtGui import QCloseEvent, QColor, QImage, QPainter, QPixmap
 from PyQt5.QtWidgets import QAction, QCheckBox, QFileDialog, QGroupBox, QHBoxLayout, QMainWindow, QVBoxLayout, QWidget
 from zivid.calibration import DetectionResult, DetectionResultFiducialMarkers, MarkerShape
 from zivid.experimental import PixelMapping
@@ -109,13 +109,13 @@ class TestHandEyeCaptureSettings(QMainWindow):
     camera: Optional[zivid.Camera] = None
     last_frame: zivid.Frame
 
-    def __init__(self, parent=None):
+    def __init__(self, zivid_app: zivid.Application, parent=None):
         super().__init__(parent)
         self.setObjectName("HandEyeSettingsTester")
 
         self.cv2_handler = CV2Handler()
-
-        self.setup_camera()
+        self.zivid_app = zivid_app
+        self.camera = select_camera(self.zivid_app, connect=True)
         self.setup_settings()
         self.create_widgets()
         self.setup_layout()
@@ -128,14 +128,6 @@ class TestHandEyeCaptureSettings(QMainWindow):
             self.camera_buttons.set_connection_status(self.camera.state.connected)
 
         self.live2d_widget.start_live_2d()
-
-    def setup_camera(self):
-        self.zividApp = zivid.Application()
-        cameras = self.zividApp.cameras()
-        if len(cameras) > 0:
-            self.camera = select_camera(cameras)
-        if self.camera is not None:
-            self.camera.connect()
 
     def setup_settings(self):
         if self.camera:
@@ -226,7 +218,9 @@ class TestHandEyeCaptureSettings(QMainWindow):
         self.live2d_widget.stop_live_2d()
         try:
             frame = self.camera.capture_2d_3d(
-                self.settings.hand_eye if self.capture_with_hand_eye_settings.isChecked() else self.settings.production
+                self.settings.hand_eye.settings_2d3d
+                if self.capture_with_hand_eye_settings.isChecked()
+                else self.settings.production.settings_2d3d
             )
             self.last_frame = frame
             self.visualize_frame_action.setEnabled(True)
@@ -278,11 +272,10 @@ class TestHandEyeCaptureSettings(QMainWindow):
             self.camera_buttons.set_connection_status(False)
         else:
             assert self.settings is not None
-            self.camera = select_camera(self.zividApp.cameras())
+            self.camera = select_camera(self.zivid_app, connect=True)
             if self.camera is None:
                 self.camera_buttons.set_connection_status(False)
             else:
-                self.camera.connect()
                 self.camera_buttons.set_connection_status(self.camera.state.connected)
                 self.setup_settings()
                 if self.camera.state.connected:
@@ -361,7 +354,11 @@ class TestHandEyeCaptureSettings(QMainWindow):
         log_message += f" (Engine: {self.settings.production.settings_2d3d.engine:>8}, Sampling: {self.settings.production.settings_2d3d.sampling.pixel:>20})"
         print(log_message)
 
+    def closeEvent(self, event: QCloseEvent) -> None:  # pylint: disable=C0103
+        self.live2d_widget.closeEvent(event)
+        super().closeEvent(event)
+
 
 if __name__ == "__main__":  # NOLINT
-    qtApp = ZividQtApplication()
-    qtApp.run(TestHandEyeCaptureSettings(), "Test Hand Eye Settings")
+    with ZividQtApplication() as qtApp:
+        qtApp.run(TestHandEyeCaptureSettings(qtApp.zivid_app), "Test Hand Eye Settings")

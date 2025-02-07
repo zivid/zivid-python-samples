@@ -365,36 +365,37 @@ def set_fixed_objects(
 
 
 if __name__ == "__main__":
-    qt_app = ZividQtApplication()
-
-    # Example usage
-    result = set_fixed_objects(
-        FixedCalibrationObjectsData(
-            hand_eye_configuration=HandEyeConfiguration(eye_in_hand=True, calibration_object=CalibrationObject.Markers),
-            marker_configuration=MarkerConfiguration(),
-            marker_positions_eye_in_hand={
-                0: [100.0, 1000.0, 0.0],
-                1: [150.0, 1050.0, 0.0],
-                2: [150.0, 1000.0, 0.0],
-                3: [100.0, 1050.0, 0.0],
-            },
-            marker_positions_eye_to_hand={
-                0: [100.0, 0.0, 0.0],
-                1: [150.0, 50.0, 0.0],
-                2: [150.0, 0.0, 0.0],
-                3: [100.0, 50.0, 0.0],
-            },
-            calibration_board_pose_eye_in_hand=TransformationMatrix(
-                translation=[-90.0, 1220.0, 0.0],
-            ),
-            calibration_board_pose_eye_to_hand=TransformationMatrix(
-                translation=[-90.0, 220.0, 0.0],
-            ),
-            use_rotation=True,
+    with ZividQtApplication():
+        # Example usage
+        result = set_fixed_objects(
+            FixedCalibrationObjectsData(
+                hand_eye_configuration=HandEyeConfiguration(
+                    eye_in_hand=True, calibration_object=CalibrationObject.Markers
+                ),
+                marker_configuration=MarkerConfiguration(),
+                marker_positions_eye_in_hand={
+                    0: [100.0, 1000.0, 0.0],
+                    1: [150.0, 1050.0, 0.0],
+                    2: [150.0, 1000.0, 0.0],
+                    3: [100.0, 1050.0, 0.0],
+                },
+                marker_positions_eye_to_hand={
+                    0: [100.0, 0.0, 0.0],
+                    1: [150.0, 50.0, 0.0],
+                    2: [150.0, 0.0, 0.0],
+                    3: [100.0, 50.0, 0.0],
+                },
+                calibration_board_pose_eye_in_hand=TransformationMatrix(
+                    translation=[-90.0, 1220.0, 0.0],
+                ),
+                calibration_board_pose_eye_to_hand=TransformationMatrix(
+                    translation=[-90.0, 220.0, 0.0],
+                ),
+                use_rotation=True,
+            )
         )
-    )
-    if result:
-        print("Fixed objects set successfully:")
-        print(result.to_fixed_calibration_objects())
-    else:
-        print("Fixed objects not set.")
+        if result:
+            print("Fixed objects set successfully:")
+            print(result.to_fixed_calibration_objects())
+        else:
+            print("Fixed objects not set.")

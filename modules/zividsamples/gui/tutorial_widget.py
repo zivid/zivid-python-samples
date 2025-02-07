@@ -49,13 +49,11 @@ class TutorialWidget(QWidget):
     def update_text(self):
         self.text_area.clear()
         text = f"<h2>{self.title}</h2>"
-        text += "<p><ol>"
+        text += "<table cellpadding='5' style='border-collapse: collapse; width: 100%;; margin-top: 10px;'>"
         for step, completed in self.steps.items():
-            if completed:
-                text += f"<li>&#10003; {step}</li>"  # HTML entity for checkmark (✓)
-            else:
-                text += f"<li>{step}</li>"
-        text += "</ol></p>"
+            checkmark = "&#x2705;" if completed else "&#x2610;"  # ✓ for checked, ☐ for unchecked
+            text += f"<tr><td>{checkmark}</td><td>{step}</td></tr>"
+        text += "</table>"
         text += "<p>" + "</p><p>".join(paragraph for paragraph in self.description) + "</p>"
         self.text_area.setText(text)
 

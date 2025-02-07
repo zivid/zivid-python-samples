@@ -5,24 +5,28 @@ Note: This script requires PyQt5 to be installed.
 
 """
 
-from typing import List, Optional
+from typing import Optional
 
 import zivid
 from PyQt5.QtCore import QSize, QTimer
 from PyQt5.QtWidgets import QDialog, QListWidget, QListWidgetItem, QPushButton, QVBoxLayout
 from zividsamples.gui.qt_application import ZividQtApplication
 
+CAMERA_ROLE = 1
+
 
 class CameraSelectionDialog(QDialog):
 
-    def __init__(self, cameras):
+    def __init__(self, zivid_app: zivid.Application, connect: bool):
         super().__init__()
-        self.selected_camera = None
-        self.init_ui(cameras)
+        self.selected_camera: Optional[zivid.Camera] = None
+        self.zivid_app = zivid_app
+        self.connect = connect
+        self.init_ui()
 
-        QTimer.singleShot(0, self.adjust_dialog_size)
+        QTimer.singleShot(0, self.find_cameras)
 
-    def init_ui(self, cameras: List[zivid.Camera]):
+    def init_ui(self):
         self.setWindowTitle("Select a Camera")
         layout = QVBoxLayout(self)
 
@@ -31,20 +35,30 @@ class CameraSelectionDialog(QDialog):
 
         self.select_button = QPushButton("Select", self)
         self.select_button.clicked.connect(self.on_select)
+        self.select_button.setEnabled(False)
         layout.addWidget(self.select_button)
 
         self.setLayout(layout)
 
+    def find_cameras(self):
+        self.camera_list_widget.addItem("Finding cameras...")
+        QTimer.singleShot(0, self.update_camera_list)
+
+    def update_camera_list(self):
+        cameras = self.zivid_app.cameras()
+        self.camera_list_widget.clear()
         camera_selected = False
         for camera in cameras:
             camera_item = QListWidgetItem(
                 f"{camera.info.model_name} ({camera.info.serial_number} - {camera.state.status})",
                 self.camera_list_widget,
             )
-            camera_item.setData(1, camera)
+            camera_item.setData(CAMERA_ROLE, camera)
             if camera.state.status == zivid.CameraState.Status.available and not camera_selected:
                 camera_item.setSelected(True)
                 camera_selected = True
+        self.select_button.setEnabled(camera_selected)
+        QTimer.singleShot(0, self.adjust_dialog_size)
 
     def adjust_dialog_size(self):
         max_width = 0
@@ -58,22 +72,31 @@ class CameraSelectionDialog(QDialog):
         dialog_size = QSize(max_width, self.sizeHint().height())
         self.resize(dialog_size.expandedTo(QSize(300, 200)))
 
+    def connect_camera(self, camera: Optional[zivid.Camera]):
+        if camera is not None:
+            camera.connect()
+            self.accept()
+
     def on_select(self):
         selected_items = self.camera_list_widget.selectedItems()
         if selected_items:
-            self.selected_camera = selected_items[0].data(1)
-        self.accept()
+            self.selected_camera = selected_items[0].data(CAMERA_ROLE)
+        if self.connect and self.selected_camera:
+            self.camera_list_widget.clear()
+            self.camera_list_widget.addItem("Connecting...")
+            QTimer.singleShot(100, lambda: self.connect_camera(self.selected_camera))
+        else:
+            self.accept()
 
 
-def select_camera(cameras: List[zivid.Camera]) -> Optional[zivid.Camera]:
-    dialog = CameraSelectionDialog(cameras)
+def select_camera(zivid_app: zivid.Application, connect: bool) -> Optional[zivid.Camera]:
+    dialog = CameraSelectionDialog(zivid_app, connect)
     if dialog.exec_() == QDialog.Accepted:
         return dialog.selected_camera
     return None
 
 
 if __name__ == "__main__":  # NOLINT
-    qtApp = ZividQtApplication()
-    zividApp = zivid.Application()
-    select_camera(zividApp.cameras())
-    qtApp.exec_()
+    with ZividQtApplication() as qtApp:
+        selected_camera = select_camera(qtApp.zivid_app, connect=True)
+        print(f"Selected camera: {selected_camera}")

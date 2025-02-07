@@ -10,7 +10,6 @@ Convert between different rotation formats with a GUI:
 
 from pathlib import Path
 
-import zivid
 from PyQt5.QtWidgets import QAction, QHBoxLayout, QMainWindow, QVBoxLayout, QWidget
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.qt_application import ZividQtApplication
@@ -84,6 +83,5 @@ class PoseConverter(QMainWindow):
 
 
 if __name__ == "__main__":  # NOLINT
-    qt_app = ZividQtApplication()
-    with zivid.Application() as zividApp:
+    with ZividQtApplication() as qt_app:
         qt_app.run(PoseConverter(), "Pose Conversion")
