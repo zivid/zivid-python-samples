@@ -166,7 +166,6 @@ def select_hand_eye_configuration(
 
 
 if __name__ == "__main__":  # NOLINT
-
-    qtApp = ZividQtApplication()
-    hand_eye_configuration = select_hand_eye_configuration()
-    print(f"Selected settings: {hand_eye_configuration}")
+    with ZividQtApplication():
+        hand_eye_configuration = select_hand_eye_configuration()
+        print(f"Selected settings: {hand_eye_configuration}")

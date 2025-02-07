@@ -188,7 +188,7 @@ class ZividFonts:
 
 class ZividQtApplication(QApplication):
 
-    def __init__(self):
+    def __init__(self, use_zivid_app: bool = True):
         if "cv2" in sys.modules:
             raise RuntimeError(
                 "When using a ZividQtApplication you cannot directly load/import cv2. It has conflicting versions of Qt on some platforms. Instead, add functionality to zividsamples.cv2_handler"
@@ -207,6 +207,11 @@ class ZividQtApplication(QApplication):
         )
         self.setFont(ZividFonts.normal)
 
+        if use_zivid_app:
+            import zivid  # pylint: disable=import-outside-toplevel
+
+            self.zivid_app = zivid.Application()
+
     def run(self, win, title: str = "Zivid Qt Application"):
         icon_path = get_file_path("LogoZBlue.ico")
         self.setWindowIcon(QIcon(icon_path.absolute().as_posix()))
@@ -224,3 +229,10 @@ class ZividQtApplication(QApplication):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("zivid.app.qt_application")
 
         return self.exec_()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        if hasattr(self, "zivid_app"):
+            self.zivid_app.release()

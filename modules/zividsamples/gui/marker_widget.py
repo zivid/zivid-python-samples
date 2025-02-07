@@ -270,7 +270,7 @@ def select_marker_configuration(
 
 
 if __name__ == "__main__":  # NOLINT
-    qtApp = ZividQtApplication()
-    widget = MarkersWidget()
-    widget.show()
-    qtApp.exec_()
+    with ZividQtApplication(use_zivid_app=False) as qtApp:
+        widget = MarkersWidget()
+        widget.show()
+        qtApp.exec_()

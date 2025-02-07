@@ -70,10 +70,11 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
     rotation_information: RotationInformation = RotationInformation()
     common_instructions: Dict[str, bool] = {}
 
-    def __init__(self, parent=None):  # noqa: ANN001
+    def __init__(self, zivid_app: zivid.Application, parent=None):  # noqa: ANN001
         super().__init__(parent)
 
-        self.setup_camera()
+        self.zivid_app = zivid_app
+        self.camera = select_camera(self.zivid_app, connect=True)
         self.setup_settings()
         self.create_widgets()
         self.setup_layout()
@@ -85,14 +86,6 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             self.live2d_widget.start_live_2d()
 
         QTimer.singleShot(0, self.update_tab_order)
-
-    def setup_camera(self) -> None:
-        self.zivid_app = zivid.Application()
-        cameras = self.zivid_app.cameras()
-        if len(cameras) > 0:
-            self.camera = select_camera(cameras)
-        if self.camera is not None:
-            self.camera.connect()
 
     def setup_settings(self) -> None:
         if self.camera:
@@ -606,9 +599,11 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             self.live2d_widget.stop_live_2d()
             self.live2d_widget.hide()
             self.camera.disconnect()
+            self.setup_instructions()
+            self.on_instructions_updated()
             self.camera_buttons.set_connection_status(False)
         else:
-            self.camera = select_camera(self.zivid_app.cameras())
+            self.camera = select_camera(self.zivid_app, connect=True)
             if self.camera is None:
                 self.camera_buttons.set_connection_status(False)
             else:
@@ -635,9 +630,8 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
 
 
 def _main() -> None:
-    qt_app = ZividQtApplication()
-
-    sys.exit(qt_app.run(HandEyeGUI(), "Hand-Eye GUI"))
+    with ZividQtApplication() as qt_app:
+        sys.exit(qt_app.run(HandEyeGUI(qt_app.zivid_app), "Hand-Eye GUI"))
 
 
 if __name__ == "__main__":  # NOLINT
