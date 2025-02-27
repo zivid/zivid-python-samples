@@ -219,7 +219,7 @@ capture.
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/advanced/capture_hdr_print_normals.py#L42))
 
 ``` sourceCode python
-settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (11.31, 5.66, 2.83)])
+settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (5.66, 4.00, 2.83)])
 ```
 
 Fully configured settings are demonstrated below.
