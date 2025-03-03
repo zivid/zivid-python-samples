@@ -39,10 +39,10 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Configuring settings")
-    settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (11.31, 5.66, 2.83)])
+    settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (5.66, 4.00, 2.83)])
 
     print("Capturing frame (HDR)")
-    with camera.capture(settings) as frame:
+    with camera.capture_3d(settings) as frame:
         point_cloud = frame.point_cloud()
 
         print("Computing normals and copying them to CPU memory")

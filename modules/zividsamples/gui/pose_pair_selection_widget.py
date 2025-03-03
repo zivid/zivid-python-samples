@@ -347,7 +347,9 @@ Note! This will not remove files from disk, but potentially reload them, and ana
             if pose_pair_widget.selected_checkbox.isChecked()
         ]
         for pose_pair_widget, residual in zip(checked_pose_pairs, residuals):  # noqa: B905
-            pose_pair_widget.clickable_labels.labels[2].setText(f"{residual.translation():.2f}")
+            pose_pair_widget.clickable_labels.labels[2].setText(
+                f"{residual.translation():.2f} ({residual.rotation():.2f}°)"
+            )
         unchecked_pose_pairs = [
             pose_pair_widget
             for pose_pair_widget in self.pose_pair_widgets.values()

@@ -274,7 +274,6 @@ class RobotControlWidget(QWidget):
         self.current_robot_target = self.robot_control.get_target_by_id(self.target_counter)
         self.activeButton = self.btn_move_home
         if self.move_to_current_target():
-            self.target_counter += 1
             self.btn_move_home.setStyleSheet("background-color: green;")
 
     def on_move_to_next_target(self, blocking: bool = True):
