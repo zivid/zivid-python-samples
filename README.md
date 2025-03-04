@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.14.1. For
+This repository contains python code samples for Zivid SDK v2.14.2. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -48,7 +48,7 @@ from the camera can be used.
           - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture images and point clouds, with or without color,
             from the Zivid camera with settings from YML file.
       - **advanced**
-          - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D separately with the Zivid camera.
+          - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D with the Zivid camera.
           - [capture\_hdr\_loop](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_loop.py) - Cover the same dynamic range in a scene with different
             acquisition settings to optimize for quality, speed, or to
             find a compromise.

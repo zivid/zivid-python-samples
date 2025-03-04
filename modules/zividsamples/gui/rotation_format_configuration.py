@@ -162,6 +162,7 @@ class RotationFormatSelectionWidget(QWidget):
             self.show_euler_format_selector(False)
         self.degrees_radio_button.setChecked(rotation_information.use_degrees)
         self.radians_radio_button.setChecked(not rotation_information.use_degrees)
+        self.on_transform_format_changed()
 
 
 @dataclass

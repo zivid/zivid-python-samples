@@ -607,7 +607,6 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             if self.camera is None:
                 self.camera_buttons.set_connection_status(False)
             else:
-                self.camera.connect()
                 self.camera_buttons.set_connection_status(self.camera.state.connected)
                 self.setup_settings()
                 assert self.settings is not None
