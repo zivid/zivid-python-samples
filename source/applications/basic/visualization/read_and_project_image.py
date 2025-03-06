@@ -54,6 +54,9 @@ def get_projector_image_file_for_camera(camera: zivid.Camera) -> Path:
         zivid.CameraInfo.Model.zivid2PlusM130,
         zivid.CameraInfo.Model.zivid2PlusM60,
         zivid.CameraInfo.Model.zivid2PlusL110,
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
     ]:
         return get_sample_data_path() / "ZividLogoZivid2PlusProjectorResolution.png"
     raise RuntimeError("Invalid camera model")
@@ -70,9 +73,9 @@ def make_settings_2d(camera: zivid.Camera) -> zivid.Settings2D:
     """
     model = camera.info.model
     if model in [
-        zivid.CameraInfo.Model.zivid2PlusM130,
-        zivid.CameraInfo.Model.zivid2PlusL110,
-        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
     ]:
         color_mode = zivid.Settings2D.Sampling.Color.grayscale
     else:
