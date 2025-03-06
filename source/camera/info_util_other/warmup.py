@@ -1,7 +1,6 @@
 """
-A basic warm-up method for a Zivid camera with specified time and capture cycle.
+Short example of a basic way to warm up the camera with specified time and capture cycle.
 
-The sample uses Capture Assistant unless a path to YAML Camera Settings is passed.
 """
 
 import argparse
@@ -38,11 +37,10 @@ def _options() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _load_or_suggest_settings(camera: zivid.Camera, settings_path: str) -> zivid.Settings:
-    """Load settings from YML file or find them with the assisted capture
+def _load_or_default_settings(settings_path: str) -> zivid.Settings:
+    """Load settings from YML file or use default settings.
 
     Args:
-        camera: Zivid camera
         settings_path: Path to the YML file that contains camera settings
 
     Returns:
@@ -53,12 +51,11 @@ def _load_or_suggest_settings(camera: zivid.Camera, settings_path: str) -> zivid
     if settings_path:
         print("Loading settings from file")
         return zivid.Settings.load(Path(settings_path))
-    print("Getting camera settings from capture assistant")
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=timedelta(milliseconds=1000),
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
-    return zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+
+    print("Using default 3D settings")
+    settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition()])
+
+    return settings
 
 
 def _main() -> None:
@@ -70,14 +67,18 @@ def _main() -> None:
 
     warmup_time = timedelta(minutes=10)
     capture_cycle = timedelta(seconds=user_options.capture_cycle)
-    settings = _load_or_suggest_settings(camera, user_options.settings_path)
+    settings = _load_or_default_settings(user_options.settings_path)
 
     before_warmup = datetime.now()
 
     print(f"Starting warm up for {warmup_time} minutes")
     while (datetime.now() - before_warmup) < warmup_time:
         before_capture = datetime.now()
-        camera.capture(settings)
+
+        # Use the same capture method as you would use in production
+        # to get the most accurate results from warmup
+        camera.capture_3d(settings)
+
         after_capture = datetime.now()
 
         duration = after_capture - before_capture

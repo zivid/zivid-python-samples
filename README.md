@@ -69,8 +69,8 @@ from the camera can be used.
             model) or estimate them from the point cloud.
           - [network\_configuration](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/network_configuration.py) - Uses Zivid API to change the IP address of the Zivid
             camera.
-          - [warmup](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/warmup.py) - A basic warm-up method for a Zivid camera with specified
-            time and capture cycle.
+          - [warmup](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/warmup.py) - Short example of a basic way to warm up the camera with
+            specified time and capture cycle.
       - **maintenance**
           - [correct\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/maintenance/correct_camera_in_field.py) - Correct the dimension trueness of a Zivid camera.
           - [reset\_camera\_in\_field](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/maintenance/reset_camera_in_field.py) - Reset infield correction on a camera.

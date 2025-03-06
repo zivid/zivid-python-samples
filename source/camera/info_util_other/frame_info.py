@@ -6,27 +6,7 @@ information about the system that captured the frame, and the time stamp of the 
 
 """
 
-import datetime
-
 import zivid
-
-
-def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
-    """Acquire frame with capture assistant.
-
-    Args:
-        camera: Zivid camera
-
-    Returns:
-        frame: Zivid frame
-
-    """
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=datetime.timedelta(milliseconds=800),
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
-    settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    return camera.capture(settings)
 
 
 def _main() -> None:
@@ -35,7 +15,12 @@ def _main() -> None:
     print("Connecting to camera")
     camera = app.connect_camera()
 
-    frame = _assisted_capture(camera)
+    settings = zivid.Settings(
+        acquisitions=[zivid.Settings.Acquisition()],
+        color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),
+    )
+
+    frame = camera.capture_2d_3d(settings)
 
     frame_info = frame.info
 

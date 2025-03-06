@@ -33,7 +33,8 @@ def _print_intrinsic_parameters_delta(
 
 def _subsampled_settings_for_camera(camera: zivid.Camera) -> zivid.Settings:
     settings_subsampled = zivid.Settings(
-        engine=zivid.Settings.Engine.phase, acquisitions=[zivid.Settings.Acquisition()]
+        acquisitions=[zivid.Settings.Acquisition()],
+        color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),
     )
     model = camera.info.model
     if (
@@ -44,12 +45,14 @@ def _subsampled_settings_for_camera(camera: zivid.Camera) -> zivid.Settings:
         or model is zivid.CameraInfo.Model.zivid2PlusL110
     ):
         settings_subsampled.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
+        settings_subsampled.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.blueSubsample2x2
     elif (
         model is zivid.CameraInfo.Model.zivid2PlusMR130
         or model is zivid.CameraInfo.Model.zivid2PlusMR60
         or model is zivid.CameraInfo.Model.zivid2PlusLR110
     ):
         settings_subsampled.sampling.pixel = zivid.Settings.Sampling.Pixel.by2x2
+        settings_subsampled.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.by2x2
     else:
         raise ValueError(f"Unhandled enum value {model}")
 
@@ -72,9 +75,12 @@ def _main() -> None:
 
     print("\nDifference between fixed intrinsics and estimated intrinsics for different apertures and temperatures:")
 
-    for fnum in (11.31, 5.66, 2.83):
-        settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum)])
-        with camera.capture(settings=settings) as frame:
+    for fnum in (5.66, 4.00, 2.83):
+        settings = zivid.Settings(
+            acquisitions=[zivid.Settings.Acquisition(aperture=fnum)],
+            color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),
+        )
+        with camera.capture_2d_3d(settings=settings) as frame:
             estimated_intrinsics = zivid.experimental.calibration.estimate_intrinsics(frame)
             temperature = frame.state.temperature.lens
             print(f"\nAperture: {fnum:.2f}, Lens Temperature: {temperature:.2f}°C")
@@ -85,7 +91,7 @@ def _main() -> None:
     print(f"Saving camera intrinsics for subsampled capture to file: {fixed_intrinsics_for_subsampled_settings_path}")
     fixed_intrinsics_for_subsampled_settings = zivid.experimental.calibration.intrinsics(camera, settings_subsampled)
     fixed_intrinsics_for_subsampled_settings.save(fixed_intrinsics_for_subsampled_settings_path)
-    frame = camera.capture(settings_subsampled)
+    frame = camera.capture_2d_3d(settings_subsampled)
     estimated_intrinsics_for_subsampled_settings = zivid.experimental.calibration.estimate_intrinsics(frame)
     estimated_intrinsics_for_subsampled_settings_path = "EstimatedIntrinsicsFromSubsampled2x2Capture.yml"
     print(
