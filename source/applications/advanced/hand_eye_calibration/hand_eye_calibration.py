@@ -72,7 +72,7 @@ def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
         ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
     )
     settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    return camera.capture(settings)
+    return camera.capture_2d_3d(settings)
 
 
 def _handle_add_pose(

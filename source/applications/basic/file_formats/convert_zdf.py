@@ -1,49 +1,83 @@
 """
-Convert point cloud data from a ZDF file to your preferred format (PLY, CSV, TXT, PNG, JPG, BMP, TIFF).
+Convert point cloud data from a ZDF file to your preferred format
+(PLY, PCD, XYZ, CSV, TXT, PNG, JPG, BMP).
 
-Example: $ python convert_zdf.py --ply Zivid3D.zdf
+Example: $ python convert_zdf.py --3d ply xyz csv --2d jpg png Zivid3D.zdf
 
 Available formats:
-    PLY - Polygon File Format
-    CSV, TXT - [X, Y, Z, r, g, b, SNR]
-    PNG, JPG, BMP, TIFF - 2D RGB image
+    PLY, PCD, XYZ, CSV, TXT - 3D point cloud
+    PNG, JPG, BMP - 2D RGB image
 
 """
 
 import argparse
 from pathlib import Path
 
-import cv2
 import numpy as np
 import zivid
+from zivid.experimental.point_cloud_export import export_frame
+from zivid.experimental.point_cloud_export.file_format import PCD, PLY, XYZ, ColorSpace
+
+FORMATS_3D = ["ply", "pcd", "xyz", "csv", "txt"]
+FORMATS_2D = ["jpg", "png", "bmp"]
 
 
 def _options() -> argparse.Namespace:
     """Function for taking in arguments from user.
 
     Returns:
-        Argument from user
+        Arguments from user
 
     """
     parser = argparse.ArgumentParser(
         description="Convert from a ZDF to your preferred format\
-            \nExample:\n\t $ python convert_zdf.py --ply Zivid3D.zdf",
+            \nExample:\n\t $ python convert_zdf.py --3d ply --linearRGB Zivid3D.zdf",
         formatter_class=argparse.RawTextHelpFormatter,
+        add_help=False,
     )
 
-    parser.add_argument("filename", help="File to convert", default="Zivid3D.zdf")
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--ply", action="store_true", help="Convert to PLY")
-    group.add_argument("--csv", action="store_true", help="Convert to CSV")
-    group.add_argument("--txt", action="store_true", help="Convert to text")
-    group.add_argument("--jpg", action="store_true", help="Convert to JPEG (3D->2D)")
-    group.add_argument("--tiff", action="store_true", help="Convert to TIFF (3D->2D)")
-    group.add_argument(
-        "--png",
-        action="store_true",
-        help="Convert to Portable Network Graphics (3D->2D)",
+    parser.usage = "%(prog)s [path] [file formats] [sub-arguments]"
+
+    # Add argument groups
+    main_group = parser.add_argument_group("Main arguments")
+    formats_group = parser.add_argument_group("Optional format options")
+    sub_arg_group = parser.add_argument_group("Optional sub-arguments")
+
+    # Main arguments
+    main_group.add_argument("path", help="File/directory holding ZDF file(s)")
+    main_group.add_argument(
+        "-a", "--all", action="store_true", help="Convert to all formats (default if no formats are specified)"
     )
-    group.add_argument("--bmp", action="store_true", help="Convert to Windows bitmap (3D->2D)")
+    main_group.add_argument("-h", "--help", action="help", help="Shows this help message")
+
+    # Formats
+    formats_group.add_argument(
+        "--3d",
+        dest="formats_3d",
+        nargs="+",
+        choices=FORMATS_3D,
+        help="3D format(s) to convert to",
+    )
+    formats_group.add_argument(
+        "--2d",
+        dest="formats_2d",
+        nargs="+",
+        choices=FORMATS_2D,
+        help="2D format(s) to convert to",
+    )
+
+    # Sub-arguments
+    sub_arg_group.add_argument(
+        "--linearRGB",
+        dest="linear_rgb",
+        action="store_true",
+        help="To have colour space be Linear RGB instead of sRGB for selected format(s)",
+    )
+    sub_arg_group.add_argument(
+        "--unordered",
+        action="store_true",
+        help="To have point clouds be unordered instead of ordered (PLY, PCD)",
+    )
 
     return parser.parse_args()
 
@@ -67,76 +101,140 @@ def _flatten_point_cloud(point_cloud: zivid.PointCloud) -> np.ndarray:
     return flattened_point_cloud[~np.isnan(flattened_point_cloud[:, 0]), :]
 
 
-def _convert_2_ply(frame: zivid.Frame, file_name: str) -> None:
-    """Convert from frame to PLY.
+def _convert_to_3d(frame: zivid.Frame, file_path: Path, file_formats: list, linear_rgb: bool, unordered: bool) -> None:
+    """Convert from frame to different 3D formats.
 
     Args:
         frame: A frame captured by a Zivid camera
-        file_name: File name without extension
+        file_path: Full path of the file(s) to be converted
+        file_formats: List of formats to convert to [PLY, PCD, XYZ, CSV, TXT]
+        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: sRGB)
+        unordered: whether to save as unordered or ordered point cloud for PLY format (default: ordered)
 
     """
-    print(f"Saving the frame to {file_name}.ply")
-    frame.save(f"{file_name}.ply")
+    for file_format in file_formats:
+        file_name_w_extension = f"{file_path.parent / file_path.stem}.{file_format}"
+        _3d_object = None
+        if file_format == "ply":
+            if not linear_rgb and not unordered:
+                _3d_object = PLY(file_name_w_extension, layout=PLY.Layout.ordered, color_space=ColorSpace.srgb)
+            elif linear_rgb and not unordered:
+                _3d_object = PLY(file_name_w_extension, layout=PLY.Layout.ordered, color_space=ColorSpace.linear_rgb)
+            elif linear_rgb and unordered:
+                _3d_object = PLY(file_name_w_extension, layout=PLY.Layout.unordered, color_space=ColorSpace.linear_rgb)
+            elif not linear_rgb and unordered:
+                _3d_object = PLY(file_name_w_extension, layout=PLY.Layout.unordered, color_space=ColorSpace.srgb)
+
+        elif file_format == "pcd":
+            if not unordered:
+                print(
+                    "NOTE: If you have configured the config file for PCD, points will be ordered. \
+If not they will be unordered. See https://support.zivid.com/en/latest/reference-articles/point-cloud-structure-and-output-formats.html#organized-pcd-format for more information."
+                )
+            if linear_rgb:
+                _3d_object = PCD(file_name_w_extension, color_space=ColorSpace.linear_rgb)
+            else:
+                _3d_object = PCD(file_name_w_extension, color_space=ColorSpace.srgb)
+
+        elif file_format == "xyz":
+            if linear_rgb:
+                _3d_object = XYZ(file_name_w_extension, color_space=ColorSpace.linear_rgb)
+            else:
+                _3d_object = XYZ(file_name_w_extension, color_space=ColorSpace.srgb)
+
+        elif file_format in ("csv", "txt"):
+            np.savetxt(file_name_w_extension, _flatten_point_cloud(frame.point_cloud()), delimiter=",", fmt="%.3f")
+
+        print(f"Saving the frame to {file_name_w_extension}")
+        if _3d_object:
+            export_frame(frame, _3d_object)
 
 
-def _convert_2_csv(point_cloud: zivid.PointCloud, file_name: str) -> None:
-    """Convert from point cloud to CSV or TXT.
+def _convert_to_2d(frame: zivid.Frame, file_path: Path, file_formats: list, linear_rgb: bool) -> None:
+    """Convert from point cloud to 2D images.
 
     Args:
-        point_cloud: A handle to point cloud in the GPU memory
-        file_name: File name with extension
+        frame: A frame captured by a Zivid camera
+        file_path: Full path of the file(s) to be converted
+        file_formats: List of formats to convert to [JPG, PNG, BMP]
+        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: sRGB)
 
     """
-    print(f"Saving the frame to {file_name}")
-    np.savetxt(file_name, _flatten_point_cloud(point_cloud), delimiter=",", fmt="%.3f")
+    for file_format in file_formats:
+        file_names = [
+            f"{file_path.parent / file_path.stem}.{file_format}",
+            f"{file_path.parent / file_path.stem}_point_cloud_resolution.{file_format}",
+        ]
+        if linear_rgb:
+            image_2d = frame.frame_2d().image_rgba()
+            image_2d_in_point_cloud_resolution = frame.point_cloud().copy_image("rgba")
+        else:
+            image_2d = frame.frame_2d().image_srgb()
+            image_2d_in_point_cloud_resolution = frame.point_cloud().copy_image("srgb")
 
-
-def _convert_2_2d(point_cloud: zivid.PointCloud, file_name: str) -> None:
-    """Convert from point cloud to 2D image.
-
-    Args:
-        point_cloud: A handle to point cloud in the GPU memory
-        file_name: File name without extension
-
-    """
-    print(f"Saving the frame to {file_name}")
-    bgra = point_cloud.copy_data("bgra")
-    cv2.imwrite(file_name, bgra[:, :, :3])
+        print(f"Saving the frame to {file_names[0]} and {file_names[1]}")
+        image_2d.save(file_names[0])
+        image_2d_in_point_cloud_resolution.save(file_names[1])
 
 
 def _main() -> None:
     user_options = _options()
 
-    file_path = Path(user_options.filename)
-    if not file_path.exists():
-        raise FileNotFoundError(f"{user_options.filename} does not exist")
+    path = Path(user_options.path)
+    if not path.exists():
+        raise ValueError(f"{user_options.path} does not exist")
 
     with zivid.Application():
-        print(f"Reading point cloud from file: {user_options.filename}")
-        frame = zivid.Frame(user_options.filename)
+        print(f"Reading point cloud(s) from: {user_options.path}")
 
-        point_cloud = frame.point_cloud()
+        frames = []
+        if path.is_dir():
+            for file_path in path.glob("*.zdf"):
+                frame = zivid.Frame(file_path)
+                frames.append((frame, file_path))
+        else:
+            frame = zivid.Frame(user_options.path)
+            frames.append((frame, path))
 
-        if user_options.ply:
-            _convert_2_ply(frame, file_path.stem)
+        if len(frames) == 0:
+            raise ValueError(f"{user_options.path} does not contain any ZDF files")
 
-        elif user_options.csv:
-            _convert_2_csv(point_cloud, file_path.stem + ".csv")
+        if user_options.all or (not user_options.formats_3d and not user_options.formats_2d):
+            for frame, file_name in frames:
+                user_options.formats_3d = FORMATS_3D
+                user_options.formats_2d = FORMATS_2D
+                _convert_to_3d(
+                    frame,
+                    file_name,
+                    user_options.formats_3d,
+                    user_options.linear_rgb,
+                    user_options.unordered,
+                )
+                _convert_to_2d(
+                    frame,
+                    file_name,
+                    user_options.formats_2d,
+                    user_options.linear_rgb,
+                )
+        else:
+            if user_options.formats_3d:
+                for frame, file_name in frames:
+                    _convert_to_3d(
+                        frame,
+                        file_name,
+                        user_options.formats_3d,
+                        user_options.linear_rgb,
+                        user_options.unordered,
+                    )
 
-        elif user_options.txt:
-            _convert_2_csv(point_cloud, file_path.stem + ".txt")
-
-        elif user_options.png:
-            _convert_2_2d(point_cloud, file_path.stem + ".png")
-
-        elif user_options.jpg:
-            _convert_2_2d(point_cloud, file_path.stem + ".jpg")
-
-        elif user_options.bmp:
-            _convert_2_2d(point_cloud, file_path.stem + ".bmp")
-
-        elif user_options.tiff:
-            _convert_2_2d(point_cloud, file_path.stem + ".tiff")
+            if user_options.formats_2d:
+                for frame, file_name in frames:
+                    _convert_to_2d(
+                        frame,
+                        file_name,
+                        user_options.formats_2d,
+                        user_options.linear_rgb,
+                    )
 
 
 if __name__ == "__main__":

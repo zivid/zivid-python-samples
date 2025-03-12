@@ -217,7 +217,7 @@ def _assisted_capture(camera: zivid.Camera, max_time_milliseconds: int = 800) ->
         ambient_light_frequency=SuggestSettingsParameters.AmbientLightFrequency.none,
     )
     settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    return camera.capture(settings)
+    return camera.capture_2d_3d(settings)
 
 
 def perform_hand_eye_calibration(

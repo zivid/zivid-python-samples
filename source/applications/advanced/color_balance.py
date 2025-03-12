@@ -59,7 +59,7 @@ def _main() -> None:
 
     settings_2d = zivid.Settings2D.load(user_options.path)
 
-    rgba = camera.capture(settings_2d).image_rgba().copy_data()
+    rgba = camera.capture_2d(settings_2d).image_rgba().copy_data()
     display_rgb(rgba[:, :, 0:3], title="RGB image before color balance", block=False)
 
     print("Finding the white squares of the checkerboard as white reference ...")
@@ -75,7 +75,7 @@ def _main() -> None:
     settings_2d.processing.color.balance.red = red_balance
     settings_2d.processing.color.balance.green = green_balance
     settings_2d.processing.color.balance.blue = blue_balance
-    rgba_balanced = camera.capture(settings_2d).image_rgba().copy_data()
+    rgba_balanced = camera.capture_2d(settings_2d).image_rgba().copy_data()
 
     display_rgb(rgba_balanced[:, :, 0:3], title="RGB image after color balance", block=True)
 

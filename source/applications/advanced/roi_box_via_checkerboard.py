@@ -42,9 +42,11 @@ def _main() -> None:
         print(f"Creating virtual camera using file: {file_camera}")
         camera = app.create_file_camera(file_camera)
 
-        settings = zivid.Settings([zivid.Settings.Acquisition()])
+        settings = zivid.Settings()
+        settings.acquisitions.append(zivid.Settings.Acquisition())
+        settings.color = zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()])
 
-        original_frame = camera.capture(settings)
+        original_frame = camera.capture_2d_3d(settings)
         point_cloud = original_frame.point_cloud()
 
         print("Displaying the original point cloud")
@@ -78,7 +80,7 @@ def _main() -> None:
         point_b_in_checkerboard_frame = roi_box_lower_left_corner
 
         print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
-        detection_result = zivid.calibration.detect_feature_points(original_frame)
+        detection_result = zivid.calibration.detect_calibration_board(original_frame)
         camera_to_checkerboard_transform = detection_result.pose().to_matrix()
 
         print("Transforming the ROI base frame points to the camera frame")
@@ -94,7 +96,7 @@ def _main() -> None:
         settings.region_of_interest.box.point_b = roi_points_in_camera_frame[2]
         settings.region_of_interest.box.extents = (-10, roi_box_height)
 
-        roi_point_cloud = camera.capture(settings).point_cloud()
+        roi_point_cloud = camera.capture_2d_3d(settings).point_cloud()
 
         print("Displaying the ROI-filtered point cloud")
         display_pointcloud(roi_point_cloud.copy_data("xyz"), roi_point_cloud.copy_data("rgba")[:, :, :3])

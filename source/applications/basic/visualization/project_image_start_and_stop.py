@@ -57,7 +57,7 @@ def _main() -> None:
             input("Press enter to stop projecting by performing a 3D capture")
             settings = zivid.Settings()
             settings.acquisitions.append(zivid.Settings.Acquisition())
-            camera.capture(settings)
+            camera.capture_3d(settings)
 
             input("Press enter to exit")
 
