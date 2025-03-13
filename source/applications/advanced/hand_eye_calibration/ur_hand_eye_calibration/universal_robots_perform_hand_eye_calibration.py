@@ -167,7 +167,7 @@ def _get_frame_and_transform_matrix(
         transform: Transformation matrix (4x4)
 
     """
-    frame = camera.capture(settings)
+    frame = camera.capture_2d_3d(settings)
     robot_pose = np.array(con.receive().actual_TCP_pose)
 
     translation = robot_pose[:3] * 1000

@@ -232,13 +232,14 @@ def _capture_with_capture_assistant(camera: zivid.Camera) -> zivid.Frame:
     settings.processing.filters.smoothing.gaussian.enabled = True
     settings.processing.filters.smoothing.gaussian.sigma = 1.5
     settings.sampling.pixel = "all"
+    settings.color.sampling.pixel = "all"
 
     # We must limit Brightness to a *maximum* of 2.2, when using `all` mode.
     # This code can be removed by changing the Config.yml option 'Camera/Power/Limit'.
     for acquisition in settings.acquisitions:
         acquisition.brightness = min(acquisition.brightness, 2.2)
 
-    return camera.capture(settings)
+    return camera.capture_2d_3d(settings)
 
 
 def _annotate(frame_2d: zivid.Frame2D, location: Tuple[int, int]) -> np.ndarray:
@@ -295,10 +296,14 @@ def _main() -> None:
         with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
             input("Press enter to continue ...")
 
+            # Fine tune 2D settings until the "ProjectedMarker.png" image is well exposed if the projected marker well is not detected in ImageWithMarker.png.
+            exposure_time = timedelta(microseconds=20000)
+            aperture = 2.38
+            gain = 1.0
             settings_2d_zero_brightness = zivid.Settings2D(
                 acquisitions=[
                     zivid.Settings2D.Acquisition(
-                        brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.38
+                        brightness=0.0, exposure_time=exposure_time, aperture=aperture, gain=gain
                     )
                 ],
                 sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
@@ -307,7 +312,7 @@ def _main() -> None:
             settings_2d_max_brightness = zivid.Settings2D(
                 acquisitions=[
                     zivid.Settings2D.Acquisition(
-                        brightness=1.8, exposure_time=timedelta(microseconds=20000), aperture=2.38
+                        brightness=1.8, exposure_time=exposure_time, aperture=aperture, gain=gain
                     )
                 ],
                 sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
@@ -315,12 +320,13 @@ def _main() -> None:
 
             print("Capture a 2D frame with the marker")
             projected_marker_frame_2d = projected_image.capture(settings_2d_zero_brightness)
+            projected_marker_frame_2d.image_rgba().save("ProjectedMarker.png")
 
             print("Capture a 2D frame of the scene illuminated with the projector")
-            illuminated_scene_frame_2d = camera.capture(settings_2d_max_brightness)
+            illuminated_scene_frame_2d = camera.capture_2d(settings_2d_max_brightness)
 
             print("Capture a 2D frame of the scene without projector illumination")
-            non_illuminated_scene_frame_2d = camera.capture(settings_2d_zero_brightness)
+            non_illuminated_scene_frame_2d = camera.capture_2d(settings_2d_zero_brightness)
 
             print("Locating marker in the 2D image:")
             marker_location = _find_marker(
