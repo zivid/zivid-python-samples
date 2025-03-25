@@ -27,6 +27,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import zivid
+import zivid.calibration
 from zividsamples.calibration_board_utils import find_white_mask_from_checkerboard
 from zividsamples.white_balance_calibration import (
     camera_may_need_color_balancing,
@@ -111,28 +112,8 @@ def _capture_rgb(camera: zivid.Camera, settings_2d: zivid.Settings2D) -> np.ndar
         rgb: RGB image (H, W, 3)
 
     """
-    rgb = camera.capture(settings_2d).image_rgba().copy_data()[:, :, :3]
+    rgb = camera.capture_2d(settings_2d).image_rgba().copy_data()[:, :, :3]
     return rgb
-
-
-def _capture_assistant_settings(camera: zivid.Camera) -> zivid.Settings:
-    """Get settings from capture assistant.
-
-    Args:
-        camera: Zivid camera
-
-    Returns:
-        Zivid 3D capture settings from capture assistant
-
-    """
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=timedelta(milliseconds=1200),
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
-    suggested_settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    suggested_settings.sampling.pixel = "all"
-
-    return suggested_settings
 
 
 def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple[np.ndarray, float]:
@@ -150,8 +131,7 @@ def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple
 
     """
     try:
-        settings = _capture_assistant_settings(camera)
-        frame = camera.capture(settings)
+        frame = zivid.calibration.capture_calibration_board(camera)
 
         checkerboard_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
         distance_to_checkerboard = checkerboard_pose[2, 3]
