@@ -49,7 +49,7 @@ def _main() -> None:
         point_cloud = original_frame.point_cloud()
 
         print("Displaying the original point cloud")
-        display_pointcloud(point_cloud.copy_data("xyz"), point_cloud.copy_data("rgba")[:, :, :3])
+        display_pointcloud(point_cloud.copy_data("xyz"), point_cloud.copy_data("rgba_srgb")[:, :, :3])
 
         print("Configuring ROI box based on bin size and checkerboard placement")
         roi_box_length = 545
@@ -107,7 +107,7 @@ def _main() -> None:
         roi_point_cloud = camera.capture_2d_3d(settings).point_cloud()
 
         print("Displaying the ROI-filtered point cloud")
-        display_pointcloud(roi_point_cloud.copy_data("xyz"), roi_point_cloud.copy_data("rgba")[:, :, :3])
+        display_pointcloud(roi_point_cloud.copy_data("xyz"), roi_point_cloud.copy_data("rgba_srgb")[:, :, :3])
 
         print("Displaying depth map of the ROI-filtered point cloud")
         display_depthmap(roi_point_cloud.copy_data("xyz"))

@@ -240,7 +240,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
                     if camera_image_path.exists() and detection_result.valid():
                         qimage_rgba = QImage(str(camera_image_path))
                     else:
-                        rgba = camera_frame.point_cloud().copy_data("rgba")
+                        rgba = camera_frame.point_cloud().copy_data("rgba_srgb")
                         rgb = rgba[:, :, :3].copy().astype(np.uint8)
                         if calibration_object == CalibrationObject.Markers and detection_result.valid():
                             rgba[:, :, :3] = self.cv2_handler.draw_detected_markers(

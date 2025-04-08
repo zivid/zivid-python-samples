@@ -103,7 +103,7 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/applic
 ``` sourceCode python
 point_cloud = frame.point_cloud()
 xyz = point_cloud.copy_data("xyz")
-rgba = point_cloud.copy_data("rgba")
+rgba = point_cloud.copy_data("rgba_srgb")
 ```
 
 -----

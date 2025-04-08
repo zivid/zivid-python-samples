@@ -68,7 +68,7 @@ def _main() -> None:
     with camera.capture_2d_3d(settings) as frame:
         point_cloud = frame.point_cloud()
         xyz = point_cloud.copy_data("xyz")
-        rgba = point_cloud.copy_data("rgba")
+        rgba = point_cloud.copy_data("rgba_srgb")
 
         print("Visualizing point cloud")
         display_pointcloud(xyz, rgba[:, :, 0:3])

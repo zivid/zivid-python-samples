@@ -67,7 +67,7 @@ def _main() -> None:
     print("Capturing 2D+3D")
     with camera.capture_2d_3d(settings) as frame:
         print("Getting RGBA image")
-        image = frame.frame_2d().image_rgba()
+        image = frame.frame_2d().image_rgba_srgb()
         rgba = image.copy_data()
 
         print("Getting point cloud")

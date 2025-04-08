@@ -123,11 +123,11 @@ def _main() -> None:
                 settings_2d = make_settings_2d(camera)
 
                 print("Capturing a 2D image with the projected image")
-                frame_2d = projected_image_handle.capture(settings_2d)
+                frame_2d = projected_image_handle.capture_2d(settings_2d)
 
                 captured_image_file = "CapturedImage.png"
                 print(f"Saving the captured image: {captured_image_file}")
-                frame_2d.image_bgra().save(captured_image_file)
+                frame_2d.image_bgra_srgb().save(captured_image_file)
 
                 input("Press enter to stop projecting ...")
 
@@ -136,7 +136,7 @@ def _main() -> None:
             print(
                 f"Reading 2D image (of resolution matching the Zivid camera projector resolution) from file: {projector_image_file_for_given_camera}"
             )
-            projector_image_for_given_camera = zivid.Image.load(projector_image_file_for_given_camera, "bgra")
+            projector_image_for_given_camera = zivid.Image.load(projector_image_file_for_given_camera, "bgra_srgb")
 
             with zivid.projection.show_image_bgra(
                 camera, projector_image_for_given_camera.copy_data()

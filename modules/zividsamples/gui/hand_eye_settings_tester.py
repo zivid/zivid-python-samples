@@ -238,12 +238,9 @@ class TestHandEyeCaptureSettings(QMainWindow):
                 )
             )
             if not detection_result.valid():
-                calibration_object_text = (
-                    "checkerboard"
-                    if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard
-                    else "markers"
-                )
-                raise RuntimeError(f"Failed to detect {calibration_object_text}")
+                if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
+                    raise RuntimeError(f"Failed to detect Checkerboard. {detection_result.status_description()}")
+                raise RuntimeError("Failed to detect Markers.")
             self.log_detection_result(detection_result)
             if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
                 self.calibration_object_widget.set_checkerboard_image(rgba)
@@ -335,22 +332,23 @@ class TestHandEyeCaptureSettings(QMainWindow):
     ):
         assert self.settings is not None
         log_message = ""
-        if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
-            pose = detection_result.pose()
-            checkerboard_pose_in_camera_frame = TransformationMatrix.from_matrix(np.asarray(pose.to_matrix()))
-            translation = checkerboard_pose_in_camera_frame.translation
-            log_message += (
-                f"Calibration board: [{translation[0]:>8.2f}, {translation[1]:>8.2f}, {translation[2]:>8.2f}]"
-            )
-        else:
-            detected_markers = detection_result.detected_markers()
-            log_message += "Marker - " if len(detected_markers) < 2 else "Markers - "
-            for marker in detected_markers:
-                marker_pose_in_camera_frame = TransformationMatrix.from_matrix(np.asarray(marker.pose.to_matrix()))
-                translation = marker_pose_in_camera_frame.translation
+        if detection_result.valid():
+            if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
+                pose = detection_result.pose()
+                checkerboard_pose_in_camera_frame = TransformationMatrix.from_matrix(np.asarray(pose.to_matrix()))
+                translation = checkerboard_pose_in_camera_frame.translation
                 log_message += (
-                    f"{marker.identifier:>3}: [{translation[0]:>8.2f}, {translation[1]:>8.2f}, {translation[2]:>8.2f}]"
+                    f"Calibration board: [{translation[0]:>8.2f}, {translation[1]:>8.2f}, {translation[2]:>8.2f}]"
                 )
+            else:
+                detected_markers = detection_result.detected_markers()
+                log_message += "Marker - " if len(detected_markers) < 2 else "Markers - "
+                for marker in detected_markers:
+                    marker_pose_in_camera_frame = TransformationMatrix.from_matrix(np.asarray(marker.pose.to_matrix()))
+                    translation = marker_pose_in_camera_frame.translation
+                    log_message += f"{marker.identifier:>3}: [{translation[0]:>8.2f}, {translation[1]:>8.2f}, {translation[2]:>8.2f}]"
+        else:
+            log_message += f"Detection failed: {detection_result.status_description()}"
         log_message += f" (Engine: {self.settings.production.settings_2d3d.engine:>8}, Sampling: {self.settings.production.settings_2d3d.sampling.pixel:>20})"
         print(log_message)
 

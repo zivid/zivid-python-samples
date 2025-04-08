@@ -57,13 +57,17 @@ def _collect_dataset(camera: zivid.Camera) -> List[zivid.experimental.calibratio
         if _yes_no_prompt("Capture (y) or finish (n)? "):
             print("Capturing calibration board")
             detection_result = zivid.calibration.detect_calibration_board(camera)
-            infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
+            if detection_result.valid():
+                infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
 
-            if infield_input.valid():
-                dataset.append(infield_input)
+                if infield_input.valid():
+                    dataset.append(infield_input)
+                else:
+                    print("****Invalid Input****")
+                    print(f"Feedback: {infield_input.status_description()}")
             else:
-                print("****INVALID****")
-                print(f"Feedback: {infield_input.status_description()}")
+                print("****Failed Detection****")
+                print(f"Feedback: {detection_result.status_description()}")
 
             print(print_line)
         else:

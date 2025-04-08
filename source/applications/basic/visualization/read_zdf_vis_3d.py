@@ -19,7 +19,7 @@ def _main() -> None:
 
         point_cloud = frame.point_cloud()
         xyz = point_cloud.copy_data("xyz")
-        rgba = point_cloud.copy_data("rgba")
+        rgba = point_cloud.copy_data("rgba_srgb")
 
         display_rgb(rgba[:, :, 0:3], block=False)
 

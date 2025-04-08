@@ -45,7 +45,7 @@ def _point_cloud_to_cv_bgr(point_cloud: zivid.PointCloud) -> np.ndarray:
         bgr: BGR image (HxWx3 ndarray)
 
     """
-    bgra = point_cloud.copy_data("bgra")
+    bgra = point_cloud.copy_data("bgra_srgb")
 
     return bgra[:, :, :3]
 

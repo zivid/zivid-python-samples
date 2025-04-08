@@ -112,7 +112,7 @@ def _capture_rgb(camera: zivid.Camera, settings_2d: zivid.Settings2D) -> np.ndar
         rgb: RGB image (H, W, 3)
 
     """
-    rgb = camera.capture_2d(settings_2d).image_rgba().copy_data()[:, :, :3]
+    rgb = camera.capture_2d(settings_2d).image_rgba_srgb().copy_data()[:, :, :3]
     return rgb
 
 
@@ -136,7 +136,7 @@ def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple
         checkerboard_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
         distance_to_checkerboard = checkerboard_pose[2, 3]
 
-        rgb = frame.point_cloud().copy_data("rgba")[:, :, :3]
+        rgb = frame.point_cloud().copy_data("rgba_srgb")[:, :, :3]
         white_squares_mask = find_white_mask_from_checkerboard(rgb)
     except RuntimeError as exc:
         raise RuntimeError("Unable to find checkerboard, make sure it is in view of the camera.") from exc

@@ -344,18 +344,6 @@ def select_settings(camera: zivid.Camera) -> Optional[zivid.Settings]:
     return get_settings_from_file(camera) if settings is None else settings
 
 
-def _correct_pixel_mapping(camera: zivid.Camera, settings: zivid.Settings) -> PixelMapping:
-    pixel_mapping = calibration.pixel_mapping(camera, settings)
-    factor = 1
-    if settings.color:
-        if settings.color.sampling.pixel:
-            sampling_pixel = settings.color.sampling.pixel
-            factor = {"all": 1, "by2x2": 2, "by4x4": 4}.get(sampling_pixel, 1)
-    col_stride = int(pixel_mapping.col_stride / factor)
-    row_stride = int(pixel_mapping.row_stride / factor)
-    return PixelMapping(row_stride, col_stride, pixel_mapping.row_offset, pixel_mapping.col_offset)
-
-
 def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
     settings = select_settings(camera)
     engine, sampling_pixel = (
@@ -367,12 +355,12 @@ def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
     return SettingsForHandEyeGUI(
         production=SettingsPixelMappingIntrinsics(
             settings_2d3d=settings_2d3d,
-            pixel_mapping=_correct_pixel_mapping(camera, settings_2d3d),
+            pixel_mapping=calibration.pixel_mapping(camera, settings_2d3d),
             intrinsics=calibration.intrinsics(camera, settings_2d3d),
         ),
         hand_eye=SettingsPixelMappingIntrinsics(
             settings_2d3d=hand_eye_settings,
-            pixel_mapping=_correct_pixel_mapping(camera, hand_eye_settings),
+            pixel_mapping=calibration.pixel_mapping(camera, hand_eye_settings),
             intrinsics=calibration.intrinsics(camera, hand_eye_settings),
         ),
     )

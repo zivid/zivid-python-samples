@@ -45,7 +45,7 @@ def create_board_in_camera_frame(
 
 
 def extract_marker_points_in_camera_frame(
-    markers: Dict[str, MarkerShape]
+    markers: Dict[str, MarkerShape],
 ) -> NDArray[Shape["N, 3"], Float32]:  # type: ignore
     marker_points = np.zeros((len(markers) * 4, 3), dtype=np.float32)
     for index, marker in enumerate(markers.values()):
@@ -327,12 +327,9 @@ class HandEyeVerificationGUI(QWidget):
             )
         )
         if not detection_result.valid():
-            calibration_object_text = (
-                "checkerboard"
-                if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard
-                else "markers"
-            )
-            raise RuntimeError(f"Failed to detect {calibration_object_text}")
+            if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
+                raise RuntimeError(f"Failed to detect Checkerboard. {detection_result.status_description()}")
+            raise RuntimeError("Failed to detect Markers.")
 
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
             self.calibration_board_in_camera_frame_pose_widget.set_transformation_matrix(

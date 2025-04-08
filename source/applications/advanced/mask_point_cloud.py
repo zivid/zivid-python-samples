@@ -19,7 +19,7 @@ def _main() -> None:
 
         point_cloud = frame.point_cloud()
         xyz = point_cloud.copy_data("xyz")
-        rgba = point_cloud.copy_data("rgba")
+        rgba = point_cloud.copy_data("rgba_srgb")
 
         pixels_to_display = 300
         print(f"Generating binary mask of central {pixels_to_display} x {pixels_to_display} pixels")

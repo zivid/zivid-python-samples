@@ -187,7 +187,7 @@ All transformed captures will be saved as .ply files in the folder:
             point_cloud = capture_at_pose.camera_frame.point_cloud()
             capture_at_pose.save_as_ply()
             xyz = point_cloud.copy_data("xyz").reshape(-1, 3)
-            rgb = point_cloud.copy_data("rgba")[:, :, :3].reshape(-1, 3)
+            rgb = point_cloud.copy_data("rgba_srgb")[:, :, :3].reshape(-1, 3)
             valid_indices = np.logical_not(np.isnan(xyz).any(axis=1))
             xyz_total.append(xyz[valid_indices])
             rgb_total.append(rgb[valid_indices])

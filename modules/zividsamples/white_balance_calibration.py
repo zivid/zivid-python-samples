@@ -103,7 +103,7 @@ def white_balance_calibration(
         settings_2d.processing.color.balance.green = corrected_green_balance
         settings_2d.processing.color.balance.blue = corrected_blue_balance
 
-        rgba = camera.capture_2d(settings_2d).image_rgba().copy_data()
+        rgba = camera.capture_2d(settings_2d).image_rgba_srgb().copy_data()
         mean_color = compute_mean_rgb_from_mask(rgba[:, :, 0:3], mask)
 
         mean_red, mean_green, mean_blue = mean_color[0], mean_color[1], mean_color[2]
