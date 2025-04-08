@@ -105,7 +105,7 @@ def _handle_add_pose(
             hand_eye_input.append(zivid.calibration.HandEyeInput(robot_pose, detection_result))
             current_pose_id += 1
         else:
-            print("Failed to detect calibration board, ensure that the entire board is in the view of the camera")
+            print(f"Failed to detect calibration board. {detection_result.status_description()}")
     elif calibration_object == "m":
 
         frame = _assisted_capture(camera)

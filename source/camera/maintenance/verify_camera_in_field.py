@@ -30,6 +30,8 @@ def _main() -> None:
     # Gather data
     print("Capturing calibration board")
     detection_result = zivid.calibration.detect_calibration_board(camera)
+    if not detection_result.valid():
+        raise RuntimeError(f"Detection failed! Feedback: {detection_result.status_description()}")
 
     # Prepare data and check that it is appropriate for infield verification
     infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)

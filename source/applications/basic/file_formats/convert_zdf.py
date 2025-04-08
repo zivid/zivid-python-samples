@@ -82,18 +82,22 @@ def _options() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _flatten_point_cloud(point_cloud: zivid.PointCloud) -> np.ndarray:
+def _flatten_point_cloud(point_cloud: zivid.PointCloud, linear_rgb: bool) -> np.ndarray:
     """Convert from point cloud to flattened point cloud (with numpy).
 
     Args:
         point_cloud: A handle to point cloud in the GPU memory
+        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: False[sRGB])
 
     Returns:
         A 2D numpy array, with 8 columns and npixels rows
 
     """
     # Convert to numpy 3D array
-    point_cloud = np.dstack([point_cloud.copy_data("xyz"), point_cloud.copy_data("rgba"), point_cloud.copy_data("snr")])
+    color_space = "rgba" if linear_rgb else "rgba_srgb"
+    point_cloud = np.dstack(
+        [point_cloud.copy_data("xyz"), point_cloud.copy_data(color_space), point_cloud.copy_data("snr")]
+    )
     # Flattening the point cloud
     flattened_point_cloud = point_cloud.reshape(-1, 8)
 
@@ -108,7 +112,7 @@ def _convert_to_3d(frame: zivid.Frame, file_path: Path, file_formats: list, line
         frame: A frame captured by a Zivid camera
         file_path: Full path of the file(s) to be converted
         file_formats: List of formats to convert to [PLY, PCD, XYZ, CSV, TXT]
-        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: sRGB)
+        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: False[sRGB])
         unordered: whether to save as unordered or ordered point cloud for PLY format (default: ordered)
 
     """
@@ -143,7 +147,9 @@ If not they will be unordered. See https://support.zivid.com/en/latest/reference
                 _3d_object = XYZ(file_name_w_extension, color_space=ColorSpace.srgb)
 
         elif file_format in ("csv", "txt"):
-            np.savetxt(file_name_w_extension, _flatten_point_cloud(frame.point_cloud()), delimiter=",", fmt="%.3f")
+            np.savetxt(
+                file_name_w_extension, _flatten_point_cloud(frame.point_cloud(), linear_rgb), delimiter=",", fmt="%.3f"
+            )
 
         print(f"Saving the frame to {file_name_w_extension}")
         if _3d_object:
@@ -157,7 +163,7 @@ def _convert_to_2d(frame: zivid.Frame, file_path: Path, file_formats: list, line
         frame: A frame captured by a Zivid camera
         file_path: Full path of the file(s) to be converted
         file_formats: List of formats to convert to [JPG, PNG, BMP]
-        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: sRGB)
+        linear_rgb: whether to save as linear RGB or sRGB for selected format(s) (default: False[sRGB])
 
     """
     for file_format in file_formats:
@@ -169,8 +175,8 @@ def _convert_to_2d(frame: zivid.Frame, file_path: Path, file_formats: list, line
             image_2d = frame.frame_2d().image_rgba()
             image_2d_in_point_cloud_resolution = frame.point_cloud().copy_image("rgba")
         else:
-            image_2d = frame.frame_2d().image_srgb()
-            image_2d_in_point_cloud_resolution = frame.point_cloud().copy_image("srgb")
+            image_2d = frame.frame_2d().image_rgba_srgb()
+            image_2d_in_point_cloud_resolution = frame.point_cloud().copy_image("rgba_srgb")
 
         print(f"Saving the frame to {file_names[0]} and {file_names[1]}")
         image_2d.save(file_names[0])

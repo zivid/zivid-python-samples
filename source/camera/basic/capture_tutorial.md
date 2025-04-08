@@ -334,7 +334,7 @@ If we only want to capture 3D, the points cloud without color, we can do
 so via the `capture3D` API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L103))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L105))
 
 ``` sourceCode python
 with camera.capture_3d(settings) as frame_3d:
@@ -407,7 +407,7 @@ We can get the 2D color image from `Frame2D`, which is part of the
 ([go to source]())
 
 ``` sourceCode python
-image_2d = frame.frame_2d().image_bgra()
+image_2d = frame.frame_2d().image_bgra_srgb()
 ```
 
 We can get 2D color image directly from the point cloud. This image will
@@ -417,7 +417,7 @@ have the same resolution as the point cloud.
 
 ``` sourceCode python
 point_cloud = frame.point_cloud()
-image_2d_in_point_cloud_resolution = point_cloud.copy_image("bgra")
+image_2d_in_point_cloud_resolution = point_cloud.copy_image("bgra_srgb")
 ```
 
 2D captures also produce 2D color images in linear RGB and sRGB color
@@ -427,7 +427,7 @@ space.
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L23))
 
 ``` sourceCode python
-image_bgra = frame.frame_2d().image_rgba()
+image_rgba = frame.frame_2d().image_rgba_srgb()
 .. tab-item:: sRGB
 ```
 
@@ -445,8 +445,8 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera
 
 ``` sourceCode python
 image_file = "ImageRGBA.png"
-print(f"Saving 2D color image (linear RGB color space) to file: {image_file}")
-image_bgra.save(image_file)
+print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
+image_rgba.save(image_file)
 .. tab-item:: sRGB
 ```
 

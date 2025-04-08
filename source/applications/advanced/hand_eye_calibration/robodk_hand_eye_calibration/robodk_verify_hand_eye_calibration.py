@@ -52,7 +52,7 @@ def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
     settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
     frame = camera.capture_2d_3d(settings_list)
 
-    bgra_image = frame.point_cloud().copy_data("bgra")
+    bgra_image = frame.point_cloud().copy_data("bgra_srgb")
 
     return frame, bgra_image
 

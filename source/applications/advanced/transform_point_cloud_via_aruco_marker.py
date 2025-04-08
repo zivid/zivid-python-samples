@@ -56,7 +56,7 @@ def _main() -> None:
             raise RuntimeError("No ArUco markers detected")
 
         print("Converting to OpenCV image format")
-        bgra_image = point_cloud.copy_data("bgra")
+        bgra_image = point_cloud.copy_data("bgra_srgb")
 
         print("Displaying detected ArUco marker")
         bgr = _draw_detected_marker(bgra_image, detection_result)

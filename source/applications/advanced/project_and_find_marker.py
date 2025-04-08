@@ -195,9 +195,9 @@ def _find_marker(
     cropped_rows = 400
 
     normalized_image = _normalize(
-        _cropped_gray_float_image(projected_marker_frame_2d.image_bgra().copy_data()[:, :, :3], cropped_rows),
-        _cropped_gray_float_image(illuminated_scene_frame_2d.image_bgra().copy_data()[:, :, :3], cropped_rows),
-        _cropped_gray_float_image(non_illuminated_scene_frame_2d.image_bgra().copy_data()[:, :, :3], cropped_rows),
+        _cropped_gray_float_image(projected_marker_frame_2d.image_bgra_srgb().copy_data()[:, :, :3], cropped_rows),
+        _cropped_gray_float_image(illuminated_scene_frame_2d.image_bgra_srgb().copy_data()[:, :, :3], cropped_rows),
+        _cropped_gray_float_image(non_illuminated_scene_frame_2d.image_bgra_srgb().copy_data()[:, :, :3], cropped_rows),
     )
 
     blurred_marker = cv2.GaussianBlur(_create_marker(marker_resolution, (1,), (0,)), (5, 5), sigmaX=1.0, sigmaY=1.0)
@@ -253,7 +253,7 @@ def _annotate(frame_2d: zivid.Frame2D, location: Tuple[int, int]) -> np.ndarray:
         Annotated BGRA image
 
     """
-    image = frame_2d.image_bgra().copy_data()
+    image = frame_2d.image_bgra_srgb().copy_data()
     marker_color = (0, 0, 255, 255)
     marker_size = 10
 
@@ -319,8 +319,8 @@ def _main() -> None:
             )
 
             print("Capture a 2D frame with the marker")
-            projected_marker_frame_2d = projected_image.capture(settings_2d_zero_brightness)
-            projected_marker_frame_2d.image_rgba().save("ProjectedMarker.png")
+            projected_marker_frame_2d = projected_image.capture_2d(settings_2d_zero_brightness)
+            projected_marker_frame_2d.image_rgba_srgb().save("ProjectedMarker.png")
 
             print("Capture a 2D frame of the scene illuminated with the projector")
             illuminated_scene_frame_2d = camera.capture_2d(settings_2d_max_brightness)

@@ -47,7 +47,7 @@ def _capture_bgr_image(camera: zivid.Camera, gamma: float) -> np.ndarray:
 
     print("Capturing 2D frame")
     with camera.capture_2d(settings_2d) as frame_2d:
-        image = frame_2d.image_bgra()
+        image = frame_2d.image_bgra_srgb()
         bgra = image.copy_data()
         return bgra[:, :, :3]
 

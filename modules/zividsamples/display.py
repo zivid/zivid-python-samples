@@ -126,7 +126,7 @@ def display_pointcloud_with_downsampled_normals(
         downsampling: A valid Zivid downsampling factor to apply to normals
 
     """
-    rgb = point_cloud.copy_data("rgba")[:, :, :3]
+    rgb = point_cloud.copy_data("rgba_srgb")[:, :, :3]
     xyz = point_cloud.copy_data("xyz")
     point_cloud.downsample(downsampling)
     normals = point_cloud.copy_data("normals")

@@ -91,6 +91,8 @@ def _main() -> None:
 
         # More information about linear RGB and sRGB color spaces is available at:
         # https://support.zivid.com/en/latest/reference-articles/color-spaces-and-output-formats.html#color-spaces
+        # To get linear RGB image, use the following line instead:
+        # image_linear_rgb = frame_2d.image_rgba();
 
         pixel_row = 100
         pixel_col = 50

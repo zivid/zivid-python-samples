@@ -36,6 +36,9 @@ def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace)
         frame: Zivid frame
         args: Input arguments
 
+    Raises:
+        RuntimeError: If the calibration object is not detected
+
     Returns:
         xyz: A numpy array of X, Y and Z point cloud coordinates within the region of interest
 
@@ -46,6 +49,10 @@ def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace)
     if args.calibration_object == "checkerboard":
         # Finding Cartesian coordinates of the checkerboard center point
         detection_result = zivid.calibration.detect_calibration_board(frame)
+
+        if not detection_result.valid():
+            raise RuntimeError(f"Calibration board not detected! {detection_result.status_description()}")
+
         centroid = detection_result.centroid()
         # the longest distance from the checkerboard centroid to the calibration board corner is < 245 mm
         radius_threshold = 245
@@ -209,7 +216,9 @@ def _main() -> None:
                 xyz_filtered = _filter_calibration_object_roi(frame, args)
 
                 # Converting from NumPy array to Open3D format
-                point_cloud_open3d = _create_open3d_point_cloud(frame.point_cloud().copy_data("rgba"), xyz_filtered)
+                point_cloud_open3d = _create_open3d_point_cloud(
+                    frame.point_cloud().copy_data("rgba_srgb"), xyz_filtered
+                )
 
                 # Saving point cloud to PLY file
                 o3d.io.write_point_cloud(f"img{data_pair_id + 1}.ply", point_cloud_open3d)

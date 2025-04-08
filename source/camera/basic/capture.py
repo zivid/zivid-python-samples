@@ -20,10 +20,10 @@ def _main() -> None:
 
     print("Capturing frame")
     with camera.capture_2d_3d(settings) as frame:
-        image_bgra = frame.frame_2d().image_rgba()
+        image_rgba = frame.frame_2d().image_rgba_srgb()
         image_file = "ImageRGBA.png"
-        print(f"Saving 2D color image (linear RGB color space) to file: {image_file}")
-        image_bgra.save(image_file)
+        print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
+        image_rgba.save(image_file)
 
         data_file = "Frame.zdf"
         print(f"Saving frame to file: {data_file}")

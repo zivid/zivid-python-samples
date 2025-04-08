@@ -24,7 +24,7 @@ def _main() -> None:
     print("Capturing frame (HDR)")
     with camera.capture_2d_3d(settings) as frame:
         point_cloud = frame.point_cloud()
-        rgba = point_cloud.copy_data("rgba")
+        rgba = point_cloud.copy_data("rgba_srgb")
         normals = point_cloud.copy_data("normals")
         normals_colormap = 0.5 * (1 - normals)
 

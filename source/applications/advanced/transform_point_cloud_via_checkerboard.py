@@ -166,6 +166,10 @@ def _main() -> None:
 
         print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
         detection_result = zivid.calibration.detect_calibration_board(frame)
+
+        if not detection_result.valid():
+            raise RuntimeError(f"No Checkerboard detected. {detection_result.status_description()}")
+
         camera_to_checkerboard_transform = detection_result.pose().to_matrix()
         print(camera_to_checkerboard_transform)
         print("Camera pose in checkerboard frame:")
@@ -173,14 +177,14 @@ def _main() -> None:
         print(checkerboard_to_camera_transform)
 
         transform_file = Path("CheckerboardToCameraTransform.yaml")
-        print("Saving a YAML file with Inverted checkerboard pose to file: ")
+        print("Saving camera pose in checkerboard frame to file: ")
         assert_affine_matrix_and_save(checkerboard_to_camera_transform, transform_file)
 
-        print("Transforming point cloud from camera frame to Checkerboard frame")
+        print("Transforming point cloud from camera frame to checkerboard frame")
         point_cloud.transform(checkerboard_to_camera_transform)
 
         print("Converting to OpenCV image format")
-        bgra_image = point_cloud.copy_data("bgra")
+        bgra_image = point_cloud.copy_data("bgra_srgb")
 
         print("Visualizing checkerboard with coordinate system")
         _draw_coordinate_system(frame, camera_to_checkerboard_transform, bgra_image)
@@ -189,6 +193,10 @@ def _main() -> None:
         checkerboard_transformed_file = "CalibrationBoardInCheckerboardOrigin.zdf"
         print(f"Saving transformed point cloud to file: {checkerboard_transformed_file}")
         frame.save(checkerboard_transformed_file)
+
+        print("Reading applied transformation matrix to the point cloud:")
+        transformation_matrix = point_cloud.transformation_matrix()
+        print(transformation_matrix)
 
 
 if __name__ == "__main__":

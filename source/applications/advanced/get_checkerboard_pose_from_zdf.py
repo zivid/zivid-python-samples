@@ -27,7 +27,7 @@ def _create_open3d_point_cloud(point_cloud: zivid.PointCloud) -> o3d.geometry.Po
 
     """
     xyz = point_cloud.copy_data("xyz")
-    rgba = point_cloud.copy_data("rgba")
+    rgba = point_cloud.copy_data("rgba_srgb")
 
     xyz = np.nan_to_num(xyz).reshape(-1, 3)
     rgb = rgba[:, :, 0:3].reshape(-1, 3)

@@ -124,7 +124,7 @@ def _main() -> None:
     print("Capturing and estimating pose of the Zivid checkerboard in the camera frame")
     detection_result = zivid.calibration.detect_calibration_board(camera)
     if not detection_result.valid():
-        raise RuntimeError("Calibration board not detected!")
+        raise RuntimeError(f"Calibration board not detected! {detection_result.status_description()}")
 
     print("Estimating checkerboard pose")
     camera_to_checkerboard_transform = detection_result.pose().to_matrix()
@@ -164,11 +164,11 @@ def _main() -> None:
         settings_2d = _get_2d_capture_settings(camera)
 
         print("Capturing a 2D image with the projected image")
-        frame_2d = projected_image.capture(settings_2d)
+        frame_2d = projected_image.capture_2d(settings_2d)
 
         captured_image_file = "CapturedImage.png"
         print(f"Saving the captured image: {captured_image_file}")
-        frame_2d.image_bgra().save(captured_image_file)
+        frame_2d.image_bgra_srgb().save(captured_image_file)
 
         input("Press enter to stop projecting ...")
 

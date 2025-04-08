@@ -244,12 +244,9 @@ class HandEyeCalibrationGUI(QWidget):
                 )
             )
             if not detection_result.valid():
-                calibration_object_text = (
-                    "checkerboard"
-                    if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard
-                    else "markers"
-                )
-                raise RuntimeError(f"Failed to detect {calibration_object_text}")
+                if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
+                    raise RuntimeError(f"Failed to detect Checkerboard. {detection_result.status_description()}")
+                raise RuntimeError("Failed to detect Markers.")
             rgb = rgba[:, :, :3].copy().astype(np.uint8)
             camera_pose = None
             if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:

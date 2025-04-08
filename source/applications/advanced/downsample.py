@@ -43,7 +43,7 @@ def _main() -> None:
 
         point_cloud = frame.point_cloud()
         xyz = point_cloud.copy_data("xyz")
-        rgba = point_cloud.copy_data("rgba")
+        rgba = point_cloud.copy_data("rgba_srgb")
 
         print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
@@ -61,7 +61,7 @@ def _main() -> None:
         point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
 
         xyz_donwsampled = point_cloud.copy_data("xyz")
-        rgba_downsampled = point_cloud.copy_data("rgba")
+        rgba_downsampled = point_cloud.copy_data("rgba_srgb")
 
         print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 

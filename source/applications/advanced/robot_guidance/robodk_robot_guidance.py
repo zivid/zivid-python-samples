@@ -144,7 +144,7 @@ def _generate_tool_poses_from_checkerboard(
     """
     detection_result = zivid.calibration.detect_calibration_board(camera)
     if not detection_result.valid():
-        raise RuntimeError("Calibration board not detected!")
+        raise RuntimeError(f"Calibration board not detected! {detection_result.status_description()}")
 
     camera_to_checkerboard_transform = detection_result.pose().to_matrix()
     base_to_checkerboard_transform = base_to_camera_transform @ camera_to_checkerboard_transform
