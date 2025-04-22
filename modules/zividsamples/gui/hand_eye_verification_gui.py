@@ -300,7 +300,9 @@ class HandEyeVerificationGUI(QWidget):
 
     def on_robot_pose_manually_updated(self):
         self.calculate_calibration_object_in_camera_frame_pose()
-        self.update_instructions(False, False)
+        self.update_instructions(
+            has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame, robot_pose_confirmed=False
+        )
         self.update_projection.emit()
 
     def on_actual_pose_updated(self, robot_target: RobotTarget):
