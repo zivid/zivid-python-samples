@@ -454,6 +454,12 @@ def _find_2d_settings_from_mask(
     min_exposure_time = _find_lowest_exposure_time(camera)
     brightness = _find_max_brightness(camera) if use_projector else 0
     settings_2d = _initialize_settings_2d(aperture=8, exposure_time=min_exposure_time, brightness=brightness, gain=1)
+    if not use_projector and camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    ):
+        settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
 
     lower_white_range = 210
     upper_white_range = 215

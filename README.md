@@ -45,7 +45,7 @@ from the camera can be used.
             camera.
           - [capture\_hdr\_complete\_settings](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_hdr_complete_settings.py) - Capture point clouds, with color, from the Zivid camera
             with fully configured settings.
-          - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture images and point clouds, with or without color,
+          - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture images and point clouds, with and without color,
             from the Zivid camera with settings from YML file.
       - **advanced**
           - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D with the Zivid camera.

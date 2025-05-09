@@ -50,7 +50,16 @@ The `zivid.Frame` contains the point cloud and color image (stored on
 compute device memory) and the capture and camera information. Capture
 ^^^^^^^
 
-When you capture with Zivid, you get a frame in return.
+When you capture with Zivid, you get a frame in return. The point cloud
+is stored in the frame, and the frame is stored in the GPU memory. The
+capture can contain color or not, depending of the method that you call.
+For more information see this `table with different capture
+modes<capture-mode-table>`.
+
+### Capture with color
+
+If you want to capture a point cloud with color, you can use the
+`Zivid::Camera::capture2D3D()` method.
 
 ([go to
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22))
@@ -59,11 +68,23 @@ source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera
 with camera.capture_2d_3d(settings) as frame:
 ```
 
+### Capture without color
+
+If you want to capture a point cloud without color, you can use the
+`Zivid::Camera::capture3D()` method.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L122))
+
+``` sourceCode python
+with camera.capture_3d(settings) as frame_3d:
+```
+
 Check
 [capture\_tutorial](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_tutorial.md)
 for detailed instructions on how to capture.
 
-### Load
+#### Load
 
 The frame can also be loaded from a ZDF file.
 
@@ -78,7 +99,7 @@ frame = zivid.Frame(data_file)
 
 ## Point Cloud
 
-### Get handle from Frame
+#### Get handle from Frame
 
 You can now get a handle to the point cloud data on the GPU.
 
@@ -101,19 +122,19 @@ from GPU memory.
 
 Note:
 
-`zivid.camera.capture()` method returns at some moment in time after the
-camera completes capturing raw images. The handle from
-`zivid.frame.point_cloud()` is available instantly. However, the actual
-point cloud data becomes available only after the processing on the GPU
-is finished. Any calls to data-copy functions (section below) will block
-and wait for processing to finish before proceeding with the requested
-copy operation.
+`zivid.camera.capture_2d_3d()` and `zivid.camera.capture_3d()` methods
+return at some moment in time after the camera completes capturing raw
+images. The handle from `zivid.frame.point_cloud()` is available
+instantly. However, the actual point cloud data becomes available only
+after the processing on the GPU is finished. Any calls to data-copy
+functions (section below) will block and wait for processing to finish
+before proceeding with the requested copy operation.
 
 For detailed explanation, see [Point Cloud Capture
 Process](https://support.zivid.com/latest/academy/camera/point-cloud-capture-process.html).
 ----
 
-### Copy from GPU to CPU memory
+#### Copy from GPU to CPU memory
 
 You can now selectively copy data based on what is required. This is the
 complete list of output data formats and how to copy them from the GPU.
@@ -139,7 +160,7 @@ xyz = point_cloud.copy_data("xyz")
 rgba = point_cloud.copy_data("rgba_srgb")
 ```
 
-#### Memory allocation options
+### Memory allocation options
 
 In terms of memory allocation, there are two ways to copy data:
 

@@ -334,7 +334,7 @@ If we only want to capture 3D, the points cloud without color, we can do
 so via the `capture3D` API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L105))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L122))
 
 ``` sourceCode python
 with camera.capture_3d(settings) as frame_3d:
@@ -346,7 +346,7 @@ If we only want to capture a 2D image, which is faster than 3D, we can
 do so via the `capture2D` API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L86))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L91))
 
 ``` sourceCode python
 with camera.capture_2d(settings) as frame_2d:
@@ -401,17 +401,51 @@ frame = zivid.Frame(data_file)
 
 ### Save 2D
 
-We can get the 2D color image from `Frame2D`, which is part of the
-`Frame` object, obtained from `capture2D3D()`.
+From a `capture2D()` you get a `Frame2D`. There are two color spaces
+available for 2D images: linear RGB and sRGB. The `imageRGBA()` will
+return an image in the linear RGB color space. If you append `_SRGB` to
+the function name then the returned image will be in the sRGB color
+space
 
-([go to source]())
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L96))
 
 ``` sourceCode python
-image_2d = frame.frame_2d().image_bgra_srgb()
+image_rgba = frame_2d.image_rgba()
+.. tab-item:: sRGB
+```
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L107))
+
+``` sourceCode python
+image_srgb = frame_2d.image_rgba_srgb()
+```
+
+Then, we can save the 2D image in linear RGB or sRGB color space.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L97-L99))
+
+``` sourceCode python
+image_file = "ImageRGBA_linear.png"
+print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
+image_rgba.save(image_file)
+.. tab-item:: sRGB
+```
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L108-L110))
+
+``` sourceCode python
+image_file = "ImageRGBA_sRGB.png"
+print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
+image_srgb.save(image_file)
 ```
 
 We can get 2D color image directly from the point cloud. This image will
-have the same resolution as the point cloud.
+have the same resolution as the point cloud and it will be in the sRGB
+color space.
 
 ([go to source]())
 
@@ -420,43 +454,14 @@ point_cloud = frame.point_cloud()
 image_2d_in_point_cloud_resolution = point_cloud.copy_image("bgra_srgb")
 ```
 
-2D captures also produce 2D color images in linear RGB and sRGB color
-space.
+We can get the 2D color image from `Frame2D`, which is part of the
+`Frame` object, obtained from `capture2D3D()`. This image will have the
+resolution given by the 2D settings inside the 2D3D settings.
 
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L23))
-
-``` sourceCode python
-image_rgba = frame.frame_2d().image_rgba_srgb()
-.. tab-item:: sRGB
-```
-
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L87))
+([go to source]())
 
 ``` sourceCode python
-image_srgb = frame_2d.image_srgb()
-```
-
-Then, we can save the 2D image in linear RGB or sRGB color space.
-
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L24-L26))
-
-``` sourceCode python
-image_file = "ImageRGBA.png"
-print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
-image_rgba.save(image_file)
-.. tab-item:: sRGB
-```
-
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L88-L90))
-
-``` sourceCode python
-image_file = "ImageSRGB.png"
-print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
-image_srgb.save(image_file)
+image_2d = frame.frame_2d().image_bgra_srgb()
 ```
 
 ## Multithreading
