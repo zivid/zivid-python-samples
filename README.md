@@ -45,7 +45,7 @@ from the camera can be used.
             camera.
           - [capture\_hdr\_complete\_settings](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_hdr_complete_settings.py) - Capture point clouds, with color, from the Zivid camera
             with fully configured settings.
-          - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture images and point clouds, with or without color,
+          - [capture\_with\_settings\_from\_yml](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py) - Capture images and point clouds, with and without color,
             from the Zivid camera with settings from YML file.
       - **advanced**
           - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D with the Zivid camera.
@@ -149,11 +149,12 @@ from the camera can be used.
   - **modules**
       - **zividsamples**
           - [calibration\_board\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/calibration_board_utils.py) - Utility functions for the Zivid calibration board.
-          - [display](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/display.py) - Display relevant data for Zivid Samples.
+          - [color\_to\_grayscale](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/color_to_grayscale.py) - if rgba\_image.ndim \!= 3 or rgba\_image.shape\[2\] \!= 4: - [display](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/display.py) - Display relevant data for Zivid Samples.
           - [paths](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/paths.py) - Get relevant paths for Zivid Samples.
           - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/robodk_tools.py) - Robot Control Module
           - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_load_matrix.py) - Save and load Zivid 4x4 transformation matrices from and
             to YAML files.
+          - [settings\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/settings_utils.py) - categories = zivid.presets.categories2d(camera.info.model)
           - [transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/transformation_matrix.py) - Convenience functions and a class for 4x4 transformation
             matrices.
           - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/white_balance_calibration.py) - Balance color for 2D capture using white surface as

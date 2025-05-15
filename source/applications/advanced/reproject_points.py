@@ -15,6 +15,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import zivid
+from zividsamples.settings_utils import get_matching_2d_preset_settings, update_exposure_based_on_relative_brightness
 
 
 def _checkerboard_grid() -> List[np.ndarray]:
@@ -81,38 +82,53 @@ def _get_2d_capture_settings(camera: zivid.Camera) -> zivid.Settings2D:
     Args:
         camera: Zivid camera
 
-    Raises:
-        ValueError: If the camera model is not supported
-
     Returns:
         2D capture settings
 
     """
-    settings_2d = zivid.Settings2D(
-        acquisitions=[
-            zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)
-        ]
-    )
 
-    model = camera.info.model
-    if model in [
-        zivid.CameraInfo.Model.zividTwo,
-        zivid.CameraInfo.Model.zividTwoL100,
-        zivid.CameraInfo.Model.zivid2PlusM130,
-        zivid.CameraInfo.Model.zivid2PlusM60,
-        zivid.CameraInfo.Model.zivid2PlusL110,
-    ]:
-        settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.rgb
-    elif model in [
-        zivid.CameraInfo.Model.zivid2PlusMR130,
-        zivid.CameraInfo.Model.zivid2PlusMR60,
-        zivid.CameraInfo.Model.zivid2PlusLR110,
-    ]:
-        settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
-    else:
-        raise ValueError(f"Unsupported camera model '{model}'")
+    def _get_sampling_color_for_model(model: zivid.CameraInfo.Model) -> zivid.Settings2D.Sampling.Color:
+        """Get the sampling color based on the camera model.
 
-    return settings_2d
+        Args:
+            model: Zivid camera model
+
+        Raises:
+            ValueError: If the camera model is not supported
+
+        Returns:
+            Sampling color for the camera model
+        """
+        if model in [
+            zivid.CameraInfo.Model.zividTwo,
+            zivid.CameraInfo.Model.zividTwoL100,
+            zivid.CameraInfo.Model.zivid2PlusM130,
+            zivid.CameraInfo.Model.zivid2PlusM60,
+            zivid.CameraInfo.Model.zivid2PlusL110,
+        ]:
+            sampling_color = zivid.Settings2D.Sampling.Color.rgb
+        elif model in [
+            zivid.CameraInfo.Model.zivid2PlusMR130,
+            zivid.CameraInfo.Model.zivid2PlusMR60,
+            zivid.CameraInfo.Model.zivid2PlusLR110,
+        ]:
+            sampling_color = zivid.Settings2D.Sampling.Color.grayscale
+        else:
+            raise ValueError(f"Unsupported camera model '{model}'")
+        return sampling_color
+
+    sampling_color = _get_sampling_color_for_model(camera.info.model)
+    try:
+        return get_matching_2d_preset_settings(camera, sampling_color, zivid.Settings2D.Sampling.Pixel.all)
+    except RuntimeError:
+        settings_2d = zivid.Settings2D(
+            acquisitions=[
+                zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)
+            ],
+            sampling=zivid.Settings2D.Sampling(color=sampling_color, pixel=zivid.Settings2D.Sampling.Pixel.all),
+        )
+
+        return settings_2d
 
 
 def _main() -> None:
@@ -158,10 +174,10 @@ def _main() -> None:
     print(f"Saving the projector image to file: {projector_image_file}")
     cv2.imwrite(projector_image_file, projector_image)
 
-    print("Displaying the projector image")
+    settings_2d = update_exposure_based_on_relative_brightness(camera, _get_2d_capture_settings(camera))
 
+    print("Displaying the projector image")
     with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
-        settings_2d = _get_2d_capture_settings(camera)
 
         print("Capturing a 2D image with the projected image")
         frame_2d = projected_image.capture_2d(settings_2d)

@@ -2,7 +2,7 @@
 Script to generate a dataset and perform hand-eye calibration using a Universal Robot UR5e robot.
 The script communicates with the robot through Real-Time Data Exchange (RTDE) interface.
 More information about RTDE:
-https://www.universal-robots.com/how-tos-and-faqs/how-to/ur-how-tos/real-time-data-exchange-rtde-guide-22229/
+https://www.universal-robots.com/articles/ur/interface-communication/real-time-data-exchange-rtde-guide/
 
 The entire sample consist of two additional files:
     - universal_robots_hand_eye_script.urp: Robot program script that moves between different poses.
