@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Optional
 
+import zivid
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication, QCheckBox, QGroupBox, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 from zividsamples.gui.hand_eye_configuration import HandEyeConfiguration
@@ -12,21 +13,18 @@ class CameraButtonsWidget(QWidget):
     def __init__(
         self,
         capture_button_text="Capture",
-        already_connected: bool = False,
         parent=None,
     ):
         super().__init__(parent)
 
         # Define buttons
-        connect_button_text = "Connected" if already_connected else "Connect"
-        self.connect_button = QPushButton(connect_button_text)
+        self.connect_button = QPushButton("Connect")
         self.connect_button.setCheckable(True)
-        self.connect_button.setChecked(already_connected)
-        self.connect_button.setStyleSheet("background-color: green;" if already_connected else "")
+        self.connect_button.setStyleSheet("")
         self.connect_button.setObjectName("Camera-connect_button")
         self.capture_button = QPushButton(capture_button_text)
         self.capture_button.setCheckable(True)
-        self.capture_button.setEnabled(already_connected)
+        self.capture_button.setEnabled(False)
         self.capture_button.setObjectName("Camera-capture_button")
 
         self.information_label = QLabel()
@@ -66,11 +64,20 @@ class CameraButtonsWidget(QWidget):
         QApplication.processEvents()
         self.connect_button_clicked.emit()
 
-    def set_connection_status(self, connected: bool):
-        self.connect_button.setText("Connected" if connected else "Connect")
-        self.connect_button.setChecked(connected)
-        self.connect_button.setStyleSheet("background-color: green;" if connected else "")
-        self.capture_button.setEnabled(connected)
+    def set_connection_status(self, camera: Optional[zivid.Camera]):
+        if camera is None:
+            self.connect_button.setText("Connect")
+            self.connect_button.setChecked(False)
+            self.connect_button.setStyleSheet("")
+            self.capture_button.setEnabled(False)
+        else:
+            if camera.state.connected:
+                self.connect_button.setText(f"Connected to {camera.info.model_name} ({camera.info.serial_number})")
+            else:
+                self.connect_button.setText(f"Disconnected ({camera.state.status}) (click to re-connect)")
+            self.connect_button.setChecked(camera.state.connected)
+            self.connect_button.setStyleSheet("background-color: green;" if camera.state.connected else "")
+            self.capture_button.setEnabled(camera.state.connected)
 
     def set_information(self, text: str):
         if text == "":

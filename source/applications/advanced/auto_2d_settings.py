@@ -191,7 +191,7 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
             )
     elif camera.info.model in (zivid.CameraInfo.Model.zivid2PlusM60, zivid.CameraInfo.Model.zivid2PlusMR60):
         focus_distance = 600
-        focal_length = 11
+        focal_length = 6.75
         circle_of_confusion = 0.008
         fnum_min = 2.37
         if image_distance_near < 300 or image_distance_far > 1100:
@@ -201,7 +201,7 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
             )
     elif camera.info.model in (zivid.CameraInfo.Model.zivid2PlusL110, zivid.CameraInfo.Model.zivid2PlusLR110):
         focus_distance = 1100
-        focal_length = 11
+        focal_length = 6.75
         circle_of_confusion = 0.008
         fnum_min = 2.37
         if image_distance_near < 800 or image_distance_far > 2000:

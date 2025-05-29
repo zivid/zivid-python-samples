@@ -149,6 +149,8 @@ from the camera can be used.
   - **modules**
       - **zividsamples**
           - [calibration\_board\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/calibration_board_utils.py) - Utility functions for the Zivid calibration board.
+          - [camera\_verification](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/camera_verification.py) - def capture\_and\_measure\_from\_frame(frame: zivid.Frame)
+            -\> VerificationAndState:
           - [color\_to\_grayscale](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/color_to_grayscale.py) - if rgba\_image.ndim \!= 3 or rgba\_image.shape\[2\] \!= 4: - [display](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/display.py) - Display relevant data for Zivid Samples.
           - [paths](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/paths.py) - Get relevant paths for Zivid Samples.
           - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/robodk_tools.py) - Robot Control Module

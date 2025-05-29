@@ -6,31 +6,34 @@ from typing import Callable, Optional
 import numpy as np
 import zivid
 from nptyping import NDArray, Shape, UInt8
-from PyQt5.QtCore import Q_ARG, QMetaObject, Qt
+from PyQt5.QtCore import Q_ARG, QMetaObject, Qt, pyqtSignal
 from PyQt5.QtGui import QCloseEvent, QColor, QImage, QPainter, QPixmap
 from PyQt5.QtWidgets import QApplication, QGroupBox, QVBoxLayout, QWidget
 from zividsamples.gui.image_viewer import ImageViewer
 
 
 class Live2DWidget(QWidget):
+    camera_disconnected = pyqtSignal(str)
     is_first: bool = True
     live_active: bool = False
     live_thread: Optional[threading.Thread] = None
     current_rgba: Optional[NDArray[Shape["H, W, 4"], UInt8]] = None  # type: ignore
-    settings_2d: Optional[zivid.Settings2D] = None
 
     def __init__(
         self,
         capture_function: Optional[Callable[[zivid.Settings2D], zivid.Frame2D]] = None,
         settings_2d: Optional[zivid.Settings2D] = None,
-        camera_model: Optional[str] = None,
+        camera: Optional[zivid.Camera] = None,
         parent=None,
     ):
         super().__init__(parent)
 
         self.capture_function = capture_function
-        if settings_2d is not None and camera_model is not None:
-            self.update_settings_2d(settings_2d, camera_model)
+        self.camera = camera
+        self.settings_2d = settings_2d
+        if settings_2d is not None and self.camera is not None:
+            if self.camera.info.model:
+                self.update_settings_2d(settings_2d, self.camera.info.model)
 
         self.group_box = QGroupBox()
         self.group_box.setTitle("Live 2D")
@@ -48,16 +51,50 @@ class Live2DWidget(QWidget):
         self.live_2d_image.setMinimumHeight(height)
         self.live_2d_image.setMinimumWidth(int(height * aspect_ratio))
 
+    def rgb_to_grayscale(self, rgba_image):
+        return np.dot(rgba_image[..., :3], [0.299, 0.587, 0.114])
+
+    def update_exposure_based_on_relative_brightness(self, settings_2d: zivid.Settings2D) -> zivid.Settings2D:
+        if settings_2d.acquisitions[0].brightness == 0.0:
+            return settings_2d
+        assert self.capture_function is not None
+        rgba_with_projector = self.capture_function(settings_2d).image_srgb().copy_data()
+        grayscale_with_projector = self.rgb_to_grayscale(rgba_with_projector)
+        for acquisition in settings_2d.acquisitions:
+            acquisition.brightness = 0.0
+        rgba_without_projector = self.capture_function(settings_2d).image_srgb().copy_data()
+        grayscale_without_projector = self.rgb_to_grayscale(rgba_without_projector)
+        grayscale_without_projector[grayscale_without_projector == 0] = np.nan
+        # Assuming that more pixels are not in shadow than in shadow, we can use median
+        # to get a good estimate of the brightness difference.
+        relative_brightness = np.nanmedian(grayscale_with_projector / grayscale_without_projector)
+        for acquisition in settings_2d.acquisitions:
+            max_exposure_time = datetime.timedelta(microseconds=20000)
+            current_exposure_time = acquisition.exposure_time
+            exposure_increase = min(
+                max_exposure_time - current_exposure_time, current_exposure_time * relative_brightness
+            )
+            acquisition.exposure_time += exposure_increase
+            remaining_relative_brightness = relative_brightness / (exposure_increase / current_exposure_time)
+            acquisition.gain *= remaining_relative_brightness
+            acquisition.brightness = 0.0
+        return settings_2d
+
     def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str):
-        self.settings_2d = zivid.Settings2D.from_serialized(zivid.Settings2D.serialize(settings_2d))
-        assert self.settings_2d is not None
-        self.settings_2d.acquisitions[0].brightness = 0.0
         if camera_model in [
             zivid.CameraInfo.Model.zivid2PlusMR60,
             zivid.CameraInfo.Model.zivid2PlusMR130,
             zivid.CameraInfo.Model.zivid2PlusLR110,
         ]:
-            self.settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
+            settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
+        self.settings_2d = self.update_exposure_based_on_relative_brightness(
+            zivid.Settings2D.from_serialized(zivid.Settings2D.serialize(settings_2d))
+        )
+        if camera_model in [
+            zivid.CameraInfo.Model.zivid2PlusMR60,
+            zivid.CameraInfo.Model.zivid2PlusMR130,
+            zivid.CameraInfo.Model.zivid2PlusLR110,
+        ]:
             self.settings_2d.sampling.pixel = zivid.Settings2D.Sampling.Pixel.by2x2
             # To match the projector frequency of 120 Hz we set it to 8333. This could
             # be dynamically adjusted based on use case (with and without looking at a
@@ -112,8 +149,14 @@ class Live2DWidget(QWidget):
 
     def capture(self) -> bool:
         try:
-            if self.capture_function is None:
+            if self.camera is None:
                 raise RuntimeError("No camera connected.")
+            if not self.camera.state.connected:
+                raise RuntimeError(
+                    f"{self.camera.info.model_name} ({self.camera.info.serial_number}): ({self.camera.state.status}"
+                )
+            assert self.capture_function is not None
+            assert self.settings_2d is not None
             frame_2d = self.capture_function(self.settings_2d)
             self.current_rgba = frame_2d.image_srgb().copy_data()
             if self.current_rgba is None:
@@ -140,6 +183,7 @@ class Live2DWidget(QWidget):
             self.show_error_message(error_message)
             self.current_rgba = None
             self.is_first = True
+            self.camera_disconnected.emit(error_message)
             return False
         return True
 

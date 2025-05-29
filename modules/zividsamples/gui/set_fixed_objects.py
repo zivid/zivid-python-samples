@@ -37,7 +37,7 @@ from zividsamples.gui.marker_widget import MarkerConfiguration
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode, TransformationMatrix
 from zividsamples.gui.qt_application import ZividQtApplication
 from zividsamples.gui.rotation_format_configuration import RotationInformation
-from zividsamples.paths import get_file_path
+from zividsamples.paths import get_image_file_path
 
 
 @dataclass
@@ -245,12 +245,14 @@ class FixedObjectsSelectionDialog(QDialog):
         self.descriptive_text = QLabel()
         self.fixed_object_pose_eye_to_hand_label = AspectRatioLabel(
             title="Pose of fixed objects in Eye-to-Hand configuration",
-            pixmap=QPixmap(get_file_path("hand-eye-robot-and-calibration-board-ee-object-pose.png").as_posix()),
+            pixmap=QPixmap(get_image_file_path("hand-eye-robot-and-calibration-board-ee-object-pose.png").as_posix()),
         )
         self.fixed_object_pose_eye_in_hand_label = AspectRatioLabel(
             title="Pose of fixed objects in Eye-in-Hand configuration",
             pixmap=QPixmap(
-                get_file_path("hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose.png").as_posix()
+                get_image_file_path(
+                    "hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose.png"
+                ).as_posix()
             ),
         )
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
@@ -295,7 +297,7 @@ class FixedObjectsSelectionDialog(QDialog):
         self.use_rotation_checkbox.setObjectName("SetFixedObjects-use_rotation_checkbox")
 
         self.calibration_board_pose_label = AspectRatioLabel(
-            title="Calibration Board Pose", pixmap=QPixmap(get_file_path("zvd_cb01_pose.png").as_posix())
+            title="Calibration Board Pose", pixmap=QPixmap(get_image_file_path("zvd_cb01_pose.png").as_posix())
         )
 
     def create_marker_widgets(self):

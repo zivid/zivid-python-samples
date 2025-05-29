@@ -23,6 +23,7 @@ dependencies = [
     "pyyaml",
     "pyqt5-sip==12.15.0",
     "pyqt5",
+    "pyqtgraph",
     "robodk",
     "scipy",
     "zivid"
@@ -39,4 +40,4 @@ include-package-data = true
 where = ["."]
 
 [tool.setuptools.package-data]
-"zividsamples" = ["images/*.png", "images/**/*.png", "images/*.ico", "images/**/*.ico"]
+"zividsamples" = ["images/*.png", "images/**/*.png", "images/*.ico", "images/**/*.ico", "data/*.json", "data/**/*.json", "data/*.yaml", "data/**/*.yaml"]

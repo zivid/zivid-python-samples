@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from PyQt5.QtWidgets import QGroupBox, QTextEdit, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QGroupBox, QTextBrowser, QVBoxLayout, QWidget
 
 
 class TutorialWidget(QWidget):
@@ -16,9 +16,10 @@ class TutorialWidget(QWidget):
 
         self.group_box = QGroupBox("Tutorial", self)
 
-        self.text_area = QTextEdit()
+        self.text_area = QTextBrowser()
         self.text_area.setAcceptRichText(True)
         self.text_area.setReadOnly(True)
+        self.text_area.setOpenExternalLinks(True)
 
         group_layout = QVBoxLayout()
         group_layout.addWidget(self.text_area)
@@ -55,7 +56,7 @@ class TutorialWidget(QWidget):
             text += f"<tr><td>{checkmark}</td><td>{step}</td></tr>"
         text += "</table>"
         text += "<p>" + "</p><p>".join(paragraph for paragraph in self.description) + "</p>"
-        self.text_area.setText(text)
+        self.text_area.setHtml(text)
 
     def set_text_margins(self, left, top, right, bottom):
         document = self.text_area.document()

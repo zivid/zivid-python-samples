@@ -71,7 +71,7 @@ def _main() -> None:
 
     before_warmup = datetime.now()
 
-    print(f"Starting warm up for {warmup_time} minutes")
+    print(f"Starting warmup for {warmup_time} minutes")
     while (datetime.now() - before_warmup) < warmup_time:
         before_capture = datetime.now()
 
@@ -96,7 +96,7 @@ def _main() -> None:
         remaining_time_seconds = remaining_time.seconds % 60
         print(f"Remaining time: {remaining_time_minutes} minutes, {remaining_time_seconds} seconds.")
 
-    print("Warm up completed")
+    print("Warmup completed")
 
 
 if __name__ == "__main__":

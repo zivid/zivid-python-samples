@@ -70,7 +70,7 @@ class HandEyeVerificationGUI(QWidget):
     advanced_view: bool = False
     has_set_object_poses_in_robot_frame: bool = False
     has_confirmed_robot_pose: bool = False
-    update_projection = pyqtSignal()
+    update_projection = pyqtSignal(bool)
     instructions_updated: pyqtSignal = pyqtSignal()
     description: List[str]
     instruction_steps: Dict[str, bool]
@@ -303,19 +303,19 @@ class HandEyeVerificationGUI(QWidget):
         self.update_instructions(
             has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame, robot_pose_confirmed=False
         )
-        self.update_projection.emit()
+        self.update_projection.emit(True)
 
     def on_actual_pose_updated(self, robot_target: RobotTarget):
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
         self.confirm_robot_pose()
         self.calculate_calibration_object_in_camera_frame_pose()
-        self.update_projection.emit()
+        self.update_projection.emit(True)
 
     def on_target_pose_updated(self, robot_target: RobotTarget):
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
         self.has_confirmed_robot_pose = False
         self.calculate_calibration_object_in_camera_frame_pose()
-        self.update_projection.emit()
+        self.update_projection.emit(True)
 
     def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
         self.detected_markers = {}
@@ -380,7 +380,7 @@ class HandEyeVerificationGUI(QWidget):
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
             self.cv2_handler.draw_circles(projector_image, non_nan_projector_image_indices, color)
         else:
-            self.cv2_handler.draw_polygons(projector_image, non_nan_projector_image_indices, color)
+            self.cv2_handler.draw_polygons(projector_image, non_nan_projector_image_indices, color=color)
         # projector_image[0, 0] = [1, 1, 1, 255]  # TODO(ZIVID-8760): Remove workaround
         return projector_image
 
@@ -434,7 +434,7 @@ class HandEyeVerificationGUI(QWidget):
     def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix):
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
         self.calculate_calibration_object_in_camera_frame_pose()
-        self.update_projection.emit()
+        self.update_projection.emit(True)
 
     def set_save_directory(self, data_directory: Path):
         if self.data_directory != data_directory:
