@@ -27,7 +27,16 @@ def get_sample_data_path() -> Path:
     return path
 
 
-def get_file_path(file_name: str) -> Path:
+def get_data_file_path(file_name: str) -> Path:
+    if hasattr(resources, "files") and hasattr(resources, "as_file"):
+        with resources.as_file(resources.files("zividsamples.data") / file_name) as data_file:
+            return Path(data_file)
+    else:
+        with resources.path("zividsamples.data", file_name) as data_file:
+            return Path(data_file)
+
+
+def get_image_file_path(file_name: str) -> Path:
     if hasattr(resources, "files") and hasattr(resources, "as_file"):
         with resources.as_file(resources.files("zividsamples.images") / file_name) as icon_file:
             return Path(icon_file)

@@ -1,11 +1,15 @@
 import ctypes
+import os
 import sys
 from dataclasses import dataclass
 from typing import Tuple
 
 from PyQt5.QtGui import QColor, QFont, QIcon
-from PyQt5.QtWidgets import QApplication, QDesktopWidget
-from zividsamples.paths import get_file_path
+from PyQt5.QtWidgets import QApplication, QDesktopWidget, QFrame
+from zividsamples.paths import get_image_file_path
+
+os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
 
 
 def _color_text(color: Tuple[int, int, int], opacity: float) -> str:
@@ -14,6 +18,26 @@ def _color_text(color: Tuple[int, int, int], opacity: float) -> str:
 
 def color_as_qcolor(color: Tuple[int, int, int], opacity: float) -> QColor:
     return QColor(color[0], color[1], color[2], int(opacity * 255))
+
+
+def styled_link(text: str, href: str) -> str:
+    return f'<a href={href} style="color: {_color_text(ZividColors.PINK, 0.9)};">{text}</a>'
+
+
+def create_vertical_line() -> QFrame:
+    line = QFrame()
+    line.setFrameShape(QFrame.VLine)
+    line.setFrameShadow(QFrame.Sunken)
+    line.setProperty("isVerticalLine", True)
+    return line
+
+
+def create_horizontal_line() -> QFrame:
+    line = QFrame()
+    line.setFrameShape(QFrame.HLine)
+    line.setFrameShadow(QFrame.Sunken)
+    line.setProperty("isHorizontalLine", True)
+    return line
 
 
 @dataclass(frozen=True)
@@ -97,31 +121,58 @@ TAB_STYLE = f"""
 QTabWidget::pane {{
     border-top: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
 }}
+QTabWidget#main_tab_widget::pane {{
+    border-top: none;
+}}
 QTabWidget::tab-bar {{
+    left: 15px;
+}}
+QTabWidget#preparation_tab_widget::tab-bar {{
     left: 5px;
+    border: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
+}}
+QTabWidget#verification_tab_widget::tab-bar {{
+    left: 9.5em; /* Approximate offset by the width of "PREPARE" and "CALIBRATE" tabs */
+    border: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
 }}
 QTabBar::tab {{
-    background-color: {_color_text(ZividColors.MEDIUM_LIGHT_GRAY, 1)};
     color: white;
+    background-color: {_color_text(ZividColors.MEDIUM_LIGHT_GRAY, 1)};
     border: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
+    padding: 5px;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
-    padding: 5px;
-    margin-right: 1px;
+    margin-right: 2px;
 }}
 QTabBar::tab:selected {{
     background-color: {_color_text(ZividColors.DARK_BLUE, 1)};
-    color: white;
 }}
 QTabBar::tab:!selected {{
-    background-color: {_color_text(ZividColors.MEDIUM_LIGHT_GRAY, 1)};
     border: 2px solid {_color_text(ZividColors.MEDIUM_LIGHT_GRAY, 1)};
-    color: white;
     margin-top: 2px;
+}}
+QTabWidget#preparation_tab_widget QTabBar::tab, QTabWidget#verification_tab_widget QTabBar::tab {{
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    margin-right: 0px;
+}}
+QTabWidget#preparation_tab_widget QTabBar::tab::first, QTabWidget#verification_tab_widget QTabBar::tab::first {{
+    border-left: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
+    border-top-left-radius: 4px;
+}}
+QTabWidget#preparation_tab_widget QTabBar::tab::last, QTabWidget#verification_tab_widget QTabBar::tab::last {{
+    border-right: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
+    border-top-right-radius: 4px;
+}}
+QTabWidget#preparation_tab_widget QTabBar::tab:selected, QTabWidget#verification_tab_widget QTabBar::tab:selected {{
+    border: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
+}}
+QTabWidget#preparation_tab_widget QTabBar::tab:!selected, QTabWidget#verification_tab_widget QTabBar::tab:!selected {{
+    border-top: 2px solid {_color_text(ZividColors.DARK_BLUE, 1)};
+    margin-top: 0px;
 }}
 QTabBar::tab:hover {{
     background-color: {_color_text(ZividColors.ITEM_BACKGROUND, 1)};
-    color: white;
 }}
 """
 
@@ -213,7 +264,7 @@ class ZividQtApplication(QApplication):
             self.zivid_app = zivid.Application()
 
     def run(self, win, title: str = "Zivid Qt Application"):
-        icon_path = get_file_path("LogoZBlue.ico")
+        icon_path = get_image_file_path("LogoZBlue.ico")
         self.setWindowIcon(QIcon(icon_path.absolute().as_posix()))
         win.setWindowTitle(title)
         win.show()

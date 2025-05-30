@@ -37,6 +37,7 @@ class SettingsPixelMappingIntrinsics:
 class SettingsForHandEyeGUI:
     production: SettingsPixelMappingIntrinsics
     hand_eye: SettingsPixelMappingIntrinsics
+    infield_correction: SettingsPixelMappingIntrinsics
 
 
 def validate_settings(camera: zivid.Camera, settings: zivid.Settings) -> bool:
@@ -350,8 +351,10 @@ def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
         get_engine_and_sampling_pixel(camera) if settings is None else (settings.engine, settings.sampling.pixel)
     )
     hand_eye_settings = _settings_for_hand_eye(camera, engine, sampling_pixel)
-    settings_2d3d = zivid.Settings(hand_eye_settings) if settings is None else settings
+    settings_2d3d = zivid.Settings.from_serialized(hand_eye_settings.serialize()) if settings is None else settings
     settings_2d3d.sampling.color = None
+    infield_frame = zivid.calibration.capture_calibration_board(camera)
+    infield_correction_settings = infield_frame.settings
     return SettingsForHandEyeGUI(
         production=SettingsPixelMappingIntrinsics(
             settings_2d3d=settings_2d3d,
@@ -362,5 +365,10 @@ def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
             settings_2d3d=hand_eye_settings,
             pixel_mapping=calibration.pixel_mapping(camera, hand_eye_settings),
             intrinsics=calibration.intrinsics(camera, hand_eye_settings),
+        ),
+        infield_correction=SettingsPixelMappingIntrinsics(
+            settings_2d3d=infield_correction_settings,
+            pixel_mapping=calibration.pixel_mapping(camera, infield_correction_settings),
+            intrinsics=calibration.intrinsics(camera, infield_correction_settings),
         ),
     )

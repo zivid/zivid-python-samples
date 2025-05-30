@@ -8,25 +8,16 @@ import numpy as np
 import zivid
 from PyQt5.QtCore import QSignalBlocker, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (
-    QFrame,
-    QGridLayout,
-    QGroupBox,
-    QLabel,
-    QLineEdit,
-    QMessageBox,
-    QScrollArea,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt5.QtWidgets import QGridLayout, QGroupBox, QLabel, QLineEdit, QMessageBox, QScrollArea, QVBoxLayout, QWidget
 from scipy.spatial.transform import Rotation
 from zividsamples.gui.aspect_ratio_label import AspectRatioLabel
+from zividsamples.gui.qt_application import create_horizontal_line, create_vertical_line
 from zividsamples.gui.rotation_format_configuration import (
     RotationFormats,
     RotationFormatSelectionWidget,
     RotationInformation,
 )
-from zividsamples.paths import get_file_path
+from zividsamples.paths import get_image_file_path
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -209,9 +200,12 @@ class BasePoseWidget(QWidget):
 
 
 def parameter_text_to_float(text: str) -> float:
-    if text == "":
+    sanitized_text = text.strip().replace(",", ".")
+    if sanitized_text == "":
         return 0.0
-    return float(text)
+    if not re.fullmatch(r"[0-9.\-]+", sanitized_text):
+        raise ValueError(f"Invalid input: {text}")
+    return float(sanitized_text)
 
 
 class PoseWidget(BasePoseWidget):
@@ -267,7 +261,7 @@ class PoseWidget(BasePoseWidget):
             parameter_editor.setObjectName(f"rotation_parameter_{index}")
             parameter_editor.setReadOnly(self.read_only)
 
-        self.advanced_divider = self._create_horizontal_line()
+        self.advanced_divider = create_horizontal_line()
         self.pose_label = QLabel()
         self.pose_label.setText(f"Translation + {self._rotation_label_text()}")
         self.pose_text = QLineEdit()
@@ -282,7 +276,7 @@ class PoseWidget(BasePoseWidget):
         row_offset = 0 if self.display_mode == PoseWidgetDisplayMode.OnlyPose else 3
 
         if self.display_mode != PoseWidgetDisplayMode.OnlyPose:
-            self.grid_layout.addWidget(self._create_horizontal_line(), row_offset, 0, 1, 4)
+            self.grid_layout.addWidget(create_horizontal_line(), row_offset, 0, 1, 4)
             row_offset = row_offset + 1
 
         self.grid_layout.addWidget(self.translation_parameters_label, row_offset, 0)
@@ -290,7 +284,7 @@ class PoseWidget(BasePoseWidget):
             self.grid_layout.addWidget(parameter_editor, row_offset, index, 1, 1)
         row_offset = row_offset + 1
 
-        self.grid_layout.addWidget(self._create_horizontal_line(), row_offset, 0, 1, 4)
+        self.grid_layout.addWidget(create_horizontal_line(), row_offset, 0, 1, 4)
         row_offset = row_offset + 1
 
         for index, parameter_editor in enumerate(self.rotation_parameter_editors):
@@ -397,9 +391,15 @@ class PoseWidget(BasePoseWidget):
 
     def on_rotation_parameter_changed(self):
         modified_index = int(self.sender().objectName().split("_")[-1])
-        update_parameter = parameter_text_to_float(self.sender().text())
-        if np.isclose(update_parameter, self.rotation_parameters[modified_index]):
+        try:
+            update_parameter = parameter_text_to_float(self.sender().text())
+            if np.isclose(update_parameter, self.rotation_parameters[modified_index]):
+                return
+        except ValueError:
+            # We have invalid input, ignore it and revert to what we had before.
+            self.update_from_transformation_matrix()
             return
+
         updated_rotation_parameters = [
             parameter_text_to_float(parameter_editor.text())
             for i, parameter_editor in enumerate(self.rotation_parameter_editors)
@@ -425,6 +425,16 @@ class PoseWidget(BasePoseWidget):
             self.update_from_transformation_matrix()
 
     def on_translation_parameter_changed(self):
+        modified_index = int(self.sender().objectName().split("_")[-1])
+        try:
+            update_parameter = parameter_text_to_float(self.sender().text())
+            if np.isclose(update_parameter, self.transformation_matrix.translation[modified_index]):
+                return
+        except ValueError:
+            # We have invalid input, ignore it and revert to what we had before.
+            self.update_from_transformation_matrix()
+            return
+
         for i, parameter_editor in enumerate(self.translation_parameter_editors):
             self.transformation_matrix.translation[i] = parameter_text_to_float(parameter_editor.text())
         self.update_from_transformation_matrix()
@@ -477,13 +487,6 @@ class PoseWidget(BasePoseWidget):
             error_message = f"Failed to load from {self.yaml_pose_path}: {ex}"
             QMessageBox.warning(self, "Load Error", error_message)
 
-    def _create_horizontal_line(self) -> QFrame:
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        line.setProperty("isHorizontalLine", True)
-        return line
-
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []
         for parameter_editor in self.translation_parameter_editors:
@@ -504,10 +507,12 @@ class PoseWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
     ):
-        ee_camera_pose_img_path = get_file_path(
+        ee_camera_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-ee-camera-pose-low-res.png"
         )
-        rob_camera_pose_img_path = get_file_path("hand-eye-robot-and-calibration-board-rob-camera-pose-low-res.png")
+        rob_camera_pose_img_path = get_image_file_path(
+            "hand-eye-robot-and-calibration-board-rob-camera-pose-low-res.png"
+        )
         return cls(
             title="Hand Eye Transform",
             initial_rotation_information=initial_rotation_information,
@@ -525,10 +530,10 @@ class PoseWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
     ):
-        robot_ee_pose_img_path = get_file_path(
+        robot_ee_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-ee-pose-low-res.png"
         )
-        rob_ee_pose_img_path = get_file_path("hand-eye-robot-and-calibration-board-rob-ee-pose-low-res.png")
+        rob_ee_pose_img_path = get_image_file_path("hand-eye-robot-and-calibration-board-rob-ee-pose-low-res.png")
         return cls(
             title="Robot Pose",
             initial_rotation_information=initial_rotation_information,
@@ -546,10 +551,10 @@ class PoseWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
     ):
-        eih_camera_object_pose_img_path = get_file_path(
+        eih_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-camera-object-pose-low-res.png"
         )
-        eth_camera_object_pose_img_path = get_file_path(
+        eth_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-object-pose-low-res.png"
         )
         return cls(
@@ -570,10 +575,10 @@ class PoseWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
     ):
-        eih_robot_object_pose_img_path = get_file_path(
+        eih_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose-low-res.png"
         )
-        eth_robot_object_pose_img_path = get_file_path(
+        eth_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-ee-object-pose-low-res.png"
         )
         return cls(
@@ -649,7 +654,7 @@ class MarkerPosesWidget(BasePoseWidget):
 
         self.grid_layout.addWidget(self.ids_title_label, row_offset, 0)
         self.grid_layout.addWidget(self.translation_title_label, row_offset, 1, 1, 3, alignment=Qt.AlignCenter)
-        self.grid_layout.addWidget(self._create_vertical_line(), row_offset, 4)
+        self.grid_layout.addWidget(create_vertical_line(), row_offset, 4)
         self.grid_layout.addWidget(
             self.rotation_title_label,
             row_offset,
@@ -684,7 +689,7 @@ class MarkerPosesWidget(BasePoseWidget):
                 label.setAlignment(Qt.AlignVCenter | Qt.AlignCenter)
                 self.grid_layout.addWidget(label, row_offset, index)
 
-            self.grid_layout.addWidget(self._create_vertical_line(), row_offset, 4)
+            self.grid_layout.addWidget(create_vertical_line(), row_offset, 4)
 
             # Add rotation parameters
             for index, parameter in enumerate(self.rotation_parameters[key], start=5):
@@ -739,13 +744,6 @@ class MarkerPosesWidget(BasePoseWidget):
         self.rotation_title_label.setText(self._rotation_label_text())
         self.update_markers()
 
-    def _create_vertical_line(self) -> QFrame:
-        line = QFrame()
-        line.setFrameShape(QFrame.VLine)
-        line.setFrameShadow(QFrame.Sunken)
-        line.setProperty("isVerticalLine", True)
-        return line
-
     @classmethod
     def MarkersInCameraFrame(
         cls,
@@ -753,10 +751,10 @@ class MarkerPosesWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
     ):
-        eih_camera_object_pose_img_path = get_file_path(
+        eih_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-camera-object-pose-low-res.png"
         )
-        eth_camera_object_pose_img_path = get_file_path(
+        eth_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-object-pose-low-res.png"
         )
         return cls(
@@ -775,10 +773,10 @@ class MarkerPosesWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
     ):
-        eih_robot_object_pose_img_path = get_file_path(
+        eih_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose-low-res.png"
         )
-        eth_robot_object_pose_img_path = get_file_path(
+        eth_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-ee-object-pose-low-res.png"
         )
         return cls(

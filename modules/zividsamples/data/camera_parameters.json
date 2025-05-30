@@ -1,0 +1,698 @@
+{
+    "Zivid 2 M70": {
+        "key_a": 700,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 500,
+                    "max": 1100
+                },
+                "acceptable": {
+                    "min": 300,
+                    "max": 1300
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 2000
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 262
+                },
+                {
+                    "distance": 679.64,
+                    "value": 740.35
+                },
+                {
+                    "distance": 732.48,
+                    "value": 798
+                },
+                {
+                    "distance": 2000,
+                    "value": 1988.51
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 192
+                },
+                {
+                    "distance": 2000,
+                    "value": 1278
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 514.0018965335581,
+                    "max": 1143.1907939914163
+                },
+                "acceptable": {
+                    "min": 262.0,
+                    "max": 1331.039506437768
+                },
+                "calculator": {
+                    "min": 262.0,
+                    "max": 1988.51
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 319.7647058823529,
+                    "max": 703.0588235294117
+                },
+                "acceptable": {
+                    "min": 192.0,
+                    "max": 830.8235294117646
+                },
+                "calculator": {
+                    "min": 192.0,
+                    "max": 1278.0
+                }
+            }
+        },
+        "key_c": [
+            0.003589769,
+            -5.2574e-06,
+            2.26447e-09,
+            1.86902e-12
+        ]
+    },
+    "Zivid 2 L100": {
+        "key_a": 1000,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 800,
+                    "max": 1400
+                },
+                "acceptable": {
+                    "min": 600,
+                    "max": 1600
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 3000
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 262
+                },
+                {
+                    "distance": 679.64,
+                    "value": 740.35
+                },
+                {
+                    "distance": 732.48,
+                    "value": 798
+                },
+                {
+                    "distance": 2000,
+                    "value": 1988.51
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 192
+                },
+                {
+                    "distance": 2000,
+                    "value": 1278
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 861.4177253218884,
+                    "max": 1424.9638626609442
+                },
+                "acceptable": {
+                    "min": 640.0028448003372,
+                    "max": 1612.8125751072962
+                },
+                "calculator": {
+                    "min": 262.0,
+                    "max": 2927.7535622317596
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 511.4117647058823,
+                    "max": 894.7058823529411
+                },
+                "acceptable": {
+                    "min": 383.6470588235294,
+                    "max": 1022.470588235294
+                },
+                "calculator": {
+                    "min": 192.0,
+                    "max": 1916.8235294117646
+                }
+            }
+        },
+        "key_c": [
+            0.003977014,
+            -4.89407e-06,
+            2.45537e-09,
+            2.6884e-13
+        ]
+    },
+    "Zivid 2+ M130": {
+        "key_a": 1300,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 1000,
+                    "max": 1600
+                },
+                "acceptable": {
+                    "min": 800,
+                    "max": 2700
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 3500
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 110.4
+                },
+                {
+                    "distance": 1300,
+                    "value": 792.71
+                },
+                {
+                    "distance": 1600,
+                    "value": 975.64
+                },
+                {
+                    "distance": 2700,
+                    "value": 1646.39
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 153.4
+                },
+                {
+                    "distance": 2700,
+                    "value": 1364.94
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 588.017,
+                    "max": 975.64
+                },
+                "acceptable": {
+                    "min": 451.55500000000006,
+                    "max": 1646.39
+                },
+                "calculator": {
+                    "min": 110.4,
+                    "max": 2134.208181818182
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 506.76583333333326,
+                    "max": 809.6508333333333
+                },
+                "acceptable": {
+                    "min": 405.8041666666667,
+                    "max": 1364.94
+                },
+                "calculator": {
+                    "min": 153.4,
+                    "max": 1768.7866666666666
+                }
+            }
+        },
+        "key_c": [
+            0.008460734,
+            -9.60721e-06,
+            5.3614e-09,
+            -8.0322e-13
+        ]
+    },
+    "Zivid 2+ M60": {
+        "key_a": 600,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 350,
+                    "max": 900
+                },
+                "acceptable": {
+                    "min": 300,
+                    "max": 1100
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 2000
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 234
+                },
+                {
+                    "distance": 600,
+                    "value": 579
+                },
+                {
+                    "distance": 713.34,
+                    "value": 709.34
+                },
+                {
+                    "distance": 1100,
+                    "value": 1096
+                },
+                {
+                    "distance": 2000,
+                    "value": 1990.34
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 236
+                },
+                {
+                    "distance": 1100,
+                    "value": 858
+                },
+                {
+                    "distance": 2000,
+                    "value": 1557.1
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 291.5,
+                    "max": 896.0
+                },
+                "acceptable": {
+                    "min": 234.0,
+                    "max": 1096.0
+                },
+                "calculator": {
+                    "min": 234.0,
+                    "max": 1990.34
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 274.875,
+                    "max": 702.5
+                },
+                "acceptable": {
+                    "min": 236.0,
+                    "max": 858.0
+                },
+                "calculator": {
+                    "min": 236.0,
+                    "max": 1557.1
+                }
+            }
+        },
+        "key_c": [
+            0.003598852,
+            -6.84388e-06,
+            6.88936e-09,
+            -1.76876e-12
+        ]
+    },
+    "Zivid 2+ L110": {
+        "key_a": 1100,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 800,
+                    "max": 1400
+                },
+                "acceptable": {
+                    "min": 700,
+                    "max": 1700
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 3000
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 247
+                },
+                {
+                    "distance": 700,
+                    "value": 694
+                },
+                {
+                    "distance": 729,
+                    "value": 726.4
+                },
+                {
+                    "distance": 800,
+                    "value": 797
+                },
+                {
+                    "distance": 1700,
+                    "value": 1692
+                },
+                {
+                    "distance": 3000,
+                    "value": 2900
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 236
+                },
+                {
+                    "distance": 700,
+                    "value": 547
+                },
+                {
+                    "distance": 1700,
+                    "value": 1324
+                },
+                {
+                    "distance": 3000,
+                    "value": 2335
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 797.0,
+                    "max": 1393.6666666666665
+                },
+                "acceptable": {
+                    "min": 694.0,
+                    "max": 1692.0
+                },
+                "calculator": {
+                    "min": 247.0,
+                    "max": 2900.0
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 624.7,
+                    "max": 1090.9
+                },
+                "acceptable": {
+                    "min": 547.0,
+                    "max": 1324.0
+                },
+                "calculator": {
+                    "min": 236.0,
+                    "max": 2335.0
+                }
+            }
+        },
+        "key_c": [
+            0.007425927,
+            -1.02566e-05,
+            7.507e-09,
+            -1.46368e-12
+        ]
+    },
+    "Zivid 2+ MR130": {
+        "key_a": 1300,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 1000,
+                    "max": 1600
+                },
+                "acceptable": {
+                    "min": 800,
+                    "max": 2700
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 3500
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 110.4
+                },
+                {
+                    "distance": 1300,
+                    "value": 792.71
+                },
+                {
+                    "distance": 1600,
+                    "value": 975.64
+                },
+                {
+                    "distance": 2700,
+                    "value": 1646.39
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 153.4
+                },
+                {
+                    "distance": 2700,
+                    "value": 1364.94
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 588.017,
+                    "max": 975.64
+                },
+                "acceptable": {
+                    "min": 451.55500000000006,
+                    "max": 1646.39
+                },
+                "calculator": {
+                    "min": 110.4,
+                    "max": 2134.208181818182
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 506.76583333333326,
+                    "max": 809.6508333333333
+                },
+                "acceptable": {
+                    "min": 405.8041666666667,
+                    "max": 1364.94
+                },
+                "calculator": {
+                    "min": 153.4,
+                    "max": 1768.7866666666666
+                }
+            }
+        },
+        "key_c": [
+            0.008460734,
+            -9.60721e-06,
+            5.3614e-09,
+            -8.0322e-13
+        ]
+    },
+    "Zivid 2+ MR60": {
+        "key_a": 600,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 350,
+                    "max": 900
+                },
+                "acceptable": {
+                    "min": 300,
+                    "max": 1100
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 2000
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 234
+                },
+                {
+                    "distance": 600,
+                    "value": 579
+                },
+                {
+                    "distance": 713.34,
+                    "value": 709.34
+                },
+                {
+                    "distance": 1100,
+                    "value": 1096
+                },
+                {
+                    "distance": 2000,
+                    "value": 1990.34
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 236
+                },
+                {
+                    "distance": 1100,
+                    "value": 858
+                },
+                {
+                    "distance": 2000,
+                    "value": 1557.1
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 291.5,
+                    "max": 896.0
+                },
+                "acceptable": {
+                    "min": 234.0,
+                    "max": 1096.0
+                },
+                "calculator": {
+                    "min": 234.0,
+                    "max": 1990.34
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 274.875,
+                    "max": 702.5
+                },
+                "acceptable": {
+                    "min": 236.0,
+                    "max": 858.0
+                },
+                "calculator": {
+                    "min": 236.0,
+                    "max": 1557.1
+                }
+            }
+        },
+        "key_c": [
+            0.003598852,
+            -6.84388e-06,
+            6.88936e-09,
+            -1.76876e-12
+        ]
+    },
+    "Zivid 2+ LR110": {
+        "key_a": 1100,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 800,
+                    "max": 1400
+                },
+                "acceptable": {
+                    "min": 700,
+                    "max": 1700
+                },
+                "calculator": {
+                    "min": 300,
+                    "max": 3000
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 247
+                },
+                {
+                    "distance": 700,
+                    "value": 694
+                },
+                {
+                    "distance": 729,
+                    "value": 726.4
+                },
+                {
+                    "distance": 800,
+                    "value": 797
+                },
+                {
+                    "distance": 1700,
+                    "value": 1692
+                },
+                {
+                    "distance": 3000,
+                    "value": 2900
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 300,
+                    "value": 236
+                },
+                {
+                    "distance": 700,
+                    "value": 547
+                },
+                {
+                    "distance": 1700,
+                    "value": 1324
+                },
+                {
+                    "distance": 3000,
+                    "value": 2335
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 797.0,
+                    "max": 1393.6666666666665
+                },
+                "acceptable": {
+                    "min": 694.0,
+                    "max": 1692.0
+                },
+                "calculator": {
+                    "min": 247.0,
+                    "max": 2900.0
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 624.7,
+                    "max": 1090.9
+                },
+                "acceptable": {
+                    "min": 547.0,
+                    "max": 1324.0
+                },
+                "calculator": {
+                    "min": 236.0,
+                    "max": 2335.0
+                }
+            }
+        },
+        "key_c": [
+            0.007425927,
+            -1.02566e-05,
+            7.507e-09,
+            -1.46368e-12
+        ]
+    }
+}

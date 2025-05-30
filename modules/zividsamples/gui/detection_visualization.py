@@ -7,7 +7,7 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 from zividsamples.gui.hand_eye_configuration import CalibrationObject, HandEyeConfiguration
 from zividsamples.gui.image_viewer import ImageViewer
-from zividsamples.paths import get_file_path
+from zividsamples.paths import get_image_file_path
 
 
 class DetectionVisualizationWidget(QWidget):
@@ -18,7 +18,7 @@ class DetectionVisualizationWidget(QWidget):
     calibration_object_pixmap: Dict[CalibrationObject, Optional[QPixmap]] = {}
     reset_zoom_on_next_calibration_object_image_update: bool = True
 
-    def __init__(self, hand_eye_configuration: HandEyeConfiguration, parent=None):
+    def __init__(self, hand_eye_configuration: HandEyeConfiguration, hide_descriptive_image: bool = False, parent=None):
         super().__init__(parent)
 
         self.calibration_object_pixmap = {
@@ -27,10 +27,10 @@ class DetectionVisualizationWidget(QWidget):
         }
 
         self.hand_eye_configuration = copy.deepcopy(hand_eye_configuration)
-        object_pose_in_camera_frame_eye_in_hand_path = get_file_path(
+        object_pose_in_camera_frame_eye_in_hand_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-camera-object-pose-low-res.png"
         )
-        object_pose_in_camera_frame_eye_to_hand_path = get_file_path(
+        object_pose_in_camera_frame_eye_to_hand_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-object-pose-low-res.png"
         )
         self.descriptive_image_eye_in_hand = QPixmap(object_pose_in_camera_frame_eye_in_hand_path.as_posix())
@@ -46,6 +46,7 @@ class DetectionVisualizationWidget(QWidget):
         self.calibration_object_image_viewer.hide()
         self.error_message_label = QLabel("Waiting for capture")
         self.error_message_label.setAlignment(Qt.AlignCenter)
+        self.error_message_label.setWordWrap(True)
         self.descriptive_image_label = QLabel()
         self.descriptive_image_label.setScaledContents(True)
         self.descriptive_image_label.setFixedWidth(self.descriptive_image_width)
@@ -66,6 +67,8 @@ class DetectionVisualizationWidget(QWidget):
         self.setLayout(layout)
         self.update_layout()
         self.reset_zoom_on_next_calibration_object_image_update = True
+        if hide_descriptive_image:
+            self.descriptive_image_label.hide()
 
     def update_layout(self):
         self.group_box.setTitle(f"{self.hand_eye_configuration.calibration_object.name} in Camera Frame")

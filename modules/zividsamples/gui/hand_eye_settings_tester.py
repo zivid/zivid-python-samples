@@ -123,9 +123,9 @@ class TestHandEyeCaptureSettings(QMainWindow):
         self.connect_signals()
 
         if self.camera is None:
-            self.camera_buttons.set_connection_status(False)
+            self.camera_buttons.set_connection_status(self.camera)
         else:
-            self.camera_buttons.set_connection_status(self.camera.state.connected)
+            self.camera_buttons.set_connection_status(self.camera)
 
         self.live2d_widget.start_live_2d()
 
@@ -144,7 +144,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
             self.live2d_widget = Live2DWidget(
                 capture_function=self.camera.capture_2d,
                 settings_2d=self.settings.production.settings_2d3d.color,
-                camera_model=self.camera.info.model,
+                camera=self.camera,
             )
         self.live2d_widget.setFixedHeight(self.calibration_object_widget.height())
         self.live2d_widget.setFixedWidth(self.calibration_object_widget.height())
@@ -153,8 +153,8 @@ class TestHandEyeCaptureSettings(QMainWindow):
             show_calibration_object_selection=True,
             show_eye_in_hand_selection=False,
         )
-        already_connected = False if self.camera is None else self.camera.state.connected
-        self.camera_buttons = CameraButtonsWidget(already_connected=already_connected, capture_button_text="Capture")
+        self.camera_buttons = CameraButtonsWidget(capture_button_text="Capture")
+        self.camera_buttons.set_connection_status(self.camera)
         self.capture_with_hand_eye_settings = QCheckBox("Use settings optimized for Hand Eye")
         self.capture_with_hand_eye_settings.setChecked(True)
 
@@ -266,14 +266,14 @@ class TestHandEyeCaptureSettings(QMainWindow):
             self.live2d_widget.stop_live_2d()
             self.live2d_widget.hide()
             self.camera.disconnect()
-            self.camera_buttons.set_connection_status(False)
+            self.camera_buttons.set_connection_status(self.camera)
         else:
             assert self.settings is not None
             self.camera = select_camera(self.zivid_app, connect=True)
             if self.camera is None:
-                self.camera_buttons.set_connection_status(False)
+                self.camera_buttons.set_connection_status(self.camera)
             else:
-                self.camera_buttons.set_connection_status(self.camera.state.connected)
+                self.camera_buttons.set_connection_status(self.camera)
                 self.setup_settings()
                 if self.camera.state.connected:
                     self.live2d_widget.capture_function = self.camera.capture_2d
