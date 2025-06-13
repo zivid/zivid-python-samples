@@ -15,8 +15,8 @@ def _main() -> None:
         filename_zdf = get_sample_data_path() / "Zivid3D.zdf"
 
         print(f"Reading {filename_zdf} point cloud")
-        frame = zivid.Frame(filename_zdf)
 
+        frame = zivid.Frame(filename_zdf)
         point_cloud = frame.point_cloud()
         xyz = point_cloud.copy_data("xyz")
         rgba = point_cloud.copy_data("rgba_srgb")

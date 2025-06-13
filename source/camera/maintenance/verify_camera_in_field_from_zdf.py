@@ -28,35 +28,35 @@ def _main() -> None:
 
     file_camera = get_sample_data_path() / "BinWithCalibrationBoard.zfc"
     print(f"Creating virtual camera using file: {file_camera}")
-    with app.create_file_camera(file_camera) as camera:
-        # Calibration board can be captured live, while the system is in production, and saved to ZDF file, for later use in
-        # offline infield verification
+    camera = app.create_file_camera(file_camera)
+    # Calibration board can be captured live, while the system is in production, and saved to ZDF file, for later use in
+    # offline infield verification
 
-        print("Capturing calibration board")
-        with zivid.calibration.capture_calibration_board(camera) as frame:
-            data_file = "FrameWithCalibrationBoard.zdf"
-            print(f"Saving frame to file: {data_file}, for later use in offline infield verification")
-            frame.save(data_file)
+    print("Capturing calibration board")
+    frame = zivid.calibration.capture_calibration_board(camera)
+    data_file = "FrameWithCalibrationBoard.zdf"
+    print(f"Saving frame to file: {data_file}, for later use in offline infield verification")
+    frame.save(data_file)
 
-        # The ZDF captured with captureCalibrationBoard(camera) that contains the calibration board can be loaded for
-        # offline infield verification
+    # The ZDF captured with captureCalibrationBoard(camera) that contains the calibration board can be loaded for
+    # offline infield verification
 
-        print(f"Reading frame from file: {data_file}, for offline infield verification")
-        with zivid.Frame(data_file) as frame:
-            print("Detecting calibration board")
-            detection_result = zivid.calibration.detect_calibration_board(frame)
+    print(f"Reading frame from file: {data_file}, for offline infield verification")
+    frame = zivid.Frame(data_file)
+    print("Detecting calibration board")
+    detection_result = zivid.calibration.detect_calibration_board(frame)
 
-        infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
-        if not infield_input.valid():
-            raise RuntimeError(
-                f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
-            )
-
-        print(f"Successful measurement at {detection_result.centroid()}")
-        camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
-        print(
-            f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness() * 100:.3f}%"
+    infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
+    if not infield_input.valid():
+        raise RuntimeError(
+            f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
         )
+
+    print(f"Successful measurement at {detection_result.centroid()}")
+    camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
+    print(
+        f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness() * 100:.3f}%"
+    )
 
 
 if __name__ == "__main__":

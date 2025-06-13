@@ -338,39 +338,39 @@ def _generate_dataset(
         Path: Save_dir to where dataset is saved
 
     """
-    with app.connect_camera() as camera:
-        save_dir = _generate_folder()
+    camera = app.connect_camera()
+    save_dir = _generate_folder()
 
-        # Signal robot that camera is ready
-        ready_to_capture = True
-        _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
+    # Signal robot that camera is ready
+    ready_to_capture = True
+    _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
 
+    robot_state = _read_robot_state(con)
+
+    print(
+        "Initial output robot_states: \n"
+        f"Image count: {_image_count(robot_state)} \n"
+        f"Ready for capture: {_ready_for_capture(robot_state)}\n"
+    )
+
+    images_captured = 1
+    while _image_count(robot_state) != -1:
         robot_state = _read_robot_state(con)
 
-        print(
-            "Initial output robot_states: \n"
-            f"Image count: {_image_count(robot_state)} \n"
-            f"Ready for capture: {_ready_for_capture(robot_state)}\n"
-        )
+        if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
+            print(f"Capture image {_image_count(robot_state)}")
+            _capture_one_frame_and_robot_pose(
+                con=con,
+                camera=camera,
+                save_dir=save_dir,
+                input_data=input_data,
+                image_num=images_captured,
+                ready_to_capture=ready_to_capture,
+                user_options=user_options,
+            )
+            images_captured += 1
 
-        images_captured = 1
-        while _image_count(robot_state) != -1:
-            robot_state = _read_robot_state(con)
-
-            if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
-                print(f"Capture image {_image_count(robot_state)}")
-                _capture_one_frame_and_robot_pose(
-                    con=con,
-                    camera=camera,
-                    save_dir=save_dir,
-                    input_data=input_data,
-                    image_num=images_captured,
-                    ready_to_capture=ready_to_capture,
-                    user_options=user_options,
-                )
-                images_captured += 1
-
-            time.sleep(0.1)
+        time.sleep(0.1)
 
     _write_robot_state(con, input_data, finish_capture=False, camera_ready=False)
     time.sleep(1.0)
@@ -409,6 +409,7 @@ def perform_hand_eye_calibration(
 
         if frame_file_path.is_file() and pose_file_path.is_file():
             print(f"Detect feature points from img{idata:02d}.zdf")
+
             frame = zivid.Frame(frame_file_path)
             detection_result = zivid.calibration.detect_calibration_board(frame)
 

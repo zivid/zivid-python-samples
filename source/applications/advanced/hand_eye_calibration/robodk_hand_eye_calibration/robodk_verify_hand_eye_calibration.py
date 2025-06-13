@@ -41,7 +41,6 @@ def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
 
     Returns:
         frame: Zivid frame
-        bgra_image: BGRA image
 
     """
     suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
@@ -50,11 +49,8 @@ def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
     )
 
     settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    frame = camera.capture_2d_3d(settings_list)
 
-    bgra_image = frame.point_cloud().copy_data("bgra_srgb")
-
-    return frame, bgra_image
+    return camera.capture_2d_3d(settings_list)
 
 
 def _estimate_calibration_object_pose(frame: zivid.Frame, user_options: argparse.Namespace) -> np.ndarray:
@@ -362,7 +358,8 @@ def _main() -> None:
 
     while True:
         try:
-            frame, bgra_image = _assisted_capture(camera)
+            frame = _assisted_capture(camera)
+            bgra_image = frame.point_cloud().copy_data("bgra_srgb")
             camera_to_calibration_object_transform = _estimate_calibration_object_pose(frame, user_options)
 
             print("Calculating the calibration object pose in robot base frame")

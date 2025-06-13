@@ -64,25 +64,28 @@ def _visualize_and_save_image(image: np.ndarray, image_file: str, title: str) ->
 
 
 def _main() -> None:
-    with zivid.Application():
-        data_file = get_sample_data_path() / "Zivid3D.zdf"
-        print(f"Reading ZDF frame from file: {data_file}")
-        frame = zivid.Frame(data_file)
-        point_cloud = frame.point_cloud()
+    # Application class must be initialized before using other Zivid classes.
+    app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
 
-        print("Converting to BGR image in OpenCV format")
-        bgr = _point_cloud_to_cv_bgr(point_cloud)
+    data_file = get_sample_data_path() / "Zivid3D.zdf"
+    print(f"Reading ZDF frame from file: {data_file}")
 
-        bgr_image_file = "ImageRGB.png"
-        print(f"Visualizing and saving BGR image to file: {bgr_image_file}")
-        _visualize_and_save_image(bgr, bgr_image_file, "BGR image")
+    frame = zivid.Frame(data_file)
+    point_cloud = frame.point_cloud()
 
-        print("Converting to Depth map in OpenCV format")
-        z_color_map = _point_cloud_to_cv_z(point_cloud)
+    print("Converting to BGR image in OpenCV format")
+    bgr = _point_cloud_to_cv_bgr(point_cloud)
 
-        depth_map_file = "DepthMap.png"
-        print(f"Visualizing and saving Depth map to file: {depth_map_file}")
-        _visualize_and_save_image(z_color_map, depth_map_file, "Depth map")
+    bgr_image_file = "ImageRGB.png"
+    print(f"Visualizing and saving BGR image to file: {bgr_image_file}")
+    _visualize_and_save_image(bgr, bgr_image_file, "BGR image")
+
+    print("Converting to Depth map in OpenCV format")
+    z_color_map = _point_cloud_to_cv_z(point_cloud)
+
+    depth_map_file = "DepthMap.png"
+    print(f"Visualizing and saving Depth map to file: {depth_map_file}")
+    _visualize_and_save_image(z_color_map, depth_map_file, "Depth map")
 
 
 if __name__ == "__main__":

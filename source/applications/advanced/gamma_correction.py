@@ -46,10 +46,10 @@ def _capture_bgr_image(camera: zivid.Camera, gamma: float) -> np.ndarray:
     settings_2d.processing.color.gamma = gamma
 
     print("Capturing 2D frame")
-    with camera.capture_2d(settings_2d) as frame_2d:
-        image = frame_2d.image_bgra_srgb()
-        bgra = image.copy_data()
-        return bgra[:, :, :3]
+    frame_2d = camera.capture_2d(settings_2d)
+    image = frame_2d.image_bgra_srgb()
+    bgra = image.copy_data()
+    return bgra[:, :, :3]
 
 
 def _combine_images(image_one: np.ndarray, image_two: np.ndarray) -> np.ndarray:

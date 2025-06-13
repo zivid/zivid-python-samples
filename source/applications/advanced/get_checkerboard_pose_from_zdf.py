@@ -65,26 +65,29 @@ def _visualize_checkerboard_point_cloud_with_coordinate_system(
 
 
 def _main() -> None:
-    with zivid.Application():
-        data_file = get_sample_data_path() / "CalibrationBoardInCameraOrigin.zdf"
-        print(f"Reading ZDF frame from file: {data_file}")
-        frame = zivid.Frame(data_file)
-        point_cloud = frame.point_cloud()
+    # Application class must be initialized before using other Zivid classes.
+    app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
 
-        print("Detecting checkerboard and estimating its pose in camera frame")
-        camera_to_checkerboard_transform = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
-        print(f"Camera pose in checkerboard frame:\n{camera_to_checkerboard_transform}")
+    data_file = get_sample_data_path() / "CalibrationBoardInCameraOrigin.zdf"
+    print(f"Reading ZDF frame from file: {data_file}")
 
-        transform_file_name = "CameraToCheckerboardTransform.yaml"
-        print(f"Saving detected checkerboard pose to YAML file: {transform_file_name}")
-        transform_file_path = Path(__file__).parent / transform_file_name
-        assert_affine_matrix_and_save(camera_to_checkerboard_transform, transform_file_path)
+    frame = zivid.Frame(data_file)
+    point_cloud = frame.point_cloud()
 
-        print("Visualizing checkerboard with coordinate system")
-        checkerboard_point_cloud = _create_open3d_point_cloud(point_cloud)
-        _visualize_checkerboard_point_cloud_with_coordinate_system(
-            checkerboard_point_cloud, camera_to_checkerboard_transform
-        )
+    print("Detecting checkerboard and estimating its pose in camera frame")
+    camera_to_checkerboard_transform = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
+    print(f"Camera pose in checkerboard frame:\n{camera_to_checkerboard_transform}")
+
+    transform_file_name = "CameraToCheckerboardTransform.yaml"
+    print(f"Saving detected checkerboard pose to YAML file: {transform_file_name}")
+    transform_file_path = Path(__file__).parent / transform_file_name
+    assert_affine_matrix_and_save(camera_to_checkerboard_transform, transform_file_path)
+
+    print("Visualizing checkerboard with coordinate system")
+    checkerboard_point_cloud = _create_open3d_point_cloud(point_cloud)
+    _visualize_checkerboard_point_cloud_with_coordinate_system(
+        checkerboard_point_cloud, camera_to_checkerboard_transform
+    )
 
 
 if __name__ == "__main__":

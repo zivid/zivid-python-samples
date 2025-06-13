@@ -62,10 +62,10 @@ If you want to capture a point cloud with color, you can use the
 `Zivid::Camera::capture2D3D()` method.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22-L23))
 
 ``` sourceCode python
-with camera.capture_2d_3d(settings) as frame:
+frame = camera.capture_2d_3d(settings)
 ```
 
 ### Capture without color
@@ -77,7 +77,7 @@ If you want to capture a point cloud without color, you can use the
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L122))
 
 ``` sourceCode python
-with camera.capture_3d(settings) as frame_3d:
+frame_3d = camera.capture_3d(settings)
 ```
 
 Check
@@ -89,7 +89,7 @@ for detailed instructions on how to capture.
 The frame can also be loaded from a ZDF file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L14-L16))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L14-L17))
 
 ``` sourceCode python
 data_file = get_sample_data_path() / "Zivid3D.zdf"
@@ -104,7 +104,7 @@ frame = zivid.Frame(data_file)
 You can now get a handle to the point cloud data on the GPU.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L19))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L20))
 
 ``` sourceCode python
 point_cloud = frame.point_cloud()
@@ -153,7 +153,7 @@ complete list of output data formats and how to copy them from the GPU.
 Here is an example of how to copy data.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L20-L21))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L21-L22))
 
 ``` sourceCode python
 xyz = point_cloud.copy_data("xyz")
@@ -177,7 +177,7 @@ frame or, e.g., [scale the point cloud by transforming it from mm to
 m](https://support.zivid.com/latest//academy/applications/transform/transform-millimeters-to-meters.html).
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L119))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L120))
 
 ``` sourceCode python
 point_cloud.transform(base_to_camera_transform)
@@ -207,7 +207,7 @@ Downsampling can be done in-place, which modifies the current point
 cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L61))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L63))
 
 ``` sourceCode python
 point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
@@ -217,7 +217,7 @@ It is also possible to get the downsampled point cloud as a new point
 cloud instance, which does not alter the existing point cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L55))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L57))
 
 ``` sourceCode python
 downsampled_point_cloud = point_cloud.downsampled(zivid.PointCloud.Downsampling.by2x2)

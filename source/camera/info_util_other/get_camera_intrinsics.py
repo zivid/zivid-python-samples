@@ -80,17 +80,18 @@ def _main() -> None:
             acquisitions=[zivid.Settings.Acquisition(aperture=fnum)],
             color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),
         )
-        with camera.capture_2d_3d(settings=settings) as frame:
-            estimated_intrinsics = zivid.experimental.calibration.estimate_intrinsics(frame)
-            temperature = frame.state.temperature.lens
-            print(f"\nAperture: {fnum:.2f}, Lens Temperature: {temperature:.2f}°C")
-            _print_intrinsic_parameters_delta(intrinsics, estimated_intrinsics)
+        frame = camera.capture_2d_3d(settings=settings)
+        estimated_intrinsics = zivid.experimental.calibration.estimate_intrinsics(frame)
+        temperature = frame.state.temperature.lens
+        print(f"\nAperture: {fnum:.2f}, Lens Temperature: {temperature:.2f}°C")
+        _print_intrinsic_parameters_delta(intrinsics, estimated_intrinsics)
 
     settings_subsampled = _subsampled_settings_for_camera(camera)
     fixed_intrinsics_for_subsampled_settings_path = "FixedIntrinsicsSubsampled2x2.yml"
     print(f"Saving camera intrinsics for subsampled capture to file: {fixed_intrinsics_for_subsampled_settings_path}")
     fixed_intrinsics_for_subsampled_settings = zivid.experimental.calibration.intrinsics(camera, settings_subsampled)
     fixed_intrinsics_for_subsampled_settings.save(fixed_intrinsics_for_subsampled_settings_path)
+
     frame = camera.capture_2d_3d(settings_subsampled)
     estimated_intrinsics_for_subsampled_settings = zivid.experimental.calibration.estimate_intrinsics(frame)
     estimated_intrinsics_for_subsampled_settings_path = "EstimatedIntrinsicsFromSubsampled2x2Capture.yml"
