@@ -63,6 +63,8 @@ from the camera can be used.
           - [camera\_user\_data](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_user_data.py) - Store user data on the Zivid camera.
           - [capture\_with\_diagnostics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/capture_with_diagnostics.py) - Capture point clouds, with color, from the Zivid camera,
             with settings from YML file and diagnostics enabled.
+          - [context\_manager\_with\_zivid](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/context_manager_with_zivid.py) - Sample showing how to use a context manager with Zivid
+            Application and safely return processed data.
           - [firmware\_updater](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/firmware_updater.py) - Update firmware on the Zivid camera.
           - [frame\_info](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/frame_info.py) - Read frame info from the Zivid camera.
           - [get\_camera\_intrinsics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/get_camera_intrinsics.py) - Read intrinsic parameters from the Zivid camera (OpenCV

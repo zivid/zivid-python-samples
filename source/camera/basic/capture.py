@@ -19,19 +19,20 @@ def _main() -> None:
     )
 
     print("Capturing frame")
-    with camera.capture_2d_3d(settings) as frame:
-        image_rgba = frame.frame_2d().image_rgba_srgb()
-        image_file = "ImageRGBA.png"
-        print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
-        image_rgba.save(image_file)
 
-        data_file = "Frame.zdf"
-        print(f"Saving frame to file: {data_file}")
-        frame.save(data_file)
+    frame = camera.capture_2d_3d(settings)
+    image_rgba = frame.frame_2d().image_rgba_srgb()
+    image_file = "ImageRGBA.png"
+    print(f"Saving 2D color image (sRGB color space) to file: {image_file}")
+    image_rgba.save(image_file)
 
-        data_file_ply = "PointCloud.ply"
-        print(f"Exporting point cloud to file: {data_file_ply}")
-        frame.save(data_file_ply)
+    data_file = "Frame.zdf"
+    print(f"Saving frame to file: {data_file}")
+    frame.save(data_file)
+
+    data_file_ply = "PointCloud.ply"
+    print(f"Exporting point cloud to file: {data_file_ply}")
+    frame.save(data_file_ply)
 
 
 if __name__ == "__main__":

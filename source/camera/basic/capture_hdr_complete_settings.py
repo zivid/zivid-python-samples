@@ -185,12 +185,12 @@ def _main() -> None:
     for acquisition in settings.acquisitions:
         print(acquisition)
     print("Capturing frame (HDR)")
-    with camera.capture_2d_3d(settings) as frame:
-        print("Complete settings used:")
-        print(frame.settings)
-        data_file = "Frame.zdf"
-        print(f"Saving frame to file: {data_file}")
-        frame.save(data_file)
+    frame = camera.capture_2d_3d(settings)
+    print("Complete settings used:")
+    print(frame.settings)
+    data_file = "Frame.zdf"
+    print(f"Saving frame to file: {data_file}")
+    frame.save(data_file)
 
     settings_file = "Settings.yml"
     print(f"Saving settings to file: {settings_file}")

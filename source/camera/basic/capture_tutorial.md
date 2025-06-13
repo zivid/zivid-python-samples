@@ -320,10 +320,10 @@ there is a single acquisition or multiple acquisitions (HDR) is given by
 the number of `acquisitions` in `settings`.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22-L23))
 
 ``` sourceCode python
-with camera.capture_2d_3d(settings) as frame:
+frame = camera.capture_2d_3d(settings)
 ```
 
 The `zivid.Frame` contains the point cloud, the color image, the
@@ -337,7 +337,7 @@ so via the `capture3D` API.
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L122))
 
 ``` sourceCode python
-with camera.capture_3d(settings) as frame_3d:
+frame_3d = camera.capture_3d(settings)
 ```
 
 ### Capture 2D
@@ -349,7 +349,7 @@ do so via the `capture2D` API.
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L91))
 
 ``` sourceCode python
-with camera.capture_2d(settings) as frame_2d:
+frame_2d = camera.capture_2d(settings)
 ```
 
 ## Save
@@ -357,7 +357,7 @@ with camera.capture_2d(settings) as frame_2d:
 We can now save our results.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L28-L30))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L29-L31))
 
 ``` sourceCode python
 data_file = "Frame.zdf"
@@ -379,7 +379,7 @@ Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structur
 for a list of supported formats.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L32-L34))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L33-L35))
 
 ``` sourceCode python
 data_file_ply = "PointCloud.ply"
@@ -391,7 +391,7 @@ frame.save(data_file_ply)
 Once saved, the frame can be loaded from a ZDF file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L14-L16))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L14-L17))
 
 ``` sourceCode python
 data_file = get_sample_data_path() / "Zivid3D.zdf"

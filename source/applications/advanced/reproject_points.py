@@ -178,7 +178,6 @@ def _main() -> None:
 
     print("Displaying the projector image")
     with zivid.projection.show_image_bgra(camera, projector_image) as projected_image:
-
         print("Capturing a 2D image with the projected image")
         frame_2d = projected_image.capture_2d(settings_2d)
 

@@ -130,7 +130,9 @@ def _capture_one_frame_and_robot_pose(
     robot.WaitMove()
     # Make sure the robot is completely stopped and no miniscule movement is occurring
     time.sleep(0.2)
+
     frame, transform = _get_frame_and_transform(robot, camera)
+
     _save_point_cloud_and_pose(save_directory, image_and_pose_iterator, frame, transform)
     # Verifying capture from previous pose while moving to new pose
     if next_target is not None:
@@ -181,20 +183,20 @@ def generate_hand_eye_dataset(
     """
     num_targets = len(targets)
     robot.MoveJ(targets.pop(0))
-    with app.connect_camera() as camera:
-        save_directory = _generate_directory()
-        image_and_pose_iterator = 1
-        while not image_and_pose_iterator > num_targets:
-            print(f"Capturing calibration object at robot pose {num_targets - len(targets)}")
-            _capture_one_frame_and_robot_pose(
-                robot=robot,
-                camera=camera,
-                save_directory=save_directory,
-                image_and_pose_iterator=image_and_pose_iterator,
-                next_target=targets.pop(0) if targets else None,
-                user_options=user_options,
-            )
-            image_and_pose_iterator += 1
+    camera = app.connect_camera()
+    save_directory = _generate_directory()
+    image_and_pose_iterator = 1
+    while not image_and_pose_iterator > num_targets:
+        print(f"Capturing calibration object at robot pose {num_targets - len(targets)}")
+        _capture_one_frame_and_robot_pose(
+            robot=robot,
+            camera=camera,
+            save_directory=save_directory,
+            image_and_pose_iterator=image_and_pose_iterator,
+            next_target=targets.pop(0) if targets else None,
+            user_options=user_options,
+        )
+        image_and_pose_iterator += 1
 
     print(f"\n Data saved to: {save_directory}")
 
@@ -249,6 +251,7 @@ def perform_hand_eye_calibration(
 
         if frame_file_path.is_file() and pose_file_path.is_file():
             print(f"Detect feature points from img{pose_and_image_iterator:02d}.zdf")
+
             frame = zivid.Frame(frame_file_path)
             if user_options.calibration_object == "checkerboard":
                 detected_features = zivid.calibration.detect_calibration_board(frame)

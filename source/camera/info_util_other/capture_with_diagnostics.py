@@ -62,10 +62,10 @@ def _main() -> None:
     settings.diagnostics.enabled = True
 
     print("Capturing frame")
-    with camera.capture_2d_3d(settings) as frame:
-        data_file = "FrameWithDiagnostics.zdf"
-        print(f"Saving frame with diagnostic data to file: {data_file}")
-        frame.save(data_file)
+    frame = camera.capture_2d_3d(settings)
+    data_file = "FrameWithDiagnostics.zdf"
+    print(f"Saving frame with diagnostic data to file: {data_file}")
+    frame.save(data_file)
 
 
 if __name__ == "__main__":

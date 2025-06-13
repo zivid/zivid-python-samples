@@ -66,16 +66,16 @@ settings = zivid.Settings.load(settings_file)
 ## Capture
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L22-L23))
 
 ``` sourceCode python
-with camera.capture_2d_3d(settings) as frame:
+frame = camera.capture_2d_3d(settings)
 ```
 
 ## Save
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L28-L30))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L29-L31))
 
 ``` sourceCode python
 data_file = "Frame.zdf"
@@ -84,7 +84,7 @@ frame.save(data_file)
 ```
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L32-L34))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture.py#L33-L35))
 
 ``` sourceCode python
 data_file_ply = "PointCloud.ply"
@@ -98,7 +98,7 @@ for a list of supported formats
 ## Utilize
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L19-L21))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/basic/file_formats/read_iterate_zdf.py#L20-L22))
 
 ``` sourceCode python
 point_cloud = frame.point_cloud()

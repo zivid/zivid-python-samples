@@ -157,46 +157,48 @@ def _draw_coordinate_system(frame: zivid.Frame, checkerboard_pose: np.ndarray, b
 
 
 def _main() -> None:
-    with zivid.Application():
+    # Application class must be initialized before using other Zivid classes.
+    app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
 
-        data_file = get_sample_data_path() / "CalibrationBoardInCameraOrigin.zdf"
-        print(f"Reading ZDF frame from file: {data_file}")
-        frame = zivid.Frame(data_file)
-        point_cloud = frame.point_cloud()
+    data_file = get_sample_data_path() / "CalibrationBoardInCameraOrigin.zdf"
+    print(f"Reading ZDF frame from file: {data_file}")
 
-        print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
-        detection_result = zivid.calibration.detect_calibration_board(frame)
+    frame = zivid.Frame(data_file)
+    point_cloud = frame.point_cloud()
 
-        if not detection_result.valid():
-            raise RuntimeError(f"No Checkerboard detected. {detection_result.status_description()}")
+    print("Detecting and estimating pose of the Zivid checkerboard in the camera frame")
+    detection_result = zivid.calibration.detect_calibration_board(frame)
 
-        camera_to_checkerboard_transform = detection_result.pose().to_matrix()
-        print(camera_to_checkerboard_transform)
-        print("Camera pose in checkerboard frame:")
-        checkerboard_to_camera_transform = np.linalg.inv(camera_to_checkerboard_transform)
-        print(checkerboard_to_camera_transform)
+    if not detection_result.valid():
+        raise RuntimeError(f"No Checkerboard detected. {detection_result.status_description()}")
 
-        transform_file = Path("CheckerboardToCameraTransform.yaml")
-        print("Saving camera pose in checkerboard frame to file: ")
-        assert_affine_matrix_and_save(checkerboard_to_camera_transform, transform_file)
+    camera_to_checkerboard_transform = detection_result.pose().to_matrix()
+    print(camera_to_checkerboard_transform)
+    print("Camera pose in checkerboard frame:")
+    checkerboard_to_camera_transform = np.linalg.inv(camera_to_checkerboard_transform)
+    print(checkerboard_to_camera_transform)
 
-        print("Transforming point cloud from camera frame to checkerboard frame")
-        point_cloud.transform(checkerboard_to_camera_transform)
+    transform_file = Path("CheckerboardToCameraTransform.yaml")
+    print("Saving camera pose in checkerboard frame to file: ")
+    assert_affine_matrix_and_save(checkerboard_to_camera_transform, transform_file)
 
-        print("Converting to OpenCV image format")
-        bgra_image = point_cloud.copy_data("bgra_srgb")
+    print("Transforming point cloud from camera frame to checkerboard frame")
+    point_cloud.transform(checkerboard_to_camera_transform)
 
-        print("Visualizing checkerboard with coordinate system")
-        _draw_coordinate_system(frame, camera_to_checkerboard_transform, bgra_image)
-        display_bgr(bgra_image, "Checkerboard transformation frame")
+    print("Converting to OpenCV image format")
+    bgra_image = point_cloud.copy_data("bgra_srgb")
 
-        checkerboard_transformed_file = "CalibrationBoardInCheckerboardOrigin.zdf"
-        print(f"Saving transformed point cloud to file: {checkerboard_transformed_file}")
-        frame.save(checkerboard_transformed_file)
+    print("Visualizing checkerboard with coordinate system")
+    _draw_coordinate_system(frame, camera_to_checkerboard_transform, bgra_image)
+    display_bgr(bgra_image, "Checkerboard transformation frame")
 
-        print("Reading applied transformation matrix to the point cloud:")
-        transformation_matrix = point_cloud.transformation_matrix()
-        print(transformation_matrix)
+    checkerboard_transformed_file = "CalibrationBoardInCheckerboardOrigin.zdf"
+    print(f"Saving transformed point cloud to file: {checkerboard_transformed_file}")
+    frame.save(checkerboard_transformed_file)
+
+    print("Reading applied transformation matrix to the point cloud:")
+    transformation_matrix = point_cloud.transformation_matrix
+    print(transformation_matrix)
 
 
 if __name__ == "__main__":

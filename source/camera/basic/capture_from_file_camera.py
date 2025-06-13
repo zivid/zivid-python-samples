@@ -64,10 +64,10 @@ def _main() -> None:
     settings.color = settings_2d
 
     print("Capturing frame")
-    with camera.capture_2d_3d(settings) as frame:
-        data_file = "Frame.zdf"
-        print(f"Saving frame to file: {data_file}")
-        frame.save(data_file)
+    frame = camera.capture_2d_3d(settings)
+    data_file = "Frame.zdf"
+    print(f"Saving frame to file: {data_file}")
+    frame.save(data_file)
 
 
 if __name__ == "__main__":

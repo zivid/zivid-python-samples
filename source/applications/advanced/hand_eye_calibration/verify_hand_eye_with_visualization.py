@@ -163,77 +163,77 @@ def _path_list_creator(
 
 
 def _main() -> None:
-    with zivid.Application():
-        args = _options()
+    # Application class must be initialized before using other Zivid classes.
+    app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
 
-        while True:
-            robot_camera_configuration = input(
-                "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
-            ).strip()
-            if robot_camera_configuration.lower() == "eth" or robot_camera_configuration.lower() == "eih":
-                break
-            print("Entered unknown Hand-Eye calibration type")
+    args = _options()
 
-        path = args.input_path
-        list_of_paths_to_hand_eye_dataset_point_clouds = _path_list_creator(path, "img", 2, ".zdf")
-        list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
+    while True:
+        robot_camera_configuration = input(
+            "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
+        ).strip()
+        if robot_camera_configuration.lower() == "eth" or robot_camera_configuration.lower() == "eih":
+            break
+        print("Entered unknown Hand-Eye calibration type")
 
-        if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
-            raise RuntimeError("The number of point clouds (ZDF files) and robot poses (YAML files) must be the same")
+    path = args.input_path
+    list_of_paths_to_hand_eye_dataset_point_clouds = _path_list_creator(path, "img", 2, ".zdf")
+    list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
 
-        if len(list_of_paths_to_hand_eye_dataset_robot_poses) == 0:
-            raise RuntimeError("There are no robot poses (YAML files) in the data folder")
+    if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
+        raise RuntimeError("The number of point clouds (ZDF files) and robot poses (YAML files) must be the same")
 
-        if len(list_of_paths_to_hand_eye_dataset_point_clouds) == 0:
-            raise RuntimeError("There are no point clouds (ZDF files) in the data folder")
+    if len(list_of_paths_to_hand_eye_dataset_robot_poses) == 0:
+        raise RuntimeError("There are no robot poses (YAML files) in the data folder")
 
-        if len(list_of_paths_to_hand_eye_dataset_robot_poses) == len(list_of_paths_to_hand_eye_dataset_point_clouds):
-            hand_eye_transform = load_and_assert_affine_matrix(path / "handEyeTransform.yaml")
+    if len(list_of_paths_to_hand_eye_dataset_point_clouds) == 0:
+        raise RuntimeError("There are no point clouds (ZDF files) in the data folder")
 
-            number_of_dataset_pairs = len(list_of_paths_to_hand_eye_dataset_point_clouds)
+    if len(list_of_paths_to_hand_eye_dataset_robot_poses) == len(list_of_paths_to_hand_eye_dataset_point_clouds):
+        hand_eye_transform = load_and_assert_affine_matrix(path / "handEyeTransform.yaml")
 
-            list_of_open_3d_point_clouds = []
-            for data_pair_id in range(number_of_dataset_pairs):
-                # Updating the user about the process status through the terminal
-                percentage = int(100 * data_pair_id / number_of_dataset_pairs)
-                print(f"{data_pair_id} / {number_of_dataset_pairs} - {percentage:>3}%")
+        number_of_dataset_pairs = len(list_of_paths_to_hand_eye_dataset_point_clouds)
 
-                # Reading point cloud from file
-                frame = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id])
+        list_of_open_3d_point_clouds = []
+        for data_pair_id in range(number_of_dataset_pairs):
+            # Updating the user about the process status through the terminal
+            percentage = int(100 * data_pair_id / number_of_dataset_pairs)
+            print(f"{data_pair_id} / {number_of_dataset_pairs} - {percentage:>3}%")
 
-                robot_pose = load_and_assert_affine_matrix(list_of_paths_to_hand_eye_dataset_robot_poses[data_pair_id])
+            # Reading point cloud from file
+            frame = zivid.Frame(list_of_paths_to_hand_eye_dataset_point_clouds[data_pair_id])
 
-                # Transforms point cloud to the robot end-effector frame
-                if robot_camera_configuration.lower() == "eth":
-                    inv_robot_pose = np.linalg.inv(robot_pose)
-                    frame.point_cloud().transform(np.matmul(inv_robot_pose, hand_eye_transform))
+            robot_pose = load_and_assert_affine_matrix(list_of_paths_to_hand_eye_dataset_robot_poses[data_pair_id])
 
-                # Transforms point cloud to the robot base frame
-                if robot_camera_configuration.lower() == "eih":
-                    frame.point_cloud().transform(np.matmul(robot_pose, hand_eye_transform))
+            # Transforms point cloud to the robot end-effector frame
+            if robot_camera_configuration.lower() == "eth":
+                inv_robot_pose = np.linalg.inv(robot_pose)
+                frame.point_cloud().transform(np.matmul(inv_robot_pose, hand_eye_transform))
 
-                # Extracting the points within the ROI (calibration object)
-                xyz_filtered = _filter_calibration_object_roi(frame, args)
+            # Transforms point cloud to the robot base frame
+            if robot_camera_configuration.lower() == "eih":
+                frame.point_cloud().transform(np.matmul(robot_pose, hand_eye_transform))
 
-                # Converting from NumPy array to Open3D format
-                point_cloud_open3d = _create_open3d_point_cloud(
-                    frame.point_cloud().copy_data("rgba_srgb"), xyz_filtered
-                )
+            # Extracting the points within the ROI (calibration object)
+            xyz_filtered = _filter_calibration_object_roi(frame, args)
 
-                # Saving point cloud to PLY file
-                o3d.io.write_point_cloud(f"img{data_pair_id + 1}.ply", point_cloud_open3d)
+            # Converting from NumPy array to Open3D format
+            point_cloud_open3d = _create_open3d_point_cloud(frame.point_cloud().copy_data("rgba_srgb"), xyz_filtered)
 
-                # Appending the Open3D point cloud to a list for visualization
-                list_of_open_3d_point_clouds.append(point_cloud_open3d)
+            # Saving point cloud to PLY file
+            o3d.io.write_point_cloud(f"img{data_pair_id + 1}.ply", point_cloud_open3d)
 
-        print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100%")
-        print("\nAll done!\n")
+            # Appending the Open3D point cloud to a list for visualization
+            list_of_open_3d_point_clouds.append(point_cloud_open3d)
 
-        if data_pair_id > 1:
-            print("Visualizing transformed point clouds\n")
-            o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
-        else:
-            raise RuntimeError("Not enough data!")
+    print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100%")
+    print("\nAll done!\n")
+
+    if data_pair_id > 1:
+        print("Visualizing transformed point clouds\n")
+        o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
+    else:
+        raise RuntimeError("Not enough data!")
 
 
 if __name__ == "__main__":

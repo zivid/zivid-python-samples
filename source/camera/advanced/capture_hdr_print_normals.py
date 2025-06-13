@@ -42,16 +42,16 @@ def _main() -> None:
     settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (5.66, 4.00, 2.83)])
 
     print("Capturing frame (HDR)")
-    with camera.capture_3d(settings) as frame:
-        point_cloud = frame.point_cloud()
+    frame = camera.capture_3d(settings)
+    point_cloud = frame.point_cloud()
 
-        print("Computing normals and copying them to CPU memory")
-        normals = point_cloud.copy_data("normals")
+    print("Computing normals and copying them to CPU memory")
+    normals = point_cloud.copy_data("normals")
 
-        radius_of_pixels_to_print = 5
-        print("Printing normals for the central ")
-        print(f"{radius_of_pixels_to_print * 2} x {radius_of_pixels_to_print * 2} pixels")
-        _print_normals(radius_of_pixels_to_print, normals)
+    radius_of_pixels_to_print = 5
+    print("Printing normals for the central ")
+    print(f"{radius_of_pixels_to_print * 2} x {radius_of_pixels_to_print * 2} pixels")
+    _print_normals(radius_of_pixels_to_print, normals)
 
 
 if __name__ == "__main__":

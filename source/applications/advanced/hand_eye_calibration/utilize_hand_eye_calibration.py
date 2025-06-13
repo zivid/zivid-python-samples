@@ -34,97 +34,98 @@ from zividsamples.save_load_matrix import load_and_assert_affine_matrix
 
 
 def _main() -> None:
-    with zivid.Application():
-        np.set_printoptions(precision=2)
+    # Application class must be initialized before using other Zivid classes.
+    app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
 
-        while True:
-            robot_camera_configuration = input(
-                "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
-            ).strip()
+    np.set_printoptions(precision=2)
 
-            if robot_camera_configuration.lower() == "eth":
-                file_name = "ZividGemEyeToHand.zdf"
+    while True:
+        robot_camera_configuration = input(
+            "Enter type of calibration, eth (for eye-to-hand) or eih (for eye-in-hand):"
+        ).strip()
 
-                # The (picking) point is defined as image coordinates in camera reference frame. It is hard-coded
-                # for the ZividGemEyeToHand.zdf (1035,255) X: 37.77 Y: -145.92 Z: 1227.1
-                image_coordinate_x = 1035
-                image_coordinate_y = 255
+        if robot_camera_configuration.lower() == "eth":
+            file_name = "ZividGemEyeToHand.zdf"
 
-                eye_to_hand_transform_file_path = get_sample_data_path() / "EyeToHandTransform.yaml"
+            # The (picking) point is defined as image coordinates in camera reference frame. It is hard-coded
+            # for the ZividGemEyeToHand.zdf (1035,255) X: 37.77 Y: -145.92 Z: 1227.1
+            image_coordinate_x = 1035
+            image_coordinate_y = 255
 
-                print("Reading camera pose in robot base reference frame (result of eye-to-hand calibration)")
-                base_to_camera_transform = load_and_assert_affine_matrix(eye_to_hand_transform_file_path)
+            eye_to_hand_transform_file_path = get_sample_data_path() / "EyeToHandTransform.yaml"
 
-                break
+            print("Reading camera pose in robot base reference frame (result of eye-to-hand calibration)")
+            base_to_camera_transform = load_and_assert_affine_matrix(eye_to_hand_transform_file_path)
 
-            if robot_camera_configuration.lower() == "eih":
-                file_name = "ZividGemEyeInHand.zdf"
+            break
 
-                # The (picking) point is defined as image coordinates in camera reference frame. It is hard-coded
-                # for the ZividGemEyeInHand.zdf (1460,755) X: 83.95 Y: 28.84 Z: 305.7
-                image_coordinate_x = 1460
-                image_coordinate_y = 755
+        if robot_camera_configuration.lower() == "eih":
+            file_name = "ZividGemEyeInHand.zdf"
 
-                eye_in_hand_transform_file_path = get_sample_data_path() / "EyeInHandTransform.yaml"
-                robot_transform_file_path = get_sample_data_path() / "RobotTransform.yaml"
+            # The (picking) point is defined as image coordinates in camera reference frame. It is hard-coded
+            # for the ZividGemEyeInHand.zdf (1460,755) X: 83.95 Y: 28.84 Z: 305.7
+            image_coordinate_x = 1460
+            image_coordinate_y = 755
 
-                print(
-                    "Reading camera pose in flange (end-effector) reference frame (result of eye-in-hand calibration)"
-                )
-                flange_to_camera_transform = load_and_assert_affine_matrix(eye_in_hand_transform_file_path)
+            eye_in_hand_transform_file_path = get_sample_data_path() / "EyeInHandTransform.yaml"
+            robot_transform_file_path = get_sample_data_path() / "RobotTransform.yaml"
 
-                print("Reading flange (end-effector) pose in robot base reference frame")
-                base_to_flange_transform = load_and_assert_affine_matrix(robot_transform_file_path)
+            print("Reading camera pose in flange (end-effector) reference frame (result of eye-in-hand calibration)")
+            flange_to_camera_transform = load_and_assert_affine_matrix(eye_in_hand_transform_file_path)
 
-                print("Computing camera pose in robot base reference frame")
-                base_to_camera_transform = np.matmul(base_to_flange_transform, flange_to_camera_transform)
+            print("Reading flange (end-effector) pose in robot base reference frame")
+            base_to_flange_transform = load_and_assert_affine_matrix(robot_transform_file_path)
 
-                break
+            print("Computing camera pose in robot base reference frame")
+            base_to_camera_transform = np.matmul(base_to_flange_transform, flange_to_camera_transform)
 
-            print("Entered unknown Hand-Eye calibration type")
+            break
 
-        data_file = get_sample_data_path() / file_name
-        print(f"Reading point cloud from file: {data_file}")
-        frame = zivid.Frame(data_file)
-        point_cloud = frame.point_cloud()
+        print("Entered unknown Hand-Eye calibration type")
 
-        while True:
-            command = input("Enter command, s (to transform single point) or p (to transform point cloud): ").strip()
+    data_file = get_sample_data_path() / file_name
+    print(f"Reading point cloud from file: {data_file}")
 
-            if command.lower() == "s":
-                print("Transforming single point")
+    frame = zivid.Frame(data_file)
+    point_cloud = frame.point_cloud()
 
-                xyz = point_cloud.copy_data("xyz")
+    while True:
+        command = input("Enter command, s (to transform single point) or p (to transform point cloud): ").strip()
 
-                point_in_camera_frame = np.array(
-                    [
-                        xyz[image_coordinate_y, image_coordinate_x, 0],
-                        xyz[image_coordinate_y, image_coordinate_x, 1],
-                        xyz[image_coordinate_y, image_coordinate_x, 2],
-                        1,
-                    ]
-                )
-                print(f"Point coordinates in camera reference frame: {point_in_camera_frame[0:3]}")
+        if command.lower() == "s":
+            print("Transforming single point")
 
-                print("Transforming (picking) point from camera to robot base reference frame")
-                point_in_base_frame = np.matmul(base_to_camera_transform, point_in_camera_frame)
+            xyz = point_cloud.copy_data("xyz")
 
-                print(f"Point coordinates in robot base reference frame: {point_in_base_frame[0:3]}")
+            point_in_camera_frame = np.array(
+                [
+                    xyz[image_coordinate_y, image_coordinate_x, 0],
+                    xyz[image_coordinate_y, image_coordinate_x, 1],
+                    xyz[image_coordinate_y, image_coordinate_x, 2],
+                    1,
+                ]
+            )
+            print(f"Point coordinates in camera reference frame: {point_in_camera_frame[0:3]}")
 
-                break
+            print("Transforming (picking) point from camera to robot base reference frame")
+            point_in_base_frame = np.matmul(base_to_camera_transform, point_in_camera_frame)
 
-            if command.lower() == "p":
-                print("Transforming point cloud")
+            print(f"Point coordinates in robot base reference frame: {point_in_base_frame[0:3]}")
 
-                point_cloud.transform(base_to_camera_transform)
+            break
 
-                save_file = "ZividGemTransformed.zdf"
-                print(f"Saving point cloud to file: {save_file}")
-                frame.save(save_file)
+        if command.lower() == "p":
+            print("Transforming point cloud")
 
-                break
+            point_cloud.transform(base_to_camera_transform)
 
-            print("Entered unknown command")
+            save_file = "ZividGemTransformed.zdf"
+            print(f"Saving point cloud to file: {save_file}")
+            frame.save(save_file)
+
+            break
+
+        print("Entered unknown command")
 
 
 if __name__ == "__main__":

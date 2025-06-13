@@ -8,7 +8,6 @@ Note: This script requires the Zivid Python API, Open3D and PyQt5 to be installe
 
 """
 
-import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -16,16 +15,14 @@ import numpy as np
 import zivid
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QImage
-from PyQt5.QtWidgets import QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 from zividsamples.gui.capture_at_pose_selection_widget import CaptureAtPose, CaptureAtPoseSelectionWidget
 from zividsamples.gui.hand_eye_configuration import HandEyeConfiguration
+from zividsamples.gui.pointcloud_visualizer import Open3DVisualizerWidget
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.transformation_matrix import TransformationMatrix
-
-if sys.version_info < (3, 12):
-    from zividsamples.gui.pointcloud_visualizer import Open3DVisualizerWidget
 
 
 class StitchGUI(QWidget):
@@ -33,12 +30,7 @@ class StitchGUI(QWidget):
     use_robot: bool
     qimage_rgba: Optional[QImage] = None
     hand_eye_configuration: HandEyeConfiguration
-    if sys.version_info < (3, 12):
-        point_cloud_widget: Optional[Open3DVisualizerWidget] = None
-        show_warning_once: bool = False
-    else:
-        point_cloud_widget = None
-        show_warning_once: bool = True
+    point_cloud_widget: Optional[Open3DVisualizerWidget] = None
     has_detection_result: bool = False
     has_confirmed_robot_pose: bool = False
     instructions_updated: pyqtSignal = pyqtSignal()
@@ -141,21 +133,7 @@ class StitchGUI(QWidget):
 
     def start_3d_visualizer(self):
         self.stop_3d_visualizer()
-        if sys.version_info < (3, 12):
-            self.point_cloud_widget = Open3DVisualizerWidget()
-        elif self.show_warning_once:
-            folder_path = self.capture_at_pose_selection_widget.directory
-            QMessageBox.warning(
-                self,
-                "Visualization",
-                f"""\
-Visualizing the point cloud requires Python 3.11 or earlier.
-
-All transformed captures will be saved as .ply files in the folder:
-
-{folder_path.as_posix()}""",
-            )
-            self.show_warning_once = False
+        self.point_cloud_widget = Open3DVisualizerWidget()
         self.update_stitched_view()
 
     def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):

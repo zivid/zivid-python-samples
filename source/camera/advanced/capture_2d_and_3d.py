@@ -65,17 +65,17 @@ def _main() -> None:
     settings = _get_2d_and_3d_settings(camera)
 
     print("Capturing 2D+3D")
-    with camera.capture_2d_3d(settings) as frame:
-        print("Getting RGBA image")
-        image = frame.frame_2d().image_rgba_srgb()
-        rgba = image.copy_data()
+    frame = camera.capture_2d_3d(settings)
+    print("Getting RGBA image")
+    image = frame.frame_2d().image_rgba_srgb()
+    rgba = image.copy_data()
 
-        print("Getting point cloud")
-        point_cloud = frame.point_cloud()
-        xyz = point_cloud.copy_data("xyz")
+    print("Getting point cloud")
+    point_cloud = frame.point_cloud()
+    xyz = point_cloud.copy_data("xyz")
 
-        print("Visualizing point cloud")
-        display_pointcloud(xyz, rgba[:, :, :3])
+    print("Visualizing point cloud")
+    display_pointcloud(xyz, rgba[:, :, :3])
 
 
 if __name__ == "__main__":

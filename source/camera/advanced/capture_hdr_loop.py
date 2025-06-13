@@ -57,10 +57,10 @@ def _main() -> None:
         settings = zivid.Settings.load(settings_file)
 
         print("Capturing frame (HDR)")
-        with camera.capture_2d_3d(settings) as frame:
-            data_file = f"Frame0{i}.zdf"
-            print(f"Saving frame to file: {data_file}")
-            frame.save(data_file)
+        frame = camera.capture_2d_3d(settings)
+        data_file = f"Frame0{i}.zdf"
+        print(f"Saving frame to file: {data_file}")
+        frame.save(data_file)
 
 
 if __name__ == "__main__":

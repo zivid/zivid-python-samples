@@ -132,12 +132,11 @@ def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple
     """
     try:
         frame = zivid.calibration.capture_calibration_board(camera)
-
         checkerboard_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
         distance_to_checkerboard = checkerboard_pose[2, 3]
-
-        rgb = frame.point_cloud().copy_data("rgba_srgb")[:, :, :3]
+        rgb = frame.point_cloud().copy_data("rgba_sgrb")[:, :, :3]
         white_squares_mask = find_white_mask_from_checkerboard(rgb)
+
     except RuntimeError as exc:
         raise RuntimeError("Unable to find checkerboard, make sure it is in view of the camera.") from exc
 

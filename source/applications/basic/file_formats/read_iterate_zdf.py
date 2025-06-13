@@ -13,6 +13,7 @@ def _main() -> None:
     with zivid.Application():
         data_file = get_sample_data_path() / "Zivid3D.zdf"
         print(f"Reading point cloud from file: {data_file}")
+
         frame = zivid.Frame(data_file)
 
         print("Getting point cloud from frame")
