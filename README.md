@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.15.0. For
+This repository contains python code samples for Zivid SDK v2.16.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -69,6 +69,9 @@ from the camera can be used.
           - [frame\_info](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/frame_info.py) - Read frame info from the Zivid camera.
           - [get\_camera\_intrinsics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/get_camera_intrinsics.py) - Read intrinsic parameters from the Zivid camera (OpenCV
             model) or estimate them from the point cloud.
+          - [measure\_scene\_conditions](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/measure_scene_conditions.py) - Measure ambient light conditions in the scene and output
+            the measured flickering frequency of the ambient light if
+            flickering is detected.
           - [network\_configuration](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/network_configuration.py) - Uses Zivid API to change the IP address of the Zivid
             camera.
           - [warmup](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/warmup.py) - Short example of a basic way to warm up the camera with
@@ -114,8 +117,8 @@ from the camera can be used.
             mask, and visualize it.
           - [project\_and\_find\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/project_and_find_marker.py) - Show a marker using the projector, capture a set of 2D
             images to find the marker coordinates (2D and 3D).
-          - [reproject\_points](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/reproject_points.py) - Illuminate checkerboard (Zivid Calibration Board) corners
-            by getting checkerboard pose
+          - [reproject\_points](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/reproject_points.py) - Illuminate checkerboard (Zivid Calibration Board) centers
+            by getting the checkerboard feature points
           - [roi\_box\_via\_aruco\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_aruco_marker.py) - Filter the point cloud based on a ROI box given relative
             to the ArUco marker on a Zivid Calibration Board.
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
@@ -145,6 +148,19 @@ from the camera can be used.
               - **robodk\_hand\_eye\_calibration**
                   - [robodk\_verify\_hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/robodk_hand_eye_calibration/robodk_verify_hand_eye_calibration.py) - Perform a touch test with a robot to verify
                     Hand-Eye Calibration using the RoboDK interface.
+          - **multi\_camera**
+              - [multi\_camera\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/multi_camera/multi_camera_calibration.py) - Use captures of a calibration object to generate
+                transformation matrices to a single coordinate frame,
+                from connected cameras.
+              - [multi\_camera\_calibration\_from\_zdf](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/multi_camera/multi_camera_calibration_from_zdf.py) - Use captures of a calibration object to generate
+                transformation matrices to a single coordinate frame,
+                from ZDF files.
+              - [stitch\_by\_transformation](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/multi_camera/stitch_by_transformation.py) - Use transformation matrices from Multi-Camera
+                calibration to transform point clouds into a single
+                coordinate frame, from connected cameras.
+              - [stitch\_by\_transformation\_from\_zdf](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/multi_camera/stitch_by_transformation_from_zdf.py) - Use transformation matrices from Multi-Camera
+                calibration to transform point clouds into single
+                coordinate frame, from a ZDF files.
           - **robot\_guidance**
               - [robodk\_robot\_guidance](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/robot_guidance/robodk_robot_guidance.py) - Guide the robot to follow a path on the Zivid
                 Calibration Board.

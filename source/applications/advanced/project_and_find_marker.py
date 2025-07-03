@@ -163,13 +163,56 @@ def _get_color_settings_for_camera(camera: zivid.Camera) -> zivid.Settings2D.Sam
         Sampling color to use for camera
 
     """
-    if camera.info.model in [
-        zivid.CameraInfo.Model.zivid2PlusMR130,
-        zivid.CameraInfo.Model.zivid2PlusLR110,
-        zivid.CameraInfo.Model.zivid2PlusMR60,
-    ]:
+    if camera_supports_projection_brightness_boost(camera):
         return zivid.Settings2D.Sampling.Color.grayscale
     return zivid.Settings2D.Sampling.Color.rgb
+
+
+def camera_supports_projection_brightness_boost(camera: zivid.Camera) -> bool:
+    """Check if the given camera model supports the projection brightness boost feature.
+
+    Args:
+        camera (zivid.Camera): The Zivid camera instance to check
+
+    Returns:
+        bool: True if the camera supports brightness boost, False otherwise
+    """
+    model = camera.info.model
+
+    return model in {
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    }
+
+
+def find_max_projector_brightness(camera: zivid.Camera) -> float:
+    """Return the maximum supported projector brightness for the given camera model.
+
+    Ensures the configured brightness does not exceed what the camera model allows.
+    Values are based on hardware model specifications.
+
+    Args:
+        camera (zivid.Camera): The Zivid camera instance to query
+
+    Returns:
+        float: The maximum brightness level supported by the projector
+    """
+    if camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    ):
+        return 2.5
+    if camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ):
+        return 2.2
+    if camera.info.model in (zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100):
+        return 1.8
+    return 1.0
 
 
 def _find_marker(
@@ -186,7 +229,7 @@ def _find_marker(
         illuminated_scene_frame_2d: 2D frame of scene illuminated by projector
         non_illuminated_scene_frame_2d: 2D frame of scene not illuminated by projector
         marker_resolution: (H,W) of marker image
-        camera_info: Information about camera model, serial number etc.
+        camera_info: Information about camera model, serial number etc
 
     Returns:
         Marker coordinates (x,y) in image
@@ -293,12 +336,15 @@ def _main() -> None:
         cv2.imwrite(projector_image_file, projector_image)
 
         print("Displaying the projector image")
+        projected_image = zivid.projection.show_image_bgra(camera, projector_image)
+
         input("Press enter to continue ...")
 
         # Fine tune 2D settings until the "ProjectedMarker.png" image is well exposed if the projected marker well is not detected in ImageWithMarker.png.
         exposure_time = timedelta(microseconds=20000)
         aperture = 2.38
         gain = 1.0
+
         settings_2d_zero_brightness = zivid.Settings2D(
             acquisitions=[
                 zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=exposure_time, aperture=aperture, gain=gain)
@@ -308,21 +354,40 @@ def _main() -> None:
 
         settings_2d_max_brightness = zivid.Settings2D(
             acquisitions=[
-                zivid.Settings2D.Acquisition(brightness=1.8, exposure_time=exposure_time, aperture=aperture, gain=gain)
+                zivid.Settings2D.Acquisition(
+                    brightness=find_max_projector_brightness(camera),
+                    exposure_time=exposure_time,
+                    aperture=aperture,
+                    gain=gain,
+                )
             ],
             sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
         )
 
-        print("Capture a 2D frame with the marker")
+        settings_2d_projection = zivid.Settings2D(
+            acquisitions=[
+                zivid.Settings2D.Acquisition(
+                    brightness=find_max_projector_brightness(camera),
+                    exposure_time=exposure_time,
+                    aperture=aperture,
+                    gain=gain,
+                )
+            ],
+            sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
+        )
 
-        projected_image = zivid.projection.show_image_bgra(camera, projector_image)
-        projected_marker_frame_2d = projected_image.capture_2d(settings_2d_zero_brightness)
+        print("Capturing a 2D frame with the marker")
+        projected_marker_frame_2d = projected_image.capture_2d(
+            settings_2d_zero_brightness
+            if not camera_supports_projection_brightness_boost(camera)
+            else settings_2d_projection
+        )
         projected_marker_frame_2d.image_rgba().save("ProjectedMarker.png")
 
-        print("Capture a 2D frame of the scene illuminated with the projector")
+        print("Capturing a 2D frame of the scene illuminated with the projector")
         illuminated_scene_frame_2d = camera.capture_2d(settings_2d_max_brightness)
 
-        print("Capture a 2D frame of the scene without projector illumination")
+        print("Capturing a 2D frame of the scene without projector illumination")
         non_illuminated_scene_frame_2d = camera.capture_2d(settings_2d_zero_brightness)
 
         print("Locating marker in the 2D image:")

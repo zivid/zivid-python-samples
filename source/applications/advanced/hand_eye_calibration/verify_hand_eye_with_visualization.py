@@ -47,27 +47,66 @@ def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace)
     xyz = frame.point_cloud().copy_data("xyz")
 
     if args.calibration_object == "checkerboard":
-        # Finding Cartesian coordinates of the checkerboard center point
+
         detection_result = zivid.calibration.detect_calibration_board(frame)
+        camera_to_checkerboard_transform = detection_result.pose().to_matrix()
+        checkerboard_to_camera_transform = np.linalg.inv(camera_to_checkerboard_transform)
 
-        if not detection_result.valid():
-            raise RuntimeError(f"Calibration board not detected! {detection_result.status_description()}")
+        camera_to_target_transform = camera_to_checkerboard_transform
 
-        centroid = detection_result.centroid()
-        # the longest distance from the checkerboard centroid to the calibration board corner is < 245 mm
-        radius_threshold = 245
+        xyz_in_target_frame = transform_xyz(xyz, checkerboard_to_camera_transform)
+
+        number_of_feature_points = len(detection_result.feature_points())
+        if number_of_feature_points == 12:
+            checker_size = 20
+            boarder_size_x = 2.5
+            boarder_size_y = 2.5
+            board_width = 125
+            board_height = 150
+        elif number_of_feature_points == 30:
+            checker_size = 30
+            boarder_size_x = 30
+            boarder_size_y = 10
+            board_width = 300
+            board_height = 300
+        else:
+            raise RuntimeError(
+                "Unknown number of feature points detected. Expected 12 for ZVDA-CB02 or 30 for ZVDA-CB01."
+            )
+
+        left_boarder = checker_size + boarder_size_x
+        right_boarder = board_width - boarder_size_x - checker_size
+        top_boarder = checker_size + boarder_size_y
+        bottom_boarder = board_height - boarder_size_y - checker_size
+
     else:
-        # Finding Cartesian coordinates of the ArUco marker center point
-        detection_result = zivid.calibration.detect_markers(frame, args.id, args.dictionary)
-        pose = detection_result.detected_markers()[0].pose.to_matrix()
-        translation = pose[:3, 3]
-        centroid = translation.flatten()
-        radius_threshold = args.size * np.sqrt(2) / 2
 
-    radius = np.linalg.norm(centroid - xyz, axis=2)
-    xyz[radius > radius_threshold] = np.nan
+        detection_result = zivid.calibration.detect_markers(
+            frame, args.id, zivid.calibration.MarkerDictionary.aruco4x4_50
+        )
+        camera_to_marker_transform = detection_result.detected_markers()[0].pose.to_matrix()
+        marker_to_camera_transform = np.linalg.inv(camera_to_marker_transform)
 
-    return xyz
+        camera_to_target_transform = camera_to_marker_transform
+
+        xyz_in_target_frame = transform_xyz(xyz, marker_to_camera_transform)
+
+        marker_size = args.size
+        boarder_size = 5
+
+        left_boarder = marker_size / 2 + boarder_size
+        right_boarder = marker_size / 2 + boarder_size
+        top_boarder = marker_size / 2 + boarder_size
+        bottom_boarder = marker_size / 2 + boarder_size
+
+    bounds = np.array([[-left_boarder, right_boarder], [-top_boarder, bottom_boarder], [-10, 10]])
+
+    mask = np.all((xyz_in_target_frame >= bounds[:, 0]) & (xyz_in_target_frame <= bounds[:, 1]), axis=2)
+    xyz_in_target_frame[~mask] = np.nan
+
+    xyz_masked_in_camera_frame = transform_xyz(xyz_in_target_frame, camera_to_target_transform)
+
+    return xyz_masked_in_camera_frame
 
 
 def _options() -> argparse.Namespace:
@@ -100,6 +139,27 @@ def _options() -> argparse.Namespace:
     marker_parser.add_argument("--size", required=True, type=float, help="ArUco marker size in mm")
 
     return parser.parse_args()
+
+
+def transform_xyz(xyz: np.ndarray, transform: np.ndarray) -> np.ndarray:
+    """
+    Applies a homogeneous transformation to the point cloud.
+
+    Args:
+        xyz: A numpy array of X, Y and Z point cloud coordinates
+        transform: homogenous transformation matrix (4x4)
+
+    Returns:
+        xyz: A numpy array of X, Y and Z transformed point cloud coordinates
+    """
+    xyz_flat = xyz.reshape(-1, 3)
+    ones = np.ones((xyz_flat.shape[0], 1))
+    xyz_hom = np.hstack([xyz_flat, ones])  # (N, 4)
+
+    xyz_transformed_hom = (transform @ xyz_hom.T).T  # (N, 4)
+    xyz_transformed = xyz_transformed_hom[:, :3].reshape(xyz.shape)
+
+    return xyz_transformed
 
 
 def _create_open3d_point_cloud(rgba: np.ndarray, xyz: np.ndarray) -> o3d.geometry.PointCloud:
