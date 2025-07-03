@@ -28,8 +28,8 @@ function install_www_deb {
     rm -r $TMP_DIR || exit
 }
 
-install_www_deb "https://downloads.zivid.com/sdk/releases/2.15.0+5fcc365b-1/u${VERSION_ID:0:2}/zivid_2.15.0+5fcc365b-1_amd64.deb" || exit
-install_www_deb "https://downloads.zivid.com/sdk/releases/2.15.0+5fcc365b-1/u${VERSION_ID:0:2}/zivid-genicam_2.15.0+5fcc365b-1_amd64.deb" || exit
+install_www_deb "https://downloads.zivid.com/sdk/releases/2.16.0+46cdaba6-1/u${VERSION_ID:0:2}/zivid_2.16.0+46cdaba6-1_amd64.deb" || exit
+install_www_deb "https://downloads.zivid.com/sdk/releases/2.16.0+46cdaba6-1/u${VERSION_ID:0:2}/zivid-genicam_2.16.0+46cdaba6-1_amd64.deb" || exit
 
 python3 -m pip install --upgrade pip || exit
 pushd "$ROOT_DIR" || exit

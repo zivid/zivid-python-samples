@@ -62,35 +62,42 @@ def get_projector_image_file_for_camera(camera: zivid.Camera) -> Path:
     raise RuntimeError("Invalid camera model")
 
 
-def make_settings_2d(camera: zivid.Camera) -> zivid.Settings2D:
+def make_settings_2d() -> zivid.Settings2D:
     """Creates 2D settings for a given camera.
 
     Args:
-        camera: Zivid camera
 
     Returns:
         2D settings
-    """
-    model = camera.info.model
-    if model in [
-        zivid.CameraInfo.Model.zivid2PlusMR130,
-        zivid.CameraInfo.Model.zivid2PlusLR110,
-        zivid.CameraInfo.Model.zivid2PlusMR60,
-    ]:
-        color_mode = zivid.Settings2D.Sampling.Color.grayscale
-    else:
-        color_mode = zivid.Settings2D.Sampling.Color.rgb
 
+    """
     return zivid.Settings2D(
         acquisitions=[
             zivid.Settings2D.Acquisition(
-                brightness=0.0,
+                brightness=2.5,
                 exposure_time=timedelta(microseconds=20000),
                 aperture=2.83,
             )
         ],
-        sampling=zivid.Settings2D.Sampling(color=color_mode),
+        sampling=zivid.Settings2D.Sampling(color=zivid.Settings2D.Sampling.Color.grayscale),
     )
+
+
+def camera_supports_projection_brightness_boost(camera: zivid.Camera) -> bool:
+    """Checks if the provided model supports brightness boost.
+
+    Args:
+        camera: Zivid camera model
+
+    Returns:
+        True if it is a model that supports brightness boost, False otherwise
+
+    """
+    return camera.info.model in {
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+    }
 
 
 def _main() -> None:
@@ -120,17 +127,21 @@ def _main() -> None:
     cv2.imwrite(projector_image_file, projector_image)
 
     print("Displaying the projector image")
+    with zivid.projection.show_image_bgra(camera, projector_image) as projected_image_handle:
 
-    projected_image_handle = zivid.projection.show_image_bgra(camera, projector_image)
-    settings_2d = make_settings_2d(camera)
-    print("Capturing a 2D image with the projected image")
+        settings_2d = make_settings_2d()
+        if not camera_supports_projection_brightness_boost(camera):
+            settings_2d.acquisitions[0].brightness = 0.0
+            settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.rgb
 
-    frame_2d = projected_image_handle.capture_2d(settings_2d)
-    captured_image_file = "CapturedImage.png"
-    print(f"Saving the captured image: {captured_image_file}")
-    frame_2d.image_bgra().save(captured_image_file)
+        print("Capturing a 2D image with the projected image")
+        frame_2d = projected_image_handle.capture_2d(settings_2d)
 
-    input("Press enter to stop projecting ...")
+        captured_image_file = "CapturedImage.png"
+        print(f"Saving the captured image: {captured_image_file}")
+        frame_2d.image_bgra().save(captured_image_file)
+
+        input("Press enter to stop projecting ...")
 
     projector_image_file_for_given_camera = get_projector_image_file_for_camera(camera)
 
