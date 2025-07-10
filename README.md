@@ -123,6 +123,12 @@ from the camera can be used.
             to the ArUco marker on a Zivid Calibration Board.
           - [roi\_box\_via\_checkerboard](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_checkerboard.py) - Filter the point cloud based on a ROI box given relative
             to the Zivid Calibration Board.
+          - [stitch\_continuously\_rotating\_object](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitch_continuously_rotating_object.py) - Stitch point clouds from a continuously rotating object
+            without pre-alignment using Local Point Cloud Registration
+            and apply Voxel Downsample.
+          - [stitch\_via\_local\_point\_cloud\_registration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitch_via_local_point_cloud_registration.py) - Stitch two point clouds using a transformation estimated
+            by Local Point Cloud Registration and apply Voxel
+            Downsample.
           - [transform\_point\_cloud\_from\_millimeters\_to\_meters](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform_point_cloud_from_millimeters_to_meters.py) - Transform point cloud data from millimeters to meters.
           - [transform\_point\_cloud\_via\_aruco\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform_point_cloud_via_aruco_marker.py) - Transform a point cloud from camera to ArUco marker
             coordinate frame by estimating the marker's pose from the

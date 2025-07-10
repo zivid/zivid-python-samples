@@ -90,10 +90,12 @@ def copy_to_open3d_point_cloud(
     Returns:
         An Open3D PointCloud
     """
-    xyz = np.nan_to_num(xyz).reshape(-1, 3)
+    if len(np.shape(xyz)) == 3:
+        xyz = np.nan_to_num(xyz).reshape(-1, 3)
     if normals is not None:
         normals = np.nan_to_num(normals).reshape(-1, 3)
-    rgb = rgb.reshape(-1, rgb.shape[-1])[:, :3]
+    if len(np.shape(rgb)) == 3:
+        rgb = rgb.reshape(-1, rgb.shape[-1])[:, :3]
 
     open3d_point_cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
     open3d_point_cloud.colors = o3d.utility.Vector3dVector(rgb / 255)
@@ -119,7 +121,7 @@ def display_open3d_point_cloud(open3d_point_cloud: o3d.geometry.PointCloud) -> N
         print("  9: for point cloud colored by normals")
         print("  h: for all controls")
     visualizer.get_render_option().background_color = (0, 0, 0)
-    visualizer.get_render_option().point_size = 1
+    visualizer.get_render_option().point_size = 2
     visualizer.get_render_option().show_coordinate_frame = True
     visualizer.get_view_control().set_front([0, 0, -1])
     visualizer.get_view_control().set_up([0, -1, 0])
