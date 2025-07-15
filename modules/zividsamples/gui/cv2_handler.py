@@ -219,13 +219,14 @@ class CV2Handler:
     def draw_polygons(
         self,
         image: NDArray[Shape["N, M, 3"], UInt8],  # type: ignore
-        points: NDArray[Shape["N, 2"], np.int32],  # type: ignore
+        points: NDArray[Shape["N, M, 2"], np.int32],  # type: ignore
         *,
         color: Tuple[int, int, int, int] = (0, 255, 0, 255),
         isClosed: bool = True,
         thickness: int = 1,
     ) -> None:
-        polygons = points.reshape((1, -1, 1, 2))
+        number_of_polygons = points.shape[0] if len(points.shape) > 2 else 1
+        polygons = points.reshape((number_of_polygons, -1, 1, 2))
         for polygon in polygons:
             self.cv2.polylines(
                 image,
@@ -242,14 +243,13 @@ class CV2Handler:
     def draw_fov_division(self, rgb: NDArray[Shape["N, M, 3"], UInt8], points_of_interest_2d: PointsOfInterest2D, use_bgr: bool = False):  # type: ignore
         thickness = 8
         lines_2d = points_of_interest_2d.lines_2d()
-        for line_2d in lines_2d[-4:]:
-            self.draw_polygons(
-                rgb,
-                points=line_2d,
-                color=(0, 150, 0, 255),
-                isClosed=False,
-                thickness=thickness // 2,
-            )
+        self.draw_polygons(
+            rgb,
+            points=lines_2d[-4:],
+            color=(0, 150, 0, 255),
+            isClosed=False,
+            thickness=thickness // 2,
+        )
         self.draw_polygons(
             rgb,
             points=points_of_interest_2d.full_fov_corners_with_margin,

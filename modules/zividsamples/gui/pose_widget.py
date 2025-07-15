@@ -43,11 +43,7 @@ class PoseWidgetDisplayMode(Enum):
 
 
 class BasePoseWidget(QWidget):
-    transformation_matrix: TransformationMatrix = TransformationMatrix()
-    descriptive_image_eye_in_hand: Optional[QPixmap] = None
-    descriptive_image_eye_to_hand: Optional[QPixmap] = None
     pose_updated = pyqtSignal()
-    rotation_information: RotationInformation
 
     # pylint: disable=too-many-positional-arguments
     def __init__(
@@ -63,10 +59,13 @@ class BasePoseWidget(QWidget):
         super().__init__(parent)
         self.title = title
         self.eye_in_hand = eye_in_hand
-        self.rotation_information = initial_rotation_information
+        self.rotation_information: RotationInformation = initial_rotation_information
+        self.transformation_matrix: TransformationMatrix = TransformationMatrix()
         self.display_mode = display_mode
         self.read_only = read_only
 
+        self.descriptive_image_eye_in_hand: Optional[QPixmap] = None
+        self.descriptive_image_eye_to_hand: Optional[QPixmap] = None
         if descriptive_image_paths is not None:
             self.descriptive_image_eye_in_hand = QPixmap(descriptive_image_paths[0].as_posix())
             self.descriptive_image_eye_to_hand = QPixmap(descriptive_image_paths[1].as_posix())
@@ -209,12 +208,6 @@ def parameter_text_to_float(text: str) -> float:
 
 
 class PoseWidget(BasePoseWidget):
-    yaml_pose_path: Path
-    rotation_parameters: List[float]
-    rotation_parameter_editors: List[QLineEdit]
-    translation_parameter_editors: List[QLineEdit]
-    pose_updated = pyqtSignal()
-    rotation_vector_user_parameters: List[float] = [0.0, 0.0, 0.0]
 
     # pylint: disable=too-many-positional-arguments
     def __init__(
@@ -234,6 +227,8 @@ class PoseWidget(BasePoseWidget):
 
         self.yaml_pose_path = yaml_pose_path
 
+        self.rotation_vector_user_parameters: List[float] = [0.0, 0.0, 0.0]
+        self.rotation_parameters: List[float] = []
         self.setup_widgets()
         self.setup_layout()
         self.setup_connections()
@@ -248,7 +243,7 @@ class PoseWidget(BasePoseWidget):
     def setup_widgets(self):
         self.translation_parameters_label = QLabel()
         self.translation_parameters_label.setText("Translation")
-        self.translation_parameter_editors = [QLineEdit() for _ in range(3)]
+        self.translation_parameter_editors: List[QLineEdit] = [QLineEdit() for _ in range(3)]
         for index, parameter_editor in enumerate(self.translation_parameter_editors):
             parameter_editor.setObjectName(f"translation_parameter_{index}")
             parameter_editor.setReadOnly(self.read_only)
@@ -256,7 +251,7 @@ class PoseWidget(BasePoseWidget):
         self.rotation_parameters_layout = QGridLayout()
         self.rotation_parameters_label = QLabel()
         self.rotation_parameters_label.setText(self._rotation_label_text())
-        self.rotation_parameter_editors = [QLineEdit() for _ in range(9)]
+        self.rotation_parameter_editors: List[QLineEdit] = [QLineEdit() for _ in range(9)]
         for index, parameter_editor in enumerate(self.rotation_parameter_editors):
             parameter_editor.setObjectName(f"rotation_parameter_{index}")
             parameter_editor.setReadOnly(self.read_only)

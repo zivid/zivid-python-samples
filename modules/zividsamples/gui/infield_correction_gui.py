@@ -237,6 +237,11 @@ class InfieldCorrectionGUI(QWidget):
         else:
             self.infield_correction_result_widget.set_current_correction()
 
+    def has_features_to_project(self) -> bool:
+        if self.infield_correction_input_data is None:
+            return False
+        return self.infield_correction_input_data.projector_image is not None
+
     def generate_projector_image(self, _: zivid.Camera):
         if self.infield_correction_input_data is None:
             raise RuntimeError("No infield correction input data available.")

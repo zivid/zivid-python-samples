@@ -94,7 +94,7 @@ class CalibrationObjectWidget(QWidget):
         error_pixmap.fill(Qt.gray)  # Set background color
         painter = QPainter(error_pixmap)
         painter.setPen(QColor(Qt.red))
-        painter.drawText(error_pixmap.rect(), Qt.AlignCenter, error_message)
+        painter.drawText(error_pixmap.rect(), Qt.AlignCenter | Qt.TextWordWrap, error_message)
         painter.end()
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
             self.calibration_object_image.set_pixmap(error_pixmap, reset_zoom=True)
