@@ -46,6 +46,7 @@ class CameraSelectionDialog(QDialog):
         self.zivid_app = zivid_app
         self.connect = connect
         self.init_ui()
+        self.last_description = ""
 
         QTimer.singleShot(0, self.find_cameras)
 
@@ -102,7 +103,12 @@ class CameraSelectionDialog(QDialog):
         self.resize(dialog_size.expandedTo(QSize(300, 200)))
 
     def on_firmware_update_progress(self, progress: float, description: str):
-        self.camera_list_widget.addItem(f"Firmware update progress: {progress}% ({description})")
+        last_item = self.camera_list_widget.item(self.camera_list_widget.count() - 1)
+        if self.last_description != "" and last_item.text().endswith(f"({description})"):
+            last_item.setText(f"{progress:6.2f}% ({description})")
+        else:
+            self.camera_list_widget.addItem(f"{progress:6.2f}% ({description})")
+        self.last_description = description
         self.camera_list_widget.scrollToBottom()
 
     def on_firmware_update_finished(self):
@@ -115,8 +121,12 @@ class CameraSelectionDialog(QDialog):
         QTimer.singleShot(100, self.find_cameras)
 
     def setup_firmware_update_thread(self, camera: zivid.Camera):
+        if self.firmware_updater_thread and not self.firmware_updater_thread.isRunning():
+            self.firmware_updater_thread = None
+
         if not self.firmware_updater_thread:
             self.firmware_updater_thread = QThread()
+
         self.firmware_updater_worker = FirmwareUpdateWorker(camera)
         self.firmware_updater_worker.moveToThread(self.firmware_updater_thread)
         self.firmware_updater_thread.started.connect(self.firmware_updater_worker.run)
@@ -133,6 +143,7 @@ class CameraSelectionDialog(QDialog):
     def update_firmware(self, camera: zivid.Camera):
         if camera is not None:
             try:
+                self.select_button.setEnabled(False)
                 self.camera_list_widget.clear()
                 self.camera_list_widget.addItem("Updating firmware... Please wait.")
                 self.setup_firmware_update_thread(camera)
@@ -178,7 +189,7 @@ class CameraSelectionDialog(QDialog):
                         self.selected_camera = None
                     self.accept()
             elif self.selected_camera.state.status != zivid.CameraState.Status.available:
-                QMessageBox.info(
+                QMessageBox.information(
                     self,
                     "Camera Not Available",
                     f"Camera {self.selected_camera.info.serial_number} is still not available. Will not connect.",

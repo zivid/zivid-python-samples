@@ -141,7 +141,7 @@ class Live2DWidget(QWidget):
         error_pixmap.fill(Qt.gray)  # Set background color
         painter = QPainter(error_pixmap)
         painter.setPen(QColor(Qt.red))
-        painter.drawText(error_pixmap.rect(), Qt.AlignCenter, error_message)
+        painter.drawText(error_pixmap.rect(), Qt.AlignCenter | Qt.TextWordWrap, error_message)
         painter.end()
         QMetaObject.invokeMethod(
             self.live_2d_image, "set_pixmap", Qt.QueuedConnection, Q_ARG(QPixmap, error_pixmap), Q_ARG(bool, True)

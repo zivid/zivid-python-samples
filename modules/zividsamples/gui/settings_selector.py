@@ -359,16 +359,25 @@ def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
         production=SettingsPixelMappingIntrinsics(
             settings_2d3d=settings_2d3d,
             pixel_mapping=calibration.pixel_mapping(camera, settings_2d3d),
-            intrinsics=calibration.intrinsics(camera, settings_2d3d),
+            intrinsics=calibration.intrinsics(camera, settings_2d3d.color if settings_2d3d.color else settings_2d3d),
         ),
         hand_eye=SettingsPixelMappingIntrinsics(
             settings_2d3d=hand_eye_settings,
             pixel_mapping=calibration.pixel_mapping(camera, hand_eye_settings),
-            intrinsics=calibration.intrinsics(camera, hand_eye_settings),
+            intrinsics=calibration.intrinsics(
+                camera, hand_eye_settings.color if hand_eye_settings.color else hand_eye_settings
+            ),
         ),
         infield_correction=SettingsPixelMappingIntrinsics(
             settings_2d3d=infield_correction_settings,
             pixel_mapping=calibration.pixel_mapping(camera, infield_correction_settings),
-            intrinsics=calibration.intrinsics(camera, infield_correction_settings),
+            intrinsics=calibration.intrinsics(
+                camera,
+                (
+                    infield_correction_settings.color
+                    if infield_correction_settings.color
+                    else infield_correction_settings
+                ),
+            ),
         ),
     )

@@ -9,7 +9,7 @@ def error_message_pixmap(error_message: str, size: QSize) -> QPixmap:
     error_pixmap.fill(color_as_qcolor(ZividColors.ITEM_BACKGROUND, 0.5))
     painter = QPainter(error_pixmap)
     painter.setPen(color_as_qcolor(ZividColors.PINK, 1))
-    painter.drawText(error_pixmap.rect(), Qt.AlignCenter, error_message)
+    painter.drawText(error_pixmap.rect(), Qt.AlignCenter | Qt.TextWordWrap, error_message)
     painter.end()
     return error_pixmap
 

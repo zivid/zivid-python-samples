@@ -560,18 +560,14 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             and self.camera.state.connected
         ):
             self.live2d_widget.stop_live_2d()
-            if project:
+            if project and self.current_tab_widget.has_features_to_project():
                 self.robot_control_widget.enable_disable_buttons(auto_run=True, touch=False)
                 error_msg = None
                 try:
                     if self.camera is None:
                         raise RuntimeError("No camera connected.")
                     try:
-                        projector_image = (
-                            self.hand_eye_verification_gui.generate_projector_image(self.camera)
-                            if self.current_tab_widget == self.hand_eye_verification_gui
-                            else self.infield_correction_gui.generate_projector_image(self.camera)
-                        )
+                        projector_image = self.current_tab_widget.generate_projector_image(self.camera)
                     except ValueError as ex:
                         error_msg = f"Failed to generate projector image: {ex}. Most likely the estimated position of the calibration object is out of view."
                         raise ValueError(ex) from ex
