@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QAction, QHBoxLayout, QMainWindow, QVBoxLayout, QWid
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.qt_application import ZividQtApplication
 from zividsamples.gui.rotation_format_configuration import RotationInformation
-from zividsamples.paths import get_file_path
+from zividsamples.paths import get_data_file_path
 
 
 class PoseConverter(QMainWindow):
@@ -38,10 +38,10 @@ class PoseConverter(QMainWindow):
 
         self.create_toolbar()
 
-        robot_ee_pose_img_path = get_file_path(
+        robot_ee_pose_img_path = get_data_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-ee-pose-low-res.png"
         )
-        rob_ee_pose_img_path = get_file_path("hand-eye-robot-and-calibration-board-rob-ee-pose-low-res.png")
+        rob_ee_pose_img_path = get_data_file_path("hand-eye-robot-and-calibration-board-rob-ee-pose-low-res.png")
         self.input_pose_widget = PoseWidget(
             title="Input Pose",
             initial_rotation_information=input_format,
