@@ -775,7 +775,7 @@ class MarkerPosesWidget(BasePoseWidget):
             "hand-eye-robot-and-calibration-board-ee-object-pose-low-res.png"
         )
         return cls(
-            title=f"Marker Poses In Robot {('Base' if eye_in_hand else 'Tool')} Frame",
+            title="Marker Poses In Robot Base Frame",
             initial_rotation_information=initial_rotation_information,
             eye_in_hand=eye_in_hand,
             display_mode=display_mode,

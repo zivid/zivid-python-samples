@@ -172,9 +172,7 @@ class TouchGUI(QWidget):
         hand_eye_transform = self.hand_eye_pose_widget.transformation_matrix
         robot_transform = self.robot_pose_widget.transformation_matrix
         robot_frame_transform = (
-            robot_transform * hand_eye_transform
-            if self.hand_eye_configuration.eye_in_hand
-            else robot_transform.inv() * hand_eye_transform
+            robot_transform * hand_eye_transform if self.hand_eye_configuration.eye_in_hand else hand_eye_transform
         )
         detected_marker_poses_in_robot_frame = {
             key: robot_frame_transform * value for key, value in detected_marker_poses_in_camera_frame.items()
