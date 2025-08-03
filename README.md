@@ -55,6 +55,8 @@ from the camera can be used.
           - [capture\_hdr\_print\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_print_normals.py) - Capture Zivid point clouds, compute normals and print a
             subset.
       - **info\_util\_other**
+          - [adapt\_settings\_for\_flickering\_ambient\_light](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/adapt_settings_for_flickering_ambient_light.py) - Adapt camera acquisition settings based on known ambient
+            light conditions.
           - [automatic\_network\_configuration\_for\_cameras](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/automatic_network_configuration_for_cameras.py) - Automatically configure the IP addresses of connected
             cameras to match the network of the user's PC.
           - [camera\_info](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_info.py) - Print version information for Python, zivid-python and
@@ -126,6 +128,8 @@ from the camera can be used.
           - [stitch\_continuously\_rotating\_object](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitch_continuously_rotating_object.py) - Stitch point clouds from a continuously rotating object
             without pre-alignment using Local Point Cloud Registration
             and apply Voxel Downsample.
+          - [stitch\_using\_robot\_mounted\_camera](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitch_using_robot_mounted_camera.py) - Stitch multiple point clouds captured with a robot mounted
+            camera.
           - [stitch\_via\_local\_point\_cloud\_registration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitch_via_local_point_cloud_registration.py) - Stitch two point clouds using a transformation estimated
             by Local Point Cloud Registration and apply Voxel
             Downsample.

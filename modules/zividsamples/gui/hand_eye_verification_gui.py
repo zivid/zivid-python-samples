@@ -162,7 +162,9 @@ class HandEyeVerificationGUI(QWidget):
 
     def update_instructions(self, has_set_object_poses_in_robot_frame: bool, robot_pose_confirmed: bool):
         self.has_confirmed_robot_pose = robot_pose_confirmed
-        self.has_set_object_poses_in_robot_frame = has_set_object_poses_in_robot_frame and self.has_confirmed_robot_pose
+        self.has_set_object_poses_in_robot_frame = has_set_object_poses_in_robot_frame and (
+            self.has_confirmed_robot_pose or self.use_robot
+        )
         self.instruction_steps = {}
         if self.use_robot:
             self.instruction_steps[
@@ -305,7 +307,7 @@ class HandEyeVerificationGUI(QWidget):
         self.update_projection.emit(True)
 
     def has_features_to_project(self) -> bool:
-        return self.has_confirmed_robot_pose and self.has_set_object_poses_in_robot_frame
+        return (self.has_confirmed_robot_pose or self.use_robot) and self.has_set_object_poses_in_robot_frame
 
     def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
         self.detected_markers = {}
@@ -367,11 +369,20 @@ class HandEyeVerificationGUI(QWidget):
         color = (0, 255, 0, 255) if self.has_confirmed_robot_pose else (0, 255, 255, 255)
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
             self.cv2_handler.draw_circles(projector_image, non_nan_projector_image_indices, color)
+            # Add diagonal lines across white checkers
+            rows, cols = (5, 6) if projector_pixels.shape[0] == 30 else (3, 4)
+            organized_projector_pixel_indices = non_nan_projector_image_indices.reshape(rows, cols, -1)
+            diagonal_lines = np.array(
+                [
+                    [organized_projector_pixel_indices[0, 1], organized_projector_pixel_indices[-1, -1]],
+                    [organized_projector_pixel_indices[-1, 1], organized_projector_pixel_indices[0, -1]],
+                ]
+            )
+            self.cv2_handler.draw_polygons(projector_image, diagonal_lines, color=color)
         else:
             self.cv2_handler.draw_polygons(
                 projector_image, non_nan_projector_image_indices.reshape((-1, 4, 2)), color=color
             )
-        # projector_image[0, 0] = [1, 1, 1, 255]  # TODO(ZIVID-8760): Remove workaround
         return projector_image
 
     def calculate_calibration_object_in_camera_frame_pose(self):
