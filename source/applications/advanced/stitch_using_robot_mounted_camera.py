@@ -1,33 +1,32 @@
 """
 Stitch multiple point clouds captured with a robot mounted camera.
 
-The sample simulates a camera capturing point clouds at different robot poses.
-The point clouds are pre-aligned, i.e., transformed into the robot base frame using the robot's pose and the hand-eye
-calibration transform. The resulting stitched point cloud is displayed and saved to a PLY file.
+The sample simulates a camera capturing the point clouds at different robot poses.
+The point clouds are pre-aligned using the robot's pose and a hand-eye calibration transform.
+The resulting stitched point cloud is displayed and saved to a PLY file.
 
 The sample demonstrates stitching of a small and a big object.
-
-For the small object that fully fits within the camera's field of view in every capture, the result of stitching multiple
-captures is a complete and detailed point cloud of the object. Since the object remains fully visible in each frame from
-different perspectives (front, back, left, and right), the stitching produces data for all sides of the object.
-
-For the large object that does not fit within the camera's field of view, stitching is used to expand the effective
-field of view. By capturing different sections of the object and combining them, the result is a complete view of the
-object, but from a more limited number of perspectives (e.g., mostly front-facing), depending on the capture setup.
+The small object fits within the camera's field of view and the result of stitching is a full
+point cloud of the object, seen from different angles, i.e, from the front, back, left, and right sides.
+The big object does not fit within the camera's field of view, so the stitching is done to extend the
+field of view of the camera, and see the object in full.
 
 The resulting stitched point cloud is voxel downsampled if the `--full-resolution` flag is not set.
 
-The dataset with ZDF and YML files (StitchingPointClouds.zip) for this sample can be found at
-https://support.zivid.com/en/latest/academy/applications/stitching.html.
+Dataset: https://support.zivid.com/en/latest/api-reference/samples/sample-data.html
 
-Extract the content into %ProgramData%/Zivid:
+Extract the content into :
+    • Windows:   %ProgramData%\\Zivid\\StitchingPointClouds\\
+    • Linux:     /usr/share/Zivid/data/StitchingPointClouds/
+
     StitchingPointClouds/
-        ├── SmallObject/
-        └── BigObject/
+    ├── SmallObject/
+    └── BigObject/
 
-Each of these folders must contain point cloud in ZDF and robot poses and a hand-eye transform in YML format.
+Each of these folders must contain ZDF captures, robot poses, and a hand-eye transform file.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
 """
 
 import argparse
@@ -160,8 +159,9 @@ def _main() -> None:
     args = _options()
     app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
 
-    # Ensure the dataset is extracted to %ProgramData%\Zivid:
-    # The folder must contain:
+    # Ensure the dataset is extracted to the correct location depending on the operating system:
+    #   • Windows:   %ProgramData%\\Zivid\\StitchingPointClouds\\
+    #   • Linux:     /usr/share/Zivid/data/StitchingPointClouds/
     #   StitchingPointClouds/
     #     ├── SmallObject/
     #     └── BigObject/
@@ -177,7 +177,7 @@ def _main() -> None:
             f"Missing dataset folders.\n"
             f"Make sure 'StitchingPointClouds/SmallObject' and 'StitchingPointClouds/BigObject' exist at {get_sample_data_path()}.\n\n"
             f"You can download the dataset (StitchingPointClouds.zip) from:\n"
-            f"https://support.zivid.com/en/latest/academy/applications/stitching.html"
+            f"https://support.zivid.com/en/latest/api-reference/samples/sample-data.html"
         )
 
     print("Stitching small object...")

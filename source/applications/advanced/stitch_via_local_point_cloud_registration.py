@@ -1,8 +1,16 @@
 """
 Stitch two point clouds using a transformation estimated by Local Point Cloud Registration and apply Voxel Downsample.
 
-The ZDF files for this sample can be found in Zivid's Sample Data, under the main instructions for Zivid samples.
-Zivid's Sample Data can be downloaded from  https://support.zivid.com/en/latest/api-reference/samples/sample-data.html.
+Dataset: https://support.zivid.com/en/latest/api-reference/samples/sample-data.html
+
+Extract the content into :
+    • Windows:   %ProgramData%\\Zivid\\StitchingPointClouds\\
+    • Linux:     /usr/share/Zivid/data/StitchingPointClouds/
+
+    StitchingPointClouds/
+        └── BlueObject/
+
+The folder must contain two ZDF files used for this sample.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
@@ -20,8 +28,23 @@ from zividsamples.paths import get_sample_data_path
 def _main() -> None:
     zivid.Application()
 
+    # Ensure the dataset is extracted to the correct location depending on the operating system:
+    #   • Windows:   %ProgramData%\\Zivid\\StitchingPointClouds\\
+    #   • Linux:     /usr/share/Zivid/data/StitchingPointClouds/
+    # The folder must contain:
+    #   StitchingPointClouds/
+    #     └── BlueObject/
     print("Reading point clouds from files")
     directory = get_sample_data_path() / "StitchingPointClouds" / "BlueObject"
+
+    if not directory.exists() or not directory.exists():
+        raise FileNotFoundError(
+            f"Missing dataset folders.\n"
+            f"Make sure 'StitchingPointClouds/BlueObject' exist at {get_sample_data_path()}.\n\n"
+            f"You can download the dataset (StitchingPointClouds.zip) from:\n"
+            f"https://support.zivid.com/en/latest/api-reference/samples/sample-data.html"
+        )
+
     frame_1 = zivid.Frame(directory / "BlueObject.zdf")
     frame_2 = zivid.Frame(directory / "BlueObjectSlightlyMoved.zdf")
 
