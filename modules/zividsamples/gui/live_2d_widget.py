@@ -76,7 +76,7 @@ class Live2DWidget(QWidget):
             )
             acquisition.exposure_time += exposure_increase
             remaining_relative_brightness = relative_brightness / (exposure_increase / current_exposure_time)
-            acquisition.gain *= remaining_relative_brightness
+            acquisition.gain *= max(1.0, min(16.0, remaining_relative_brightness))
             acquisition.brightness = 0.0
         return settings_2d
 
