@@ -41,7 +41,7 @@ def _main() -> None:
         settings_50_hz_path = (
             get_sample_data_path()
             / "Settings"
-            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace(' ', '_')}_ConsumerGoodsFast.yml"
+            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace(' ', '_')}_ConsumerGoodsFast_50Hz.yml"
         )
         print(settings_50_hz_path)
     elif flicker_classification == "grid60hz":
@@ -49,7 +49,7 @@ def _main() -> None:
         settings_60_hz_path = (
             get_sample_data_path()
             / "Settings"
-            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace(' ', '_')}_ConsumerGoodsFast.yml"
+            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace(' ', '_')}_ConsumerGoodsFast_60Hz.yml"
         )
         print(settings_60_hz_path)
 
