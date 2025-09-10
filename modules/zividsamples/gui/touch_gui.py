@@ -24,6 +24,7 @@ from zividsamples.gui.hand_eye_configuration import HandEyeConfiguration
 from zividsamples.gui.image_viewer import ImageViewer
 from zividsamples.gui.marker_widget import TouchMarkerWidget, generate_marker_dictionary
 from zividsamples.gui.pose_widget import MarkerPosesWidget, PoseWidget, PoseWidgetDisplayMode
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
@@ -142,7 +143,7 @@ class TouchGUI(QWidget):
         self.hand_eye_pose_widget.set_rotation_format(rotation_format)
         self.robot_pose_widget.set_rotation_format(rotation_format)
 
-    def toggle_use_robot(self, _: bool):
+    def robot_configuration_update(self, _: RobotConfiguration):
         pass
 
     def on_actual_pose_updated(self, robot_target: RobotTarget):

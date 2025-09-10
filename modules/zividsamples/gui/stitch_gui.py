@@ -20,6 +20,7 @@ from zividsamples.gui.capture_at_pose_selection_widget import CaptureAtPose, Cap
 from zividsamples.gui.hand_eye_configuration import HandEyeConfiguration
 from zividsamples.gui.pointcloud_visualizer import Open3DVisualizerWidget
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.transformation_matrix import TransformationMatrix
@@ -27,7 +28,7 @@ from zividsamples.transformation_matrix import TransformationMatrix
 
 class StitchGUI(QWidget):
     data_directory: Path
-    use_robot: bool
+    robot_configuration: RobotConfiguration
     qimage_rgba: Optional[QImage] = None
     hand_eye_configuration: HandEyeConfiguration
     point_cloud_widget: Optional[Open3DVisualizerWidget] = None
@@ -41,7 +42,7 @@ class StitchGUI(QWidget):
     def __init__(
         self,
         data_directory: Path,
-        use_robot: bool,
+        robot_configuration: RobotConfiguration,
         hand_eye_configuration: HandEyeConfiguration,
         initial_rotation_information: RotationInformation,
         parent=None,
@@ -58,7 +59,7 @@ class StitchGUI(QWidget):
         ]
 
         self.data_directory = data_directory
-        self.use_robot = use_robot
+        self.robot_configuration = robot_configuration
         self.hand_eye_configuration = hand_eye_configuration
 
         self.create_widgets(initial_rotation_information=initial_rotation_information)
@@ -74,7 +75,7 @@ class StitchGUI(QWidget):
             initial_rotation_information=initial_rotation_information,
         )
         self.confirm_robot_pose_button = QPushButton("Confirm Robot Pose")
-        self.confirm_robot_pose_button.setVisible(not self.use_robot)
+        self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.confirm_robot_pose_button.setCheckable(True)
         self.confirm_robot_pose_button.setObjectName("Stitch-confirm_robot_pose_button")
         self.hand_eye_pose_widget = PoseWidget.HandEye(
@@ -113,7 +114,7 @@ class StitchGUI(QWidget):
     def update_instructions(self, captured: bool, robot_pose_confirmed: bool):
         self.has_confirmed_robot_pose = robot_pose_confirmed
         self.instruction_steps = {}
-        if self.use_robot:
+        if self.robot_configuration.can_control():
             self.instruction_steps[
                 "Move Robot (click 'Move to next target', 'Home' or Disconnect→manually move robot→Connect)"
             ] = self.has_confirmed_robot_pose
@@ -145,9 +146,9 @@ class StitchGUI(QWidget):
         self.hand_eye_pose_widget.set_rotation_format(rotation_format)
         self.robot_pose_widget.set_rotation_format(rotation_format)
 
-    def toggle_use_robot(self, use_robot: bool):
-        self.use_robot = use_robot
-        self.confirm_robot_pose_button.setVisible(not self.use_robot)
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+        self.robot_configuration = robot_configuration
+        self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.update_instructions(captured=False, robot_pose_confirmed=self.has_confirmed_robot_pose)
 
     def on_confirm_robot_pose_button_clicked(self):

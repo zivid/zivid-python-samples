@@ -1,12 +1,21 @@
 import re
-from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 import numpy as np
 from nptyping import Float32, NDArray, Shape, UInt8
-from PyQt5.QtCore import QRegExp
+from PyQt5.QtCore import QRegExp, QSettings
 from PyQt5.QtGui import QImage, QPixmap, QValidator
-from PyQt5.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QFormLayout, QLineEdit, QSpinBox, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QLineEdit,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 from scipy.spatial.transform import Rotation
 from zivid.calibration import MarkerDictionary, MarkerShape
 from zivid.experimental import PixelMapping
@@ -127,10 +136,26 @@ class MarkerListValidator(QValidator):
         return fixed_input
 
 
-@dataclass
 class MarkerConfiguration:
-    id_list: List[int] = field(default_factory=lambda: [1, 2, 3, 4])
-    dictionary: str = MarkerDictionary.aruco4x4_50
+
+    def __init__(self, *, id_list: Optional[List[int]] = None, dictionary: Optional[str] = None):
+        settings = QSettings("Zivid", "HandEyeGUI")
+        if id_list is not None:
+            self.id_list = id_list
+        else:
+            id_list_str = settings.value("marker_configuration.id_list", "1, 2, 3, 4", type=str)
+            self.id_list = [int(x) for x in id_list_str.split(",")]
+        if dictionary is not None:
+            self.dictionary = dictionary
+        else:
+            self.dictionary = settings.value("marker_configuration.dictionary", MarkerDictionary.aruco4x4_50, type=str)
+        self.show_dialog = settings.value("marker_configuration.show_dialog", True, type=bool)
+
+    def save_choice(self):
+        settings = QSettings("Zivid", "HandEyeGUI")
+        settings.setValue("marker_configuration.id_list", ",".join(map(str, self.id_list)))
+        settings.setValue("marker_configuration.dictionary", self.dictionary)
+        settings.setValue("marker_configuration.show_dialog", self.show_dialog)
 
 
 class MarkersWidget(QWidget):
@@ -241,7 +266,7 @@ class MarkerConfigurationSelection(QDialog):
         parent=None,
     ):
         super().__init__(parent)
-        self.setWindowTitle("Select Hand-Eye Configuration")
+        self.setWindowTitle("Select Marker Configuration")
 
         self.marker_configuration = initial_marker_configuration
         self.marker_widget = MarkersWidget(
@@ -251,26 +276,34 @@ class MarkerConfigurationSelection(QDialog):
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         self.button_box.accepted.connect(self.accept)
 
+        self.remember_choice_checkbox = QCheckBox("Show this dialog")
+        self.remember_choice_checkbox.setChecked(self.marker_configuration.show_dialog)
+
         layout = QVBoxLayout()
         layout.addWidget(self.marker_widget)
         layout.addWidget(self.button_box)
+        layout.addWidget(self.remember_choice_checkbox)
         self.setLayout(layout)
 
     def accept(self):
         self.marker_configuration = self.marker_widget.marker_configuration
+        self.marker_configuration.show_dialog = self.remember_choice_checkbox.isChecked()
+        self.marker_configuration.save_choice()
         super().accept()
 
 
 def select_marker_configuration(
     initial_marker_configuration: MarkerConfiguration = MarkerConfiguration(),
+    show_anyway: bool = False,
 ) -> MarkerConfiguration:
+    if not show_anyway and not initial_marker_configuration.show_dialog:
+        return initial_marker_configuration
     dialog = MarkerConfigurationSelection(initial_marker_configuration)
     dialog.exec_()
     return dialog.marker_configuration
 
 
 if __name__ == "__main__":  # NOLINT
-    with ZividQtApplication(use_zivid_app=False) as qtApp:
-        widget = MarkersWidget()
-        widget.show()
-        qtApp.exec_()
+    with ZividQtApplication():
+        marker_configuration = select_marker_configuration()
+        print(f"Selected marker configuration: {marker_configuration}")

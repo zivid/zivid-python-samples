@@ -70,8 +70,8 @@ class BasePoseWidget(QWidget):
             self.descriptive_image_eye_in_hand = QPixmap(descriptive_image_paths[0].as_posix())
             self.descriptive_image_eye_to_hand = QPixmap(descriptive_image_paths[1].as_posix())
 
-        if initial_rotation_information.format not in RotationFormats.as_list():
-            raise ValueError(f"Invalid variant: {initial_rotation_information.format}")
+        if initial_rotation_information.rotation_format not in RotationFormats.as_list():
+            raise ValueError(f"Invalid variant: {initial_rotation_information.rotation_format}")
         # self.variant = initial_rotation_information.variant
         if self.rotation_information.euler_variant:
             # self.euler_variant = self.rotation_format.euler_variant
@@ -138,20 +138,20 @@ class BasePoseWidget(QWidget):
 
     def rotation_from_parameters(self, rotation_parameters) -> Rotation:
         rotation = None
-        if self.rotation_information.format.name == "Angle-Axis":
+        if self.rotation_information.rotation_format.name == "Angle-Axis":
             rotvec = np.asarray(rotation_parameters[1:]) * rotation_parameters[0]
             rotation = Rotation.from_rotvec(rotvec, degrees=self.rotation_information.use_degrees)
-        elif self.rotation_information.format == RotationFormats.euler:
+        elif self.rotation_information.rotation_format == RotationFormats.euler:
             rotation = Rotation.from_euler(
                 self.rotation_information.euler_variant,
                 rotation_parameters,
                 degrees=self.rotation_information.use_degrees,
             )
-        elif self.rotation_information.format.name == "Quaternion":
+        elif self.rotation_information.rotation_format.name == "Quaternion":
             rotation = Rotation.from_quat(rotation_parameters)
-        elif self.rotation_information.format.name == "Rotation Vector":
+        elif self.rotation_information.rotation_format.name == "Rotation Vector":
             rotation = Rotation.from_rotvec(rotation_parameters, degrees=self.rotation_information.use_degrees)
-        elif self.rotation_information.format.name == "Rotation Matrix":
+        elif self.rotation_information.rotation_format.name == "Rotation Matrix":
             rotation_matrix = np.asarray(rotation_parameters).reshape([3, 3])
             rotation = Rotation.from_matrix(rotation_matrix)
         else:
@@ -160,28 +160,28 @@ class BasePoseWidget(QWidget):
 
     def parameters_from_rotation(self, rotation: Rotation) -> List[float]:
         parameters = []
-        if self.rotation_information.format.name == "Angle-Axis":
+        if self.rotation_information.rotation_format.name == "Angle-Axis":
             rotvec = rotation.as_rotvec(degrees=self.rotation_information.use_degrees)
             angle = np.linalg.norm(rotvec)
             axis = rotvec / angle if angle else np.asarray([0, 0, 1])
             parameters = [angle, axis[0], axis[1], axis[2]]
-        elif self.rotation_information.format == RotationFormats.euler:
+        elif self.rotation_information.rotation_format == RotationFormats.euler:
             parameters = list(
                 rotation.as_euler(
                     self.rotation_information.euler_variant, degrees=self.rotation_information.use_degrees
                 )
             )
-        elif self.rotation_information.format.name == "Quaternion":
+        elif self.rotation_information.rotation_format.name == "Quaternion":
             parameters = list(rotation.as_quat())
-        elif self.rotation_information.format.name == "Rotation Vector":
+        elif self.rotation_information.rotation_format.name == "Rotation Vector":
             parameters = list(rotation.as_rotvec(degrees=self.rotation_information.use_degrees))
-        elif self.rotation_information.format.name == "Rotation Matrix":
+        elif self.rotation_information.rotation_format.name == "Rotation Matrix":
             parameters = list(rotation.as_matrix().flatten())
         else:
-            raise ValueError(f"Invalid variant: {self.rotation_information.format.name}")
-        if len(parameters) != self.rotation_information.format.number_of_parameters:
+            raise ValueError(f"Invalid variant: {self.rotation_information.rotation_format.name}")
+        if len(parameters) != self.rotation_information.rotation_format.number_of_parameters:
             raise ValueError(
-                f"Expected number of parameters to be {self.rotation_information.format.number_of_parameters}, got {len(parameters)}"
+                f"Expected number of parameters to be {self.rotation_information.rotation_format.number_of_parameters}, got {len(parameters)}"
             )
         return parameters
 
@@ -192,10 +192,12 @@ class BasePoseWidget(QWidget):
         degrees = (
             " (°)"
             if self.rotation_information.use_degrees
-            and self.rotation_information.format not in ["Quaternion", "Rotation Matrix"]
-            else (" (rad)" if self.rotation_information.format not in ["Quaternion", "Rotation Matrix"] else "")
+            and self.rotation_information.rotation_format not in ["Quaternion", "Rotation Matrix"]
+            else (
+                " (rad)" if self.rotation_information.rotation_format not in ["Quaternion", "Rotation Matrix"] else ""
+            )
         )
-        return f"Rotation as {self.rotation_information.format.name}{degrees}"
+        return f"Rotation as {self.rotation_information.rotation_format.name}{degrees}"
 
 
 def parameter_text_to_float(text: str) -> float:
@@ -283,8 +285,8 @@ class PoseWidget(BasePoseWidget):
         row_offset = row_offset + 1
 
         for index, parameter_editor in enumerate(self.rotation_parameter_editors):
-            row = index // 3 if self.rotation_information.format.number_of_parameters == 9 else 0
-            col = index % 3 if self.rotation_information.format.number_of_parameters == 9 else index
+            row = index // 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else 0
+            col = index % 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else index
             self.rotation_parameters_layout.addWidget(parameter_editor, row, col)
         self.grid_layout.addWidget(self.rotation_parameters_label, row_offset, 0)
         self.grid_layout.addLayout(self.rotation_parameters_layout, row_offset, 1, 1, 3)
@@ -351,7 +353,7 @@ class PoseWidget(BasePoseWidget):
 
     def update_from_transformation_matrix(self) -> None:
         self.rotation_parameters = self.parameters_from_rotation(self.transformation_matrix.rotation)
-        if self.rotation_information.format == "Rotation Vector" and not np.all(
+        if self.rotation_information.rotation_format == "Rotation Vector" and not np.all(
             np.asarray(self.rotation_vector_user_parameters) == np.zeros(3)
         ):
             self.rotation_parameters = self.rotation_vector_user_parameters
@@ -362,8 +364,8 @@ class PoseWidget(BasePoseWidget):
             if widget is not None:
                 widget.setParent(None)
         for index, parameter_editor in enumerate(self.rotation_parameter_editors):
-            row = index // 3 if self.rotation_information.format.number_of_parameters == 9 else 0
-            col = index % 3 if self.rotation_information.format.number_of_parameters == 9 else index
+            row = index // 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else 0
+            col = index % 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else index
             self.rotation_parameters_layout.addWidget(parameter_editor, row, col)
         with QSignalBlocker(self.pose_text):
             self.pose_text.setText(
@@ -372,7 +374,7 @@ class PoseWidget(BasePoseWidget):
                 + " ".join([f"{value:.3f}" for value in self.rotation_parameters])
             )
         for i, parameter_editor in enumerate(self.rotation_parameter_editors):
-            if i < self.rotation_information.format.number_of_parameters:
+            if i < self.rotation_information.rotation_format.number_of_parameters:
                 with QSignalBlocker(parameter_editor):
                     parameter_editor.setText(f"{self.rotation_parameters[i]:.3f}")
                 parameter_editor.setVisible(True)
@@ -398,9 +400,9 @@ class PoseWidget(BasePoseWidget):
         updated_rotation_parameters = [
             parameter_text_to_float(parameter_editor.text())
             for i, parameter_editor in enumerate(self.rotation_parameter_editors)
-            if i < self.rotation_information.format.number_of_parameters
+            if i < self.rotation_information.rotation_format.number_of_parameters
         ]
-        if self.rotation_information.format == "Rotation Vector":
+        if self.rotation_information.rotation_format == "Rotation Vector":
             self.rotation_vector_user_parameters = updated_rotation_parameters
         updated_rotation = self.rotation_from_parameters(updated_rotation_parameters)
         parameters_from_updated_rotation = self.parameters_from_rotation(updated_rotation)
@@ -409,7 +411,7 @@ class PoseWidget(BasePoseWidget):
             if index != modified_index and not np.isclose(parameters_from_updated_rotation[index], rotation_parameters):
                 self.sender().setStyleSheet("background-color: yellow; color: black;")
                 has_valid_input = False
-        if self.rotation_information.format == "Rotation Vector":
+        if self.rotation_information.rotation_format == "Rotation Vector":
             rotation_from_scipy_rotvec = self.rotation_from_parameters(parameters_from_updated_rotation)
             rotation_from_user_rotvec = self.rotation_from_parameters(self.rotation_vector_user_parameters)
             if np.allclose(rotation_from_scipy_rotvec.as_rotvec(), rotation_from_user_rotvec.as_rotvec()):
@@ -441,7 +443,7 @@ class PoseWidget(BasePoseWidget):
             return
         self.transformation_matrix.translation = np.array([float(value) for value in parameter_list[:3]])
         updated_rotation_parameters = [float(value) for value in parameter_list[3:]]
-        if self.rotation_information.format == "Rotation Vector":
+        if self.rotation_information.rotation_format == "Rotation Vector":
             self.rotation_vector_user_parameters = updated_rotation_parameters
         updated_rotation = self.rotation_from_parameters(updated_rotation_parameters)
         self.rotation_parameters = updated_rotation_parameters
@@ -655,7 +657,7 @@ class MarkerPosesWidget(BasePoseWidget):
             row_offset,
             5,
             1,
-            self.rotation_information.format.number_of_parameters,
+            self.rotation_information.rotation_format.number_of_parameters,
             alignment=Qt.AlignCenter,
         )
 
@@ -700,13 +702,17 @@ class MarkerPosesWidget(BasePoseWidget):
                 self.grid_layout.addWidget(
                     self.descriptive_image_label,
                     row_start - 1,
-                    self.rotation_information.format.number_of_parameters + 5,
+                    self.rotation_information.rotation_format.number_of_parameters + 5,
                     min(row_offset - (row_start - 1), self.max_rows_before_scrolling),
                     1,
                     alignment=Qt.AlignVCenter | Qt.AlignCenter,
                 )
                 self.descriptive_image_label.setHeightFromGrid(
-                    self.grid_layout, 1, row_offset, 0, self.rotation_information.format.number_of_parameters + 4
+                    self.grid_layout,
+                    1,
+                    row_offset,
+                    0,
+                    self.rotation_information.rotation_format.number_of_parameters + 4,
                 )
             else:
                 raise ValueError(f"Invalid display mode: {self.display_mode}")

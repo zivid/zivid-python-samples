@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 from PyQt5.QtCore import QObject, pyqtSignal
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -12,18 +13,35 @@ class RobotTarget:
     pose: TransformationMatrix
 
 
-class RobotControl(QObject):
+class RobotControlReadOnly(QObject):
     information_update = pyqtSignal(str)
-    target_pose_updated = pyqtSignal(RobotTarget)
-    targets: Dict[str, RobotTarget]
 
-    def __init__(self) -> None:
+    def __init__(self, robot_configuration: RobotConfiguration) -> None:
         super().__init__()
-        self.targets = {}
+        self.robot_configuration = robot_configuration
 
     @abstractmethod
     def get_pose(self) -> RobotTarget:
         raise NotImplementedError
+
+    @abstractmethod
+    def connect(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def disconnect(self):
+        raise NotImplementedError
+
+    def is_read_only(self) -> bool:
+        return True
+
+
+class RobotControl(RobotControlReadOnly):
+    target_pose_updated = pyqtSignal(RobotTarget)
+
+    def __init__(self, robot_configuration: RobotConfiguration) -> None:
+        super().__init__(robot_configuration)
+        self.targets: Dict[str, RobotTarget] = {}
 
     @abstractmethod
     def get_custom_target(self, custom_pose: TransformationMatrix) -> RobotTarget:
@@ -46,14 +64,6 @@ class RobotControl(QObject):
         raise NotImplementedError
 
     @abstractmethod
-    def connect(self, ip_address: str):
-        raise NotImplementedError
-
-    @abstractmethod
-    def disconnect(self):
-        raise NotImplementedError
-
-    @abstractmethod
     def is_moving(self) -> bool:
         raise NotImplementedError
 
@@ -64,3 +74,6 @@ class RobotControl(QObject):
     @abstractmethod
     def move_j(self, target: RobotTarget) -> None:
         raise NotImplementedError
+
+    def is_read_only(self) -> bool:
+        return False

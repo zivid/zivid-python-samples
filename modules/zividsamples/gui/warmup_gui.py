@@ -34,6 +34,7 @@ from zividsamples.camera_verification import (
     capture_and_measure,
     capture_and_measure_from_frame,
 )
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.paths import get_data_file_path
 
 
@@ -439,7 +440,7 @@ class WarmUpGUI(QWidget):
         self.instruction_steps["Warmup Completed"] = self.equilibrium_reached
         self.instructions_updated.emit()
 
-    def toggle_use_robot(self, _: bool):
+    def robot_configuration_update(self, _: RobotConfiguration):
         return
 
     def update_information_text(self):

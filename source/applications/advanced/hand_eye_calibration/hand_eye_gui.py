@@ -17,11 +17,10 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import zivid
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QCloseEvent, QKeyEvent
 from PyQt5.QtWidgets import (
     QAction,
-    QActionGroup,
     QApplication,
     QFileDialog,
     QHBoxLayout,
@@ -35,12 +34,17 @@ from zividsamples.gui.buttons_widget import CameraButtonsWidget
 from zividsamples.gui.camera_selection import select_camera
 from zividsamples.gui.cv2_handler import CV2Handler
 from zividsamples.gui.hand_eye_calibration_gui import HandEyeCalibrationGUI
-from zividsamples.gui.hand_eye_configuration import CalibrationObject, select_hand_eye_configuration
+from zividsamples.gui.hand_eye_configuration import (
+    CalibrationObject,
+    HandEyeConfiguration,
+    select_hand_eye_configuration,
+)
 from zividsamples.gui.hand_eye_verification_gui import HandEyeVerificationGUI
 from zividsamples.gui.infield_correction_gui import InfieldCorrectionGUI
 from zividsamples.gui.live_2d_widget import Live2DWidget
 from zividsamples.gui.marker_widget import MarkerConfiguration, select_marker_configuration
 from zividsamples.gui.qt_application import ZividQtApplication
+from zividsamples.gui.robot_configuration import RobotConfiguration, select_robot_configuration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.robot_control_widget import RobotControlWidget
 from zividsamples.gui.rotation_format_configuration import RotationInformation, select_rotation_format
@@ -60,25 +64,28 @@ class AutoRunState(Enum):
     STOPPING = 4
 
 
-class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
-    camera: Optional[zivid.Camera] = None
-    settings: Optional[SettingsForHandEyeGUI] = None
-    use_robot: bool = False
-    auto_run_state: AutoRunState = AutoRunState.INACTIVE
-    robot_pose: TransformationMatrix = TransformationMatrix()
-    projection_handle: Optional[zivid.projection.ProjectedImage] = None
-    last_frame: Optional[zivid.Frame] = None
-    marker_configuration: MarkerConfiguration = MarkerConfiguration()
-    rotation_information: RotationInformation = RotationInformation()
-    common_instructions: Dict[str, bool] = {}
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
+class HandEyeGUI(QMainWindow):
+    camera: Optional[zivid.Camera]
+    settings: SettingsForHandEyeGUI
+    hand_eye_configuration: HandEyeConfiguration
+    marker_configuration: MarkerConfiguration
+    robot_configuration: RobotConfiguration
+    use_robot: bool
+    rotation_information: RotationInformation
+    auto_run_state: AutoRunState
+    robot_pose: TransformationMatrix
+    projection_handle: Optional[zivid.projection.ProjectedImage]
+    last_frame: Optional[zivid.Frame]
+    common_instructions: Dict[str, bool]
 
     def __init__(self, zivid_app: zivid.Application, parent=None):  # noqa: ANN001
         super().__init__(parent)
 
         self.zivid_app = zivid_app
-        self.camera = select_camera(self.zivid_app, connect=True)
         self.previous_tab_widget: Optional[QWidget] = None
-        self.setup_settings()
+        self.configuration_wizard()
+        self.static_configuration()
         self.create_widgets()
         self.setup_layout()
         self.create_toolbar()
@@ -87,32 +94,34 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.main_tab_widget.setCurrentWidget(self.hand_eye_calibration_gui)
         self.on_instructions_updated()
 
-        if self.camera and self.settings:
+        if self.camera:
             self.live2d_widget.update_settings_2d(self.settings.production.settings_2d3d.color, self.camera.info.model)
             self.live2d_widget.start_live_2d()
 
         QTimer.singleShot(0, self.update_tab_order)
 
-    def setup_settings(self) -> None:
-        if self.camera:
-            self.settings = select_settings_for_hand_eye(self.camera)
-
-    def create_widgets(self) -> None:
-        self.central_widget = QWidget()
+    def configuration_wizard(self) -> None:
+        self.camera = select_camera(self.zivid_app, connect=True)
         self.hand_eye_configuration = select_hand_eye_configuration()
         self.marker_configuration = (
             select_marker_configuration()
             if self.hand_eye_configuration.calibration_object == CalibrationObject.Markers
             else MarkerConfiguration()
         )
-        self.use_robot = (
-            QMessageBox.question(
-                None, "Robot Control", "Do you have a robot connected?", QMessageBox.Yes | QMessageBox.No
-            )
-            == QMessageBox.Yes
-        )
+        self.robot_configuration = select_robot_configuration()
+        self.rotation_information = select_rotation_format()
+        self.configure_settings()
+
+    def static_configuration(self) -> None:
+        self.auto_run_state = AutoRunState.INACTIVE
+        self.robot_pose = TransformationMatrix()
+        self.projection_handle = None
+        self.last_frame = None
+        self.common_instructions = {}
+
+    def create_widgets(self) -> None:
+        self.central_widget = QWidget()
         cv2_handler = CV2Handler()
-        self.rotation_information = select_rotation_format(title="Select Robot Rotation Format")
 
         self.main_tab_widget = QTabWidget()
         self.main_tab_widget.setObjectName("main_tab_widget")
@@ -132,7 +141,7 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
 
         self.hand_eye_calibration_gui = HandEyeCalibrationGUI(
             data_directory=Path(__file__).parent,
-            use_robot=self.use_robot,
+            robot_configuration=self.robot_configuration,
             hand_eye_configuration=self.hand_eye_configuration,
             marker_configuration=self.marker_configuration,
             cv2_handler=cv2_handler,
@@ -147,11 +156,11 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             hand_eye_configuration=self.hand_eye_configuration,
             initial_rotation_information=self.rotation_information,
         )
-        if self.use_robot:
+        if self.robot_configuration.can_control():
             self.verification_tab_widget.addTab(self.touch_gui, "by Touching")
         self.hand_eye_verification_gui = HandEyeVerificationGUI(
             data_directory=Path(__file__).parent,
-            use_robot=self.use_robot,
+            robot_configuration=self.robot_configuration,
             hand_eye_configuration=self.hand_eye_configuration,
             marker_configuration=self.marker_configuration,
             cv2_handler=cv2_handler,
@@ -160,7 +169,7 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.verification_tab_widget.addTab(self.hand_eye_verification_gui, "with Projection")
         self.stitch_gui = StitchGUI(
             data_directory=Path(__file__).parent,
-            use_robot=self.use_robot,
+            robot_configuration=self.robot_configuration,
             hand_eye_configuration=self.hand_eye_configuration,
             initial_rotation_information=self.rotation_information,
         )
@@ -170,7 +179,6 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         if self.camera is None or self.camera.state.connected is False:
             self.live2d_widget = Live2DWidget()
         else:
-            assert self.settings is not None
             self.live2d_widget = Live2DWidget(
                 capture_function=self.camera.capture_2d,
                 settings_2d=self.settings.production.settings_2d3d.color,
@@ -182,9 +190,11 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
                 / self.settings.production.intrinsics.camera_matrix.cy,
             )
 
-        self.robot_control_widget = RobotControlWidget(get_user_pose=self.get_transformation_matrix)
+        self.robot_control_widget = RobotControlWidget(
+            get_user_pose=self.get_transformation_matrix, robot_configuration=self.robot_configuration
+        )
         self.robot_control_widget.show_buttons(auto_run=True, touch=False)
-        self.camera_buttons = CameraButtonsWidget(capture_button_text="Capture")
+        self.camera_buttons = CameraButtonsWidget(capture_button_text="Capture (F5)")
         self.camera_buttons.set_connection_status(self.camera)
 
         self.setup_instructions()
@@ -212,7 +222,7 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         layout.addLayout(bottom_layout)
 
         self.live2d_widget.setVisible(self.camera is not None)
-        self.robot_control_widget.setVisible(self.use_robot)
+        self.robot_control_widget.setVisible(self.robot_configuration.can_get_pose())
 
     def update_tab_order(self) -> None:
         tab_widgets = (
@@ -241,62 +251,27 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
 
         config_menu = self.menuBar().addMenu("Configuration")
         hand_eye_submenu = config_menu.addMenu("Hand-Eye")
-        hand_eye_action_group = QActionGroup(self)
-        hand_eye_action_group.setExclusive(True)
-        self.select_eye_in_hand_action = QAction("Eye-in-Hand", self)
-        self.select_eye_in_hand_action.setCheckable(True)
-        self.select_eye_in_hand_action.setChecked(self.hand_eye_configuration.eye_in_hand)
-        hand_eye_action_group.addAction(self.select_eye_in_hand_action)
-        hand_eye_submenu.addAction(self.select_eye_in_hand_action)
-        self.select_eye_to_hand_action = QAction("Eye-to-Hand", self)
-        self.select_eye_to_hand_action.setCheckable(True)
-        self.select_eye_to_hand_action.setChecked(not self.hand_eye_configuration.eye_in_hand)
-        hand_eye_action_group.addAction(self.select_eye_to_hand_action)
-        hand_eye_submenu.addAction(self.select_eye_to_hand_action)
-
-        calibration_object_submenu = config_menu.addMenu("Calibration Object")
-        calibration_object_action_group = QActionGroup(self)
-        calibration_object_action_group.setExclusive(True)
-        self.select_checkerboard_action = QAction(CalibrationObject.Checkerboard.name, self)
-        self.select_checkerboard_action.setCheckable(True)
-        self.select_checkerboard_action.setChecked(
-            self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard
-        )
-        calibration_object_action_group.addAction(self.select_checkerboard_action)
-        calibration_object_submenu.addAction(self.select_checkerboard_action)
-        self.select_markers_action = QAction(CalibrationObject.Markers.name, self)
-        self.select_markers_action.setCheckable(True)
-        self.select_markers_action.setChecked(
-            self.hand_eye_configuration.calibration_object == CalibrationObject.Markers
-        )
-        calibration_object_action_group.addAction(self.select_markers_action)
-        calibration_object_submenu.addAction(self.select_markers_action)
-
+        self.select_hand_eye_configuration_action = QAction("Hand-Eye", self)
+        hand_eye_submenu.addAction(self.select_hand_eye_configuration_action)
         self.select_marker_configuration_action = QAction("Markers", self)
-        config_menu.addAction(self.select_marker_configuration_action)
-        self.select_hand_eye_settings_action = QAction("Camera Settings", self)
-        config_menu.addAction(self.select_hand_eye_settings_action)
-        self.select_rotation_format_action = QAction("Select Rotation Format", self)
-        config_menu.addAction(self.select_rotation_format_action)
-        self.set_fixed_objects_action = QAction("Set Fixed Objects", self)
-        config_menu.addAction(self.set_fixed_objects_action)
+        hand_eye_submenu.addAction(self.select_marker_configuration_action)
+        self.set_fixed_objects_action = QAction("Fixed Objects", self)
+        hand_eye_submenu.addAction(self.set_fixed_objects_action)
+
+        camera_submenu = config_menu.addMenu("Camera")
+        self.select_hand_eye_settings_action = QAction("Settings", self)
+        camera_submenu.addAction(self.select_hand_eye_settings_action)
+
+        robot_submenu = config_menu.addMenu("Robot")
+        self.select_robot_configuration_action = QAction("Control Option", self)
+        robot_submenu.addAction(self.select_robot_configuration_action)
+        self.select_rotation_format_action = QAction("Rotation Format", self)
+        robot_submenu.addAction(self.select_rotation_format_action)
 
         view_menu = self.menuBar().addMenu("View")
         self.toggle_advanced_view_action = QAction("Advanced", self, checkable=True)
         self.toggle_advanced_view_action.setChecked(False)
         view_menu.addAction(self.toggle_advanced_view_action)
-
-        robot_menu = self.menuBar().addMenu("Robot")
-        self.toggle_use_robot_action = QAction("Use Robot", self)
-        self.toggle_use_robot_action.setToolTip("Toggle robot control")
-        self.toggle_use_robot_action.setCheckable(True)
-        self.toggle_use_robot_action.setChecked(self.use_robot)
-        robot_menu.addAction(self.toggle_use_robot_action)
-        self.toggle_unsafe_move_action = QAction("Enable unsafe move", self)
-        self.toggle_unsafe_move_action.setToolTip("Allow moving to 'Robot Pose' after modifying it")
-        self.toggle_unsafe_move_action.setCheckable(True)
-        self.toggle_unsafe_move_action.setChecked(False)
-        robot_menu.addAction(self.toggle_unsafe_move_action)
 
     def connect_signals(self) -> None:
         self.live2d_widget.camera_disconnected.connect(self.on_camera_disconnected)
@@ -306,21 +281,13 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.load_from_directory.triggered.connect(self.on_load_from_data_directory_action_triggered)
         self.save_to_directory.triggered.connect(self.on_save_to_data_directory_action_triggered)
         self.save_frame_action.triggered.connect(self.on_save_last_frame_action_triggered)
-        self.select_eye_in_hand_action.triggered.connect(lambda: self.on_hand_eye_action_triggered(True))
-        self.select_eye_to_hand_action.triggered.connect(lambda: self.on_hand_eye_action_triggered(False))
-        self.select_checkerboard_action.triggered.connect(
-            lambda: self.on_calibration_object_action_triggered(CalibrationObject.Checkerboard)
-        )
-        self.select_markers_action.triggered.connect(
-            lambda: self.on_calibration_object_action_triggered(CalibrationObject.Markers)
-        )
+        self.select_hand_eye_configuration_action.triggered.connect(self.hand_eye_configuration_action_triggered)
         self.select_marker_configuration_action.triggered.connect(self.on_select_marker_configuration)
         self.select_hand_eye_settings_action.triggered.connect(self.on_select_hand_eye_settings_action_triggered)
         self.select_rotation_format_action.triggered.connect(self.on_select_rotation_format)
         self.set_fixed_objects_action.triggered.connect(self.on_select_fixed_objects_action_triggered)
         self.toggle_advanced_view_action.triggered.connect(self.on_toggle_advanced_view_action_triggered)
-        self.toggle_use_robot_action.triggered.connect(self.on_toggle_use_robot_action_triggered)
-        self.toggle_unsafe_move_action.triggered.connect(self.robot_control_widget.toggle_unsafe_move)
+        self.select_robot_configuration_action.triggered.connect(self.on_select_robot_configuration_action_triggered)
         self.camera_buttons.capture_button_clicked.connect(self.on_capture_button_clicked)
         self.camera_buttons.connect_button_clicked.connect(self.on_connect_button_clicked)
         self.warmup_gui.warmup_finished.connect(self.on_warmup_finished)
@@ -367,11 +334,23 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             return self.verification_tab_widget.currentWidget()
         return self.main_tab_widget.currentWidget()
 
+    def keyPressEvent(self, a0: QKeyEvent) -> None:  # pylint: disable=invalid-name
+        if a0 is not None and a0.key() == Qt.Key_F5:
+            if self.camera and self.camera.state.connected:
+                self.camera_buttons.on_capture_button_clicked()
+        else:
+            super().keyPressEvent(a0)
+
+    def configure_settings(self, show_anyway: bool = False) -> None:
+        if self.camera:
+            current_settings = self.settings if hasattr(self, "settings") else None
+            self.settings = select_settings_for_hand_eye(self.camera, current_settings, show_anyway)
+
     def setup_instructions(self) -> None:
         self.common_instructions = {
             "Connect Camera": self.camera is not None and self.camera.state.connected,
         }
-        if self.use_robot:
+        if self.robot_configuration.can_get_pose():
             self.common_instructions.update(
                 {
                     "Connect Robot": self.robot_control_widget.connected,
@@ -380,10 +359,9 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
 
     def on_capture_button_clicked(self) -> None:
         assert self.camera is not None
-        assert self.settings is not None
         self.live2d_widget.stop_live_2d()
         try:
-            if self.use_robot:
+            if self.robot_configuration.can_control():
                 while self.robot_control_widget.robot_is_moving():
                     time.sleep(0.1)
             was_projecting = False
@@ -419,14 +397,12 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
                         self.current_tab_widget.process_capture(frame, rgba, self.settings.production)
             if not self.live2d_widget.is_active():
                 self.live2d_widget.start_live_2d()
-            if self.use_robot and self.auto_run_state == AutoRunState.RUNNING:
+            if self.robot_configuration.can_control() and self.auto_run_state == AutoRunState.RUNNING:
                 QApplication.processEvents()
                 self.robot_control_widget.on_move_to_next_target(blocking=False)
-                if self.current_tab_widget == self.hand_eye_calibration_gui:
-                    self.hand_eye_calibration_gui.on_use_data_button_clicked()
         except RuntimeError as ex:
             if self.camera.state.connected:
-                if self.use_robot and self.auto_run_state != AutoRunState.INACTIVE:
+                if self.robot_configuration.can_control() and self.auto_run_state != AutoRunState.INACTIVE:
                     self.finish_auto_run()
             else:
                 self.on_camera_disconnected(str(ex))
@@ -436,7 +412,6 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
     def on_warmup_start_requested(self) -> None:
         self.camera_buttons.disable_buttons()
         self.live2d_widget.stop_live_2d()
-        assert self.settings is not None
         self.warmup_gui.start_warmup(self.camera, self.settings.production.settings_2d3d)
 
     def on_warmup_finished(self, success: bool) -> None:
@@ -461,7 +436,7 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.infield_correction_gui.apply_correction(self.camera)
 
     def on_calibration_finished(self, transformation_matrix: TransformationMatrix) -> None:
-        if self.use_robot and self.auto_run_state == AutoRunState.CALIBRATING:
+        if self.robot_configuration.can_control() and self.auto_run_state == AutoRunState.CALIBRATING:
             self.finish_auto_run()
         if not transformation_matrix.is_identity():
             if (
@@ -613,15 +588,20 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             self.robot_control_widget.show_buttons(auto_run=True, touch=False)
         elif self.current_tab_widget == self.hand_eye_verification_gui:
             self.update_projection(True)
-            if self.use_robot:
+            if self.robot_configuration.can_control():
                 self.robot_control_widget.enable_disable_buttons(auto_run=True, touch=False)
                 self.robot_control_widget.show_buttons(auto_run=True, touch=False)
         elif self.current_tab_widget == self.stitch_gui:
             self.robot_control_widget.enable_disable_buttons(auto_run=False, touch=False)
             self.robot_control_widget.show_buttons(auto_run=False, touch=False)
         elif self.current_tab_widget == self.touch_gui:
-            self.robot_control_widget.enable_disable_buttons(auto_run=False, touch=True)
-            self.robot_control_widget.show_buttons(auto_run=False, touch=True)
+            self.robot_control_widget.enable_disable_buttons(
+                auto_run=False, touch=self.robot_configuration.can_control()
+            )
+            self.robot_control_widget.show_buttons(auto_run=False, touch=self.robot_configuration.can_control())
+        self.robot_control_widget.set_get_pose_interval(
+            fast=(self.current_tab_widget != self.hand_eye_verification_gui)
+        )
         if self.current_tab_widget == self.stitch_gui:
             self.stitch_gui.start_3d_visualizer()
         else:
@@ -657,27 +637,24 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             QMessageBox.warning(self, "Save Capture", "No capture to save.")
 
     def on_select_hand_eye_settings_action_triggered(self) -> None:
-        self.setup_settings()
-        if self.camera and self.settings:
+        self.configure_settings(show_anyway=True)
+        if self.camera:
             self.live2d_widget.update_settings_2d(self.settings.production.settings_2d3d.color, self.camera.info.model)
 
-    def on_hand_eye_action_triggered(self, eye_in_hand: bool) -> None:
-        self.hand_eye_configuration.eye_in_hand = eye_in_hand
-        self.hand_eye_calibration_gui.hand_eye_configuration_update(self.hand_eye_configuration)
-        self.hand_eye_verification_gui.hand_eye_configuration_update(self.hand_eye_configuration)
-
-    def on_calibration_object_action_triggered(self, calibration_object: CalibrationObject) -> None:
-        self.hand_eye_configuration.calibration_object = calibration_object
+    def hand_eye_configuration_action_triggered(self) -> None:
+        self.hand_eye_configuration = select_hand_eye_configuration(self.hand_eye_configuration, show_anyway=True)
         self.hand_eye_calibration_gui.hand_eye_configuration_update(self.hand_eye_configuration)
         self.hand_eye_verification_gui.hand_eye_configuration_update(self.hand_eye_configuration)
 
     def on_select_marker_configuration(self) -> None:
-        self.marker_configuration = select_marker_configuration(self.marker_configuration)
+        self.marker_configuration = select_marker_configuration(self.marker_configuration, show_anyway=True)
         self.hand_eye_calibration_gui.marker_configuration_update(self.marker_configuration)
         self.hand_eye_verification_gui.marker_configuration_update(self.marker_configuration)
 
     def on_select_rotation_format(self) -> None:
-        self.rotation_information = select_rotation_format(current_rotation_format=self.rotation_information)
+        self.rotation_information = select_rotation_format(
+            current_rotation_information=self.rotation_information, show_anyway=True
+        )
         if self.rotation_information is not None:
             for widget in self.widgets_with_robot_support():
                 widget.rotation_format_update(self.rotation_information)
@@ -689,17 +666,22 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.hand_eye_calibration_gui.toggle_advanced_view(checked)
         self.hand_eye_verification_gui.toggle_advanced_view(checked)
 
-    def on_toggle_use_robot_action_triggered(self, checked: bool) -> None:
-        self.use_robot = checked
+    def on_select_robot_configuration_action_triggered(self) -> None:
+        selected_robot = select_robot_configuration(self.robot_configuration, show_anyway=True)
+        if self.robot_configuration.robot_type == selected_robot:
+            return
+        self.robot_configuration = selected_robot
         self.setup_instructions()
         self.on_instructions_updated()
-        self.robot_control_widget.setVisible(self.use_robot)
-        if self.use_robot:
-            self.verification_tab_widget.addTab(self.touch_gui, "by Touching")
+        self.robot_control_widget.robot_configuration_update(self.robot_configuration)
+        if self.robot_configuration.can_control():
+            # Check if the widget is already added
+            if self.verification_tab_widget.indexOf(self.touch_gui) == -1:
+                self.verification_tab_widget.addTab(self.touch_gui, "by Touching")
         else:
             self.verification_tab_widget.removeTab(self.verification_tab_widget.indexOf(self.touch_gui))
         for widget in self.actual_widgets():
-            widget.toggle_use_robot(checked)
+            widget.robot_configuration_update(self.robot_configuration)
 
     def on_connect_button_clicked(self) -> None:
         if self.camera is not None and self.camera.state.connected:
@@ -713,8 +695,7 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
             self.live2d_widget.camera = self.camera
             self.camera_buttons.set_connection_status(self.camera)
             if self.camera:
-                self.setup_settings()
-                assert self.settings is not None
+                self.configure_settings()
                 self.live2d_widget.setMinimumHeight(
                     int(self.main_tab_widget.height() / 2),
                     aspect_ratio=self.settings.production.intrinsics.camera_matrix.cx
@@ -738,7 +719,7 @@ class HandEyeGUI(QMainWindow):  # pylint: disable=R0902, R0904
         self.live2d_widget.stop_live_2d()
         self.live2d_widget.hide()
 
-        if self.use_robot and self.auto_run_state != AutoRunState.INACTIVE:
+        if self.robot_configuration.can_control() and self.auto_run_state != AutoRunState.INACTIVE:
             self.finish_auto_run()
         if self.camera is not None:
             QMessageBox.critical(

@@ -20,6 +20,7 @@ from zividsamples.gui.detection_visualization import DetectionVisualizationWidge
 from zividsamples.gui.hand_eye_configuration import CalibrationObject, HandEyeConfiguration
 from zividsamples.gui.marker_widget import MarkerConfiguration, generate_marker_dictionary
 from zividsamples.gui.pose_widget import MarkerPosesWidget, PoseWidget, PoseWidgetDisplayMode
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
@@ -37,7 +38,7 @@ def extract_marker_points_in_camera_frame(
 
 
 class HandEyeVerificationGUI(QWidget):
-    use_robot: bool
+    robot_configuration: RobotConfiguration
     detected_markers: Dict[str, MarkerShape] = {}
     detected_marker_poses_in_robot_frame: Dict[str, TransformationMatrix] = {}
     detected_feature_points_in_robot_frame: NDArray[Shape["N, 3"], Float32] = np.zeros(  # type: ignore
@@ -61,7 +62,7 @@ class HandEyeVerificationGUI(QWidget):
     def __init__(
         self,
         data_directory: Path,
-        use_robot: bool,
+        robot_configuration: RobotConfiguration,
         hand_eye_configuration: HandEyeConfiguration,
         marker_configuration: MarkerConfiguration,
         cv2_handler: CV2Handler,
@@ -82,7 +83,7 @@ class HandEyeVerificationGUI(QWidget):
         ]
 
         self.data_directory = data_directory
-        self.use_robot = use_robot
+        self.robot_configuration = robot_configuration
         self.hand_eye_configuration = hand_eye_configuration
         self.marker_configuration = marker_configuration
         self.cv2_handler = cv2_handler
@@ -101,7 +102,7 @@ class HandEyeVerificationGUI(QWidget):
         )
         self.robot_pose_widget.setObjectName("HE-Verification-robot_pose_widget")
         self.confirm_robot_pose_button = QPushButton("Confirm Robot Pose")
-        self.confirm_robot_pose_button.setVisible(not self.use_robot)
+        self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.confirm_robot_pose_button.setObjectName("HE-Verification-confirm_robot_pose_button")
         self.hand_eye_pose_widget = PoseWidget.HandEye(
             self.data_directory / "hand_eye_transform.yaml",
@@ -163,10 +164,10 @@ class HandEyeVerificationGUI(QWidget):
     def update_instructions(self, has_set_object_poses_in_robot_frame: bool, robot_pose_confirmed: bool):
         self.has_confirmed_robot_pose = robot_pose_confirmed
         self.has_set_object_poses_in_robot_frame = has_set_object_poses_in_robot_frame and (
-            self.has_confirmed_robot_pose or self.use_robot
+            self.has_confirmed_robot_pose or not self.robot_configuration.has_no_robot()
         )
         self.instruction_steps = {}
-        if self.use_robot:
+        if self.robot_configuration.can_control:
             self.instruction_steps[
                 "Move Robot (click 'Move to next target', 'Home' or Disconnect→manually move robot→Connect)"
             ] = self.has_confirmed_robot_pose
@@ -176,7 +177,7 @@ class HandEyeVerificationGUI(QWidget):
             self.has_set_object_poses_in_robot_frame
         )
         if self.has_confirmed_robot_pose and self.has_set_object_poses_in_robot_frame:
-            if self.use_robot:
+            if self.robot_configuration.can_control:
                 self.instruction_steps[
                     "Move Robot (click 'Move to next target' or Disconnect→manually move robot→Connect)"
                 ] = False
@@ -202,6 +203,14 @@ class HandEyeVerificationGUI(QWidget):
         self.markers_in_camera_frame_pose_widget.set_rotation_format(rotation_format)
         self.markers_in_robot_base_frame_pose_widget.set_rotation_format(rotation_format)
 
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+        self.robot_configuration = robot_configuration
+        self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
+        self.update_instructions(
+            has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame,
+            robot_pose_confirmed=self.has_confirmed_robot_pose,
+        )
+
     def toggle_advanced_view(self, checked):
         if checked != self.advanced_view:
             self.top_grid_layout.removeWidget(self.robot_pose_widget)
@@ -224,7 +233,7 @@ class HandEyeVerificationGUI(QWidget):
         self.advanced_view = checked
         self.hand_eye_pose_widget.setVisible(checked)
         self.hand_eye_pose_widget.toggle_advanced_section(checked)
-        self.robot_pose_widget.setVisible(checked or not self.use_robot)
+        self.robot_pose_widget.setVisible(checked or self.robot_configuration.has_no_robot())
         self.robot_pose_widget.toggle_advanced_section(checked)
         show_marker_poses = (
             self.hand_eye_configuration.calibration_object == CalibrationObject.Markers
@@ -236,14 +245,6 @@ class HandEyeVerificationGUI(QWidget):
         self.markers_in_robot_base_frame_pose_widget.setVisible(show_marker_poses)
         self.calibration_board_in_camera_frame_pose_widget.setVisible(show_calibration_board_pose)
         self.calibration_board_in_robot_base_frame_pose_widget.setVisible(show_calibration_board_pose)
-
-    def toggle_use_robot(self, use_robot: bool):
-        self.use_robot = use_robot
-        self.confirm_robot_pose_button.setVisible(not self.use_robot)
-        self.update_instructions(
-            has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame,
-            robot_pose_confirmed=self.has_confirmed_robot_pose,
-        )
 
     def on_hand_eye_configuration_updated(self):
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
@@ -307,7 +308,9 @@ class HandEyeVerificationGUI(QWidget):
         self.update_projection.emit(True)
 
     def has_features_to_project(self) -> bool:
-        return (self.has_confirmed_robot_pose or self.use_robot) and self.has_set_object_poses_in_robot_frame
+        return (
+            self.has_confirmed_robot_pose or self.robot_configuration.can_control()
+        ) and self.has_set_object_poses_in_robot_frame
 
     def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
         self.detected_markers = {}
