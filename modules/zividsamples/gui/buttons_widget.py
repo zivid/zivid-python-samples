@@ -99,7 +99,6 @@ class CameraButtonsWidget(QWidget):
 
 
 class HandEyeCalibrationButtonsWidget(QWidget):
-    use_data_button_clicked = pyqtSignal()
     calibrate_button_clicked = pyqtSignal()
     use_fixed_objects_toggled = pyqtSignal(bool)
 
@@ -107,15 +106,12 @@ class HandEyeCalibrationButtonsWidget(QWidget):
         super().__init__(parent)
 
         # Define buttons
-        self.use_data_button = QPushButton("Use Data")
-        self.use_data_button.setObjectName("HandEye-use_data_button")
         self.calibrate_button = QPushButton("Calibrate")
         self.calibrate_button.setObjectName("HandEye-calibrate_button")
         self.use_fixed_objects_checkbox = QCheckBox("Fixed Objects - for low DOF systems")
         self.use_fixed_objects_checkbox.setObjectName("HandEye-fixed_objects_checkbox")
 
         # Connect signals
-        self.use_data_button.clicked.connect(self.on_use_data_button_clicked)
         self.calibrate_button.clicked.connect(self.on_calibrate_button_clicked)
         self.use_fixed_objects_checkbox.toggled.connect(self.on_use_fixed_objects_toggled)
 
@@ -124,7 +120,6 @@ class HandEyeCalibrationButtonsWidget(QWidget):
         calibrate_group_box_layout = QHBoxLayout()
         calibrate_group_box.setLayout(calibrate_group_box_layout)
 
-        calibrate_group_box_layout.addWidget(self.use_data_button)
         calibrate_group_box_layout.addWidget(self.calibrate_button)
         calibrate_group_box_layout.addWidget(self.use_fixed_objects_checkbox)
 
@@ -139,25 +134,17 @@ class HandEyeCalibrationButtonsWidget(QWidget):
         self.calibrate_button_clicked.emit()
         self.calibrate_button.setStyleSheet("")
 
-    def on_use_data_button_clicked(self):
-        self.use_data_button.setStyleSheet("background-color: yellow;")
-        QApplication.processEvents()
-        self.use_data_button_clicked.emit()
-        self.use_data_button.setStyleSheet("")
-
     def on_use_fixed_objects_toggled(self, checked: bool):
         self.use_fixed_objects_toggled.emit(checked)
 
     def disable_buttons(self):
-        self.use_data_button.setEnabled(False)
         self.calibrate_button.setEnabled(False)
 
     def enable_buttons(self):
-        self.use_data_button.setEnabled(True)
         self.calibrate_button.setEnabled(True)
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
-        return [self.use_data_button, self.calibrate_button]
+        return [self.calibrate_button]
 
 
 class HandEyeVerificationButtonsWidget(QWidget):

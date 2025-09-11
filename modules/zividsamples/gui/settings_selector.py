@@ -11,7 +11,9 @@ from pathlib import Path
 from typing import Iterable, Optional, Tuple
 
 import zivid
+from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -21,7 +23,9 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QStackedWidget,
     QVBoxLayout,
+    QWidget,
 )
 from zivid.experimental import PixelMapping, calibration
 
@@ -32,19 +36,84 @@ class SettingsPixelMappingIntrinsics:
     pixel_mapping: PixelMapping
     intrinsics: zivid.CameraIntrinsics
 
+    def save_settings(self, qsettings: QSettings):
+        qsettings.setValue("settings_2d3d", self.settings_2d3d.serialize())
+        qsettings.beginGroup("pixel_mapping")
+        qsettings.setValue("row_stride", self.pixel_mapping.row_stride)
+        qsettings.setValue("col_stride", self.pixel_mapping.col_stride)
+        qsettings.setValue("row_offset", self.pixel_mapping.row_offset)
+        qsettings.setValue("col_offset", self.pixel_mapping.col_offset)
+        qsettings.endGroup()
+        qsettings.setValue("intrinsics", self.intrinsics.serialize())
 
-@dataclass
+    @classmethod
+    def load_settings(cls, qsettings: QSettings) -> "SettingsPixelMappingIntrinsics":
+        settings_2d3d = (
+            zivid.Settings()
+            if not qsettings.contains("settings_2d3d")
+            else zivid.Settings.from_serialized(qsettings.value("settings_2d3d"))
+        )
+        qsettings.beginGroup("pixel_mapping")
+        default_pixel_mapping = PixelMapping()
+        pixel_mapping = PixelMapping(
+            row_stride=qsettings.value("row_stride", default_pixel_mapping.row_stride, type=int),
+            col_stride=qsettings.value("col_stride", default_pixel_mapping.col_stride, type=int),
+            row_offset=qsettings.value("row_offset", default_pixel_mapping.row_offset, type=float),
+            col_offset=qsettings.value("col_offset", default_pixel_mapping.col_offset, type=float),
+        )
+        qsettings.endGroup()
+        intrinsics = (
+            zivid.CameraIntrinsics()
+            if not qsettings.contains("intrinsics")
+            else zivid.CameraIntrinsics.from_serialized(qsettings.value("intrinsics"))
+        )
+        return cls(settings_2d3d=settings_2d3d, pixel_mapping=pixel_mapping, intrinsics=intrinsics)
+
+
 class SettingsForHandEyeGUI:
-    production: SettingsPixelMappingIntrinsics
-    hand_eye: SettingsPixelMappingIntrinsics
-    infield_correction: SettingsPixelMappingIntrinsics
+
+    def __init__(
+        self,
+        production: Optional[SettingsPixelMappingIntrinsics] = None,
+        hand_eye: Optional[SettingsPixelMappingIntrinsics] = None,
+        infield_correction: Optional[SettingsPixelMappingIntrinsics] = None,
+    ):
+        settings = QSettings("Zivid", "HandEyeGUI")
+        settings.beginGroup("camera_settings")
+        settings.beginGroup("production")
+        self.production = production or SettingsPixelMappingIntrinsics.load_settings(settings)
+        settings.endGroup()
+        settings.beginGroup("hand_eye")
+        self.hand_eye = hand_eye or SettingsPixelMappingIntrinsics.load_settings(settings)
+        settings.endGroup()
+        settings.beginGroup("infield_correction")
+        self.infield_correction = infield_correction or SettingsPixelMappingIntrinsics.load_settings(settings)
+        settings.endGroup()
+        self.show_dialog = settings.value("show_dialog", True, type=bool)
+        settings.endGroup()
+
+    def save_choice(self):
+        settings = QSettings("Zivid", "HandEyeGUI")
+        settings.beginGroup("camera_settings")
+        settings.beginGroup("production")
+        self.production.save_settings(settings)
+        settings.endGroup()
+        settings.beginGroup("hand_eye")
+        self.hand_eye.save_settings(settings)
+        settings.endGroup()
+        settings.beginGroup("infield_correction")
+        self.infield_correction.save_settings(settings)
+        settings.endGroup()
+        settings.setValue("show_dialog", self.show_dialog)
+        settings.endGroup()
 
 
-def validate_settings(camera: zivid.Camera, settings: zivid.Settings) -> bool:
+def validate_settings(camera: zivid.Camera, settings: zivid.Settings, show_message_box: bool = True) -> bool:
     try:
         camera.capture_2d_3d(settings)
     except Exception as error:
-        QMessageBox.critical(None, "Invalid Settings", str(error))
+        if show_message_box:
+            QMessageBox.critical(None, "Invalid Settings", str(error))
         return False
     return True
 
@@ -165,6 +234,7 @@ def _settings_for_hand_eye(
                     brightness=updated_settings.acquisitions[0].brightness,
                     exposure_time=timedelta(microseconds=20000),
                     aperture=2.43,
+                    gain=1.0,
                 )
             ],
         )
@@ -184,7 +254,7 @@ def _settings_for_hand_eye(
     return updated_settings
 
 
-class EngineAndSamplingSelectionDialog(QDialog):
+class EngineAndSamplingSelectionWidget(QWidget):
 
     def __init__(self, camera: zivid.Camera):
         super().__init__()
@@ -216,15 +286,26 @@ class EngineAndSamplingSelectionDialog(QDialog):
         form_layout.addRow("Select Sampling Mode", self.sampling_mode_selector)
         layout.addLayout(form_layout)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
-        self.button_box.accepted.connect(self.accept)
-
-        layout.addWidget(self.button_box)
-
         self.setLayout(layout)
 
+    def get_settings(self):
+        engine = self.engine_selector.currentText()
+        sampling_pixel = self.sampling_mode_selector.currentText()
+        return _settings_for_hand_eye(self.camera, engine, sampling_pixel)
 
-class PresetSelectionDialog(QDialog):
+    def reject(self):
+        engine = self.engine_selector.currentText()
+        sampling_pixel = self.sampling_mode_selector.currentText()
+        QMessageBox.critical(
+            None,
+            "Engine and Sampling Selection",
+            f"""Engine and Sampling selection is required. Will default to:
+  - {'Engine':<20} {engine}
+  - {'Sampling Pixel':<18} {sampling_pixel}""",
+        )
+
+
+class PresetSelectionWidget(QWidget):
 
     def __init__(self, camera: zivid.Camera):
         super().__init__()
@@ -246,13 +327,6 @@ class PresetSelectionDialog(QDialog):
         form_layout.addRow("Select Preset", self.preset_selector)
         layout.addLayout(form_layout)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-        self.button_box.button(QDialogButtonBox.Ok).setText("Use")
-        self.button_box.button(QDialogButtonBox.Cancel).setText("Do not use")
-        layout.addWidget(self.button_box)
-
         self.setLayout(layout)
 
     def update_preset_selector(self, _: int):
@@ -261,8 +335,11 @@ class PresetSelectionDialog(QDialog):
         for preset in presets:
             self.preset_selector.addItem(preset.name, preset)
 
+    def get_settings(self) -> zivid.Settings:
+        return self.preset_selector.currentData().settings
 
-class SettingsFromFileDialog(QDialog):
+
+class SettingsFromFileWidget(QWidget):
 
     def __init__(self, camera: zivid.Camera):
         super().__init__()
@@ -278,13 +355,6 @@ class SettingsFromFileDialog(QDialog):
         input_layout.addWidget(QPushButton("Browse", clicked=self.open_file_dialog))
         layout.addLayout(input_layout)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-        self.button_box.button(QDialogButtonBox.Ok).setText("Yes")
-        self.button_box.button(QDialogButtonBox.Cancel).setText("No")
-        layout.addWidget(self.button_box)
-
         self.setLayout(layout)
 
     def open_file_dialog(self):
@@ -294,38 +364,8 @@ class SettingsFromFileDialog(QDialog):
             if validate_settings_file(self.camera, file_path):
                 self.file_path_edit.setText(file_path)
 
-
-def get_engine_and_sampling_pixel(camera: zivid.Camera) -> Tuple[str, str]:
-    engine_and_sampling_dialog = EngineAndSamplingSelectionDialog(camera)
-    engine = engine_and_sampling_dialog.engine_selector.currentText()
-    sampling_pixel = engine_and_sampling_dialog.sampling_mode_selector.currentText()
-    if engine_and_sampling_dialog.exec_() != QDialog.Accepted:
-        QMessageBox.critical(
-            None,
-            "Engine and Sampling Selection",
-            f"""Engine and Sampling selection is required. Will default to:
-  - {'Engine':<20} {engine}
-  - {'Sampling Pixel':<18} {sampling_pixel}""",
-        )
-    return (
-        engine_and_sampling_dialog.engine_selector.currentText(),
-        engine_and_sampling_dialog.sampling_mode_selector.currentText(),
-    )
-
-
-def get_preset_settings(camera: zivid.Camera) -> Optional[zivid.Settings]:
-    preset = PresetSelectionDialog(camera)
-    if preset.exec_() == QDialog.Accepted:
-        return preset.preset_selector.currentData().settings
-    return None
-
-
-def get_settings_from_file(camera: zivid.Camera) -> Optional[zivid.Settings]:
-    file_dialog = SettingsFromFileDialog(camera)
-    if file_dialog.exec_() == QDialog.Accepted:
-        file_path = file_dialog.file_path_edit.text()
-        return zivid.Settings.load(file_path)
-    return None
+    def get_settings(self) -> zivid.Settings:
+        return zivid.Settings.load(self.file_path_edit.text())
 
 
 def _connect_if_not_connected(camera: zivid.Camera) -> bool:
@@ -338,46 +378,119 @@ def _connect_if_not_connected(camera: zivid.Camera) -> bool:
     return True
 
 
-def select_settings(camera: zivid.Camera) -> Optional[zivid.Settings]:
-    if _connect_if_not_connected(camera) is False:
-        return None
-    settings = get_preset_settings(camera)
-    return get_settings_from_file(camera) if settings is None else settings
+class SettingsSelectionDialog(QDialog):
+    def __init__(self, camera: zivid.Camera, show_dialog: bool):
+        super().__init__()
+        self.camera = camera
+        self.setWindowTitle("Select Camera Settings")
 
+        self.settings_for_hand_eye_gui = SettingsForHandEyeGUI()
 
-def select_settings_for_hand_eye(camera: zivid.Camera) -> SettingsForHandEyeGUI:
-    settings = select_settings(camera)
-    engine, sampling_pixel = (
-        get_engine_and_sampling_pixel(camera) if settings is None else (settings.engine, settings.sampling.pixel)
-    )
-    hand_eye_settings = _settings_for_hand_eye(camera, engine, sampling_pixel)
-    settings_2d3d = zivid.Settings.from_serialized(hand_eye_settings.serialize()) if settings is None else settings
-    settings_2d3d.sampling.color = None
-    infield_frame = zivid.calibration.capture_calibration_board(camera)
-    infield_correction_settings = infield_frame.settings
-    return SettingsForHandEyeGUI(
-        production=SettingsPixelMappingIntrinsics(
-            settings_2d3d=settings_2d3d,
-            pixel_mapping=calibration.pixel_mapping(camera, settings_2d3d),
-            intrinsics=calibration.intrinsics(camera, settings_2d3d.color if settings_2d3d.color else settings_2d3d),
-        ),
-        hand_eye=SettingsPixelMappingIntrinsics(
-            settings_2d3d=hand_eye_settings,
-            pixel_mapping=calibration.pixel_mapping(camera, hand_eye_settings),
-            intrinsics=calibration.intrinsics(
-                camera, hand_eye_settings.color if hand_eye_settings.color else hand_eye_settings
-            ),
-        ),
-        infield_correction=SettingsPixelMappingIntrinsics(
-            settings_2d3d=infield_correction_settings,
-            pixel_mapping=calibration.pixel_mapping(camera, infield_correction_settings),
-            intrinsics=calibration.intrinsics(
-                camera,
-                (
-                    infield_correction_settings.color
-                    if infield_correction_settings.color
-                    else infield_correction_settings
+        layout = QVBoxLayout(self)
+
+        # --- Stacked widget with the choices ---
+        self.stack = QStackedWidget(self)
+        layout.addWidget(self.stack)
+
+        # 1) Preset page
+        self.preset_widget = PresetSelectionWidget(camera)
+        self.stack.addWidget(self.preset_widget)
+
+        # 2) File page
+        self.file_widget = SettingsFromFileWidget(camera)
+        self.stack.addWidget(self.file_widget)
+
+        # 3) Manual (engine + sampling) page
+        self.manual_widget = EngineAndSamplingSelectionWidget(camera)
+        self.stack.addWidget(self.manual_widget)
+
+        horizontal_layout = QHBoxLayout()
+
+        # --- Show this dialog ---
+        self.show_dialog_checkbox = QCheckBox("Show this dialog")
+        self.show_dialog_checkbox.setChecked(show_dialog)
+        horizontal_layout.addWidget(self.show_dialog_checkbox)
+
+        # --- OK/Cancel ---
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        horizontal_layout.addWidget(self.button_box)
+
+        layout.addLayout(horizontal_layout)
+
+    def next_page(self) -> bool:
+        index = self.stack.currentIndex() + 1
+        if index < self.stack.count():
+            self.stack.setCurrentIndex(index)
+            return True
+        return False
+
+    def accept(self):
+        current_widget = self.stack.currentWidget()
+        assert current_widget
+        if self.stack.currentIndex() < 2:
+            production_settings = current_widget.get_settings()
+            hand_eye_settings = _settings_for_hand_eye(
+                self.camera, production_settings.engine, production_settings.sampling.pixel
+            )
+        else:
+            production_settings = hand_eye_settings = current_widget.get_settings()
+        infield_frame = zivid.calibration.capture_calibration_board(self.camera)
+        infield_correction_settings = infield_frame.settings
+        self.settings_for_hand_eye_gui = SettingsForHandEyeGUI(
+            production=SettingsPixelMappingIntrinsics(
+                settings_2d3d=production_settings,
+                pixel_mapping=calibration.pixel_mapping(self.camera, production_settings),
+                intrinsics=calibration.intrinsics(
+                    self.camera, production_settings.color if production_settings.color else production_settings
                 ),
             ),
-        ),
+            hand_eye=SettingsPixelMappingIntrinsics(
+                settings_2d3d=hand_eye_settings,
+                pixel_mapping=calibration.pixel_mapping(self.camera, hand_eye_settings),
+                intrinsics=calibration.intrinsics(
+                    self.camera, hand_eye_settings.color if hand_eye_settings.color else hand_eye_settings
+                ),
+            ),
+            infield_correction=SettingsPixelMappingIntrinsics(
+                settings_2d3d=infield_correction_settings,
+                pixel_mapping=calibration.pixel_mapping(self.camera, infield_correction_settings),
+                intrinsics=calibration.intrinsics(
+                    self.camera,
+                    (
+                        infield_correction_settings.color
+                        if infield_correction_settings.color
+                        else infield_correction_settings
+                    ),
+                ),
+            ),
+        )
+        self.settings_for_hand_eye_gui.show_dialog = self.show_dialog_checkbox.isChecked()
+        self.settings_for_hand_eye_gui.save_choice()
+        super().accept()
+
+    def reject(self):
+        if self.next_page():
+            return
+        self.manual_widget.reject()
+        super().reject()
+
+    def get_result(self) -> SettingsForHandEyeGUI:
+        return self.settings_for_hand_eye_gui
+
+
+def select_settings_for_hand_eye(
+    camera: zivid.Camera, initial_settings: Optional[SettingsForHandEyeGUI] = None, show_anyway: bool = False
+) -> SettingsForHandEyeGUI:
+    current_settings = initial_settings or SettingsForHandEyeGUI()
+    if not _connect_if_not_connected(camera):
+        raise RuntimeError("Cannot configure Hand-Eye settings without camera connected")
+    settings_are_valid_for_this_camera = validate_settings(
+        camera, current_settings.production.settings_2d3d, show_message_box=False
     )
+    if not current_settings.show_dialog and not show_anyway and settings_are_valid_for_this_camera:
+        return current_settings
+    settings_selector = SettingsSelectionDialog(camera, current_settings.show_dialog)
+    settings_selector.exec_()
+    return settings_selector.get_result()

@@ -15,37 +15,50 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from zividsamples.gui.robot_configuration import RobotConfiguration, RobotEnum
 from zividsamples.gui.robot_control import RobotControl, RobotTarget
 from zividsamples.gui.robot_control_robodk import RobotControlRoboDK
+from zividsamples.gui.robot_control_ur_rtde_read_only import RobotControlURRTDEReadOnly
 from zividsamples.transformation_matrix import TransformationMatrix
+
+RobotControllers = {
+    RobotEnum.NO_ROBOT: None,
+    RobotEnum.ROBODK: RobotControlRoboDK(RobotConfiguration(robot_type=RobotEnum.ROBODK)),
+    RobotEnum.UR_RTDE_READ_ONLY: RobotControlURRTDEReadOnly(RobotConfiguration(robot_type=RobotEnum.UR_RTDE_READ_ONLY)),
+}
+
+GET_POSE_INTERVAL_FAST_MS = 200
+GET_POSE_INTERVAL_SLOW_MS = 500
 
 
 class RobotControlWidget(QWidget):
-    ip: str = "172.28.60.23"
-    robot_control: RobotControl
-    connected: bool = False
     robot_connected = pyqtSignal(bool)
     auto_run_toggled = pyqtSignal()
     target_pose_updated = pyqtSignal(RobotTarget)
     actual_pose_updated = pyqtSignal(RobotTarget)
-    get_user_pose: Callable[[], TransformationMatrix]
-    current_robot_target: Optional[RobotTarget] = None
-    touch_target: Optional[TransformationMatrix] = None
-    target_counter: int = 0
     robot_move_thread_done = pyqtSignal()
-    result_queue: Optional[queue.Queue] = None
-    activeButton: Optional[QPushButton] = None
 
     def __init__(
         self,
         get_user_pose: Callable[[], TransformationMatrix],
+        robot_configuration: RobotConfiguration,
         parent=None,
     ):
         super().__init__(parent)
 
-        self.get_user_pose = get_user_pose
+        self.get_user_pose: Callable[[], TransformationMatrix] = get_user_pose
 
-        self.robot_control = RobotControlRoboDK()
+        self.robot_configuration: RobotConfiguration = robot_configuration
+        self.robot_control: Optional[RobotControl] = RobotControllers[self.robot_configuration.robot_type]
+        self.get_pose_interval_ms: int = GET_POSE_INTERVAL_FAST_MS
+        self.connected: bool = False
+
+        self.current_robot_target: Optional[RobotTarget] = None
+        self.touch_target: Optional[TransformationMatrix] = None
+        self.target_counter: int = 0
+        self.result_queue: Optional[queue.Queue] = None
+        self.activeButton: Optional[QPushButton] = None
+        self.get_pose_timer: Optional[threading.Timer] = None
 
         self.create_widgets()
         self.setup_layout()
@@ -54,7 +67,7 @@ class RobotControlWidget(QWidget):
     def create_widgets(self):
 
         self.ip_input = QLineEdit()
-        self.ip_input.setText(self.ip)
+        self.ip_input.setText(self.robot_configuration.ip_addr)
 
         self.robot_control_group_box = QGroupBox("Robot")
         self.btn_connect_robot = QPushButton("Connect")
@@ -97,6 +110,16 @@ class RobotControlWidget(QWidget):
         for button, status in self.buttons_which_depend_on_connection_status.items():
             button.setDisabled(status)
 
+        self.btn_move_to_current_target.setVisible(self.robot_configuration.can_control())
+        self.btn_move_to_touch_target.setVisible(self.robot_configuration.can_control())
+        self.btn_move_home.setVisible(self.robot_configuration.can_control())
+        self.btn_move_to_next_target.setVisible(self.robot_configuration.can_control())
+        self.btn_auto_run.setVisible(self.robot_configuration.can_control())
+
+    def start_get_pose_timer(self):
+        self.get_pose_timer = threading.Timer(self.get_pose_interval_ms / 1000.0, self.on_get_pose)
+        self.get_pose_timer.start()
+
     def setup_layout(self):
         ip_form = QFormLayout()
         ip_form.addRow("Robot IP", self.ip_input)
@@ -118,16 +141,44 @@ class RobotControlWidget(QWidget):
         self.setLayout(layout)
 
     def connect_signals(self):
+        self.ip_input.editingFinished.connect(self.on_ip_input_editing_finished)
         self.btn_connect_robot.clicked.connect(self.on_connect_to_robot)
         self.btn_move_to_next_target.clicked.connect(self.on_move_to_next_target)
         self.btn_move_home.clicked.connect(self.on_move_home)
         self.btn_move_to_current_target.clicked.connect(self.on_move_to_current_target)
         self.btn_auto_run.clicked.connect(self.on_auto_run_toggled)
         self.btn_move_to_touch_target.clicked.connect(self.on_move_to_touch_target)
-        self.robot_control.target_pose_updated.connect(self.target_pose_updated.emit)
         self.robot_move_thread_done.connect(self.on_robot_done_moving)
+        if self.robot_control and self.robot_configuration.can_control():
+            self.robot_control.target_pose_updated.connect(self.target_pose_updated.emit)
+
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+        self.robot_configuration = robot_configuration
+        self.setVisible(self.robot_configuration.has_robot())
+        self.ip_input.setText(self.robot_configuration.ip_addr)
+        if self.robot_control and not self.robot_control.is_read_only():
+            try:
+                self.robot_control.target_pose_updated.disconnect(self.target_pose_updated.emit)
+            except TypeError:
+                pass  # Signal was not connected
+        if self.get_pose_timer is not None:
+            self.get_pose_timer.cancel()
+            self.get_pose_timer = None
+        if self.connected:
+            self.disconnect()
+        self.robot_control = RobotControllers[self.robot_configuration.robot_type]
+        self.btn_move_to_current_target.setVisible(self.robot_configuration.can_control())
+        self.btn_move_to_touch_target.setVisible(self.robot_configuration.can_control())
+        self.btn_move_home.setVisible(self.robot_configuration.can_control())
+        self.btn_move_to_next_target.setVisible(self.robot_configuration.can_control())
+        self.btn_auto_run.setVisible(self.robot_configuration.can_control())
+        if self.robot_control and self.robot_configuration.can_control():
+            self.robot_control.target_pose_updated.connect(self.target_pose_updated.emit)
+        self.btn_move_to_current_target.setVisible(self.robot_configuration.allow_unsafe_move)
 
     def enable_disable_buttons(self, auto_run: bool, touch: bool):
+        if self.robot_control and self.robot_control.is_read_only():
+            return
         self.buttons_which_depend_on_connection_status[self.btn_auto_run] = auto_run
         self.btn_auto_run.setEnabled(auto_run and self.connected)
         self.buttons_which_depend_on_connection_status[self.btn_move_to_touch_target] = touch
@@ -136,8 +187,9 @@ class RobotControlWidget(QWidget):
             button.setEnabled(status)
 
     def show_buttons(self, auto_run: bool, touch: bool):
-        self.btn_auto_run.setVisible(auto_run)
-        self.btn_move_to_touch_target.setVisible(touch)
+        if self.robot_configuration.can_control():
+            self.btn_auto_run.setVisible(auto_run)
+            self.btn_move_to_touch_target.setVisible(touch)
 
     def set_auto_run_active(self, auto_run_active: bool):
         self.btn_auto_run.setChecked(auto_run_active)
@@ -154,14 +206,17 @@ class RobotControlWidget(QWidget):
     def on_auto_run_toggled(self):
         self.auto_run_toggled.emit()
 
-    def toggle_unsafe_move(self, allow_unsafe_move: bool):
-        self.btn_move_to_current_target.setVisible(allow_unsafe_move)
-
     def robot_is_moving(self):
-        return self.robot_control.is_moving()
+        if self.robot_configuration.can_control():
+            assert self.robot_control is not None
+            return self.robot_control.is_moving()
+        return False
 
     def robot_is_home(self):
-        return self.robot_control.is_home()
+        if self.robot_configuration.can_control():
+            assert self.robot_control is not None
+            return self.robot_control.is_home()
+        return False
 
     def on_robot_done_moving(self):
         if self.result_queue is None:
@@ -177,6 +232,7 @@ class RobotControlWidget(QWidget):
             print("Failed to `move_to_current_target()`")
 
     def on_get_pose(self):
+        assert self.robot_control is not None
         try:
             actual_pose = self.robot_control.get_pose()
             if actual_pose:
@@ -184,25 +240,40 @@ class RobotControlWidget(QWidget):
                     self.btn_move_home.setStyleSheet("background-color: green;")
                 self.actual_pose_updated.emit(actual_pose)
         except Exception as ex:
-            QMessageBox.warning(self, "Robot Control", f"Lost connection: {ex}")
+            QMessageBox.warning(None, "Robot Control", f"Lost connection: {ex}")
+            self.disconnect()
+        if self.robot_control.is_read_only():
+            self.start_get_pose_timer()
+
+    def set_get_pose_interval(self, fast: bool):
+        if fast:
+            self.get_pose_interval_ms = GET_POSE_INTERVAL_FAST_MS
+        else:
+            self.get_pose_interval_ms = GET_POSE_INTERVAL_SLOW_MS
+        if self.get_pose_timer is not None:
+            self.get_pose_timer.cancel()
+            self.get_pose_timer = None
+            self.start_get_pose_timer()
+
+    def disconnect(self):
+        if self.connected:
+            assert self.robot_control is not None
+            if self.get_pose_timer is not None:
+                self.get_pose_timer.cancel()
+                self.get_pose_timer = None
+            print("Disconnecting")
+            self.robot_control.disconnect()
             self.btn_connect_robot.setChecked(False)
             self.btn_connect_robot.setStyleSheet("")
             self.btn_connect_robot.setText("Connect")
+            for button in self.buttons_which_depend_on_connection_status:
+                button.setDisabled(True)
+            self.connected = False
             self.robot_connected.emit(False)
 
-    def disconnect(self):
-        print("Disconnecting")
-        self.btn_connect_robot.setChecked(False)
-        self.btn_connect_robot.setStyleSheet("")
-        self.btn_connect_robot.setText("Connect")
-        for button in self.buttons_which_depend_on_connection_status:
-            button.setDisabled(True)
-        self.connected = False
-        self.robot_connected.emit(False)
-
     def on_connect_to_robot(self):
+        assert self.robot_control is not None
         if self.connected:
-            self.robot_control.disconnect()
             self.disconnect()
         else:
             self.btn_connect_robot.setChecked(True)
@@ -210,7 +281,7 @@ class RobotControlWidget(QWidget):
             self.btn_connect_robot.setText("Connecting...")
             QApplication.processEvents()
             try:
-                self.robot_control.connect(self.ip)
+                self.robot_control.connect()
                 self.btn_connect_robot.setStyleSheet("background-color: green;")
                 self.btn_connect_robot.setText("Disconnect")
                 self.on_get_pose()
@@ -225,6 +296,7 @@ class RobotControlWidget(QWidget):
 
     def move_robot_in_separate_thread(self, emit_signal_when_done: bool = False, moveL: bool = False) -> None:
         assert self.result_queue is not None
+        assert self.robot_control is not None
         if self.current_robot_target is None:
             QMessageBox.warning(None, "Robot Control", "No target set")
             self.result_queue.put(False)
@@ -270,6 +342,7 @@ class RobotControlWidget(QWidget):
         return result
 
     def on_move_home(self):
+        assert self.robot_control is not None
         self.target_counter = 0
         self.current_robot_target = self.robot_control.get_target_by_id(self.target_counter)
         self.activeButton = self.btn_move_home
@@ -277,6 +350,7 @@ class RobotControlWidget(QWidget):
             self.btn_move_home.setStyleSheet("background-color: green;")
 
     def on_move_to_next_target(self, blocking: bool = True):
+        assert self.robot_control is not None
         self.target_counter += 1
         if self.target_counter == self.robot_control.get_number_of_regular_targets():
             self.target_counter = 0
@@ -289,6 +363,7 @@ class RobotControlWidget(QWidget):
         self.move_to_current_target(blocking)
 
     def on_move_to_touch_target(self):
+        assert self.robot_control is not None
         if self.touch_target is None:
             QMessageBox.warning(self, "Robot Control", "Aruco target not acquired")
             return
@@ -314,6 +389,7 @@ class RobotControlWidget(QWidget):
         self.move_to_current_target()
 
     def on_move_to_current_target(self):
+        assert self.robot_control is not None
         self.current_robot_target = self.robot_control.get_custom_target(self.get_user_pose())
         self.activeButton = self.btn_move_to_current_target
         self.move_to_current_target()
@@ -322,6 +398,23 @@ class RobotControlWidget(QWidget):
     def set_touch_target(self, touch_target: TransformationMatrix):
         self.touch_target = touch_target
         self.btn_move_to_touch_target.setEnabled(True)
+
+    def on_ip_input_editing_finished(self):
+        if self.connected:
+            disconnect = QMessageBox.question(
+                self,
+                "Robot Control",
+                "Changing the IP address will disconnect the robot if it is connected. Do you want to continue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if disconnect == QMessageBox.Yes:
+                self.robot_configuration.ip_addr = self.ip_input.text()
+                self.disconnect()
+            else:
+                self.ip_input.setText(self.robot_configuration.ip_addr)
+        else:
+            self.robot_configuration.ip_addr = self.ip_input.text()
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         all_widgets = [

@@ -27,7 +27,8 @@ dependencies = [
     "pyqtgraph",
     "robodk",
     "scipy",
-    "zivid"
+    "zivid",
+    "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@v2.7.12"
 ]
 
 [build-system]

@@ -13,6 +13,7 @@ apt-yes update || exit
 apt-yes dist-upgrade || exit
 
 apt-yes install \
+    git \
     python3-pip \
     wget ||
     exit $?

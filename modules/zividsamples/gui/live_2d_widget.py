@@ -71,25 +71,29 @@ class Live2DWidget(QWidget):
         for acquisition in settings_2d.acquisitions:
             max_exposure_time = datetime.timedelta(microseconds=20000)
             current_exposure_time = acquisition.exposure_time
-            exposure_increase = min(
-                max_exposure_time - current_exposure_time, current_exposure_time * relative_brightness
+            exposure_increase = max(
+                datetime.timedelta(0),
+                min(max_exposure_time - current_exposure_time, current_exposure_time * relative_brightness),
             )
             acquisition.exposure_time += exposure_increase
-            remaining_relative_brightness = relative_brightness / (exposure_increase / current_exposure_time)
-            acquisition.gain *= max(1.0, min(16.0, remaining_relative_brightness))
+            remaining_relative_brightness = (
+                relative_brightness
+                if exposure_increase == datetime.timedelta(0)
+                else relative_brightness / (exposure_increase / current_exposure_time)
+            )
+            acquisition.gain = max(1.0, min(acquisition.gain * remaining_relative_brightness, 16.0))
             acquisition.brightness = 0.0
         return settings_2d
 
     def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str):
+        settings_2d_copy = zivid.Settings2D.from_serialized(settings_2d.serialize())
         if camera_model in [
             zivid.CameraInfo.Model.zivid2PlusMR60,
             zivid.CameraInfo.Model.zivid2PlusMR130,
             zivid.CameraInfo.Model.zivid2PlusLR110,
         ]:
-            settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
-        self.settings_2d = self.update_exposure_based_on_relative_brightness(
-            zivid.Settings2D.from_serialized(zivid.Settings2D.serialize(settings_2d))
-        )
+            settings_2d_copy.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
+        self.settings_2d = self.update_exposure_based_on_relative_brightness(settings_2d_copy)
         if camera_model in [
             zivid.CameraInfo.Model.zivid2PlusMR60,
             zivid.CameraInfo.Model.zivid2PlusMR130,

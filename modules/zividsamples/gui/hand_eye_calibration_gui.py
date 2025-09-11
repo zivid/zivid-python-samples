@@ -23,6 +23,7 @@ from zividsamples.gui.hand_eye_configuration import CalibrationObject, HandEyeCo
 from zividsamples.gui.marker_widget import MarkerConfiguration
 from zividsamples.gui.pose_pair_selection_widget import PosePair, PosePairSelectionWidget, directory_has_pose_pair_data
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.gui.set_fixed_objects import FixedCalibrationObjectsData, set_fixed_objects
@@ -33,7 +34,7 @@ from zividsamples.transformation_matrix import TransformationMatrix
 
 class HandEyeCalibrationGUI(QWidget):
     data_directory: Path
-    use_robot: bool
+    robot_configuration: RobotConfiguration
     hand_eye_configuration: HandEyeConfiguration
     marker_configuration: MarkerConfiguration = MarkerConfiguration()
     pose_pair: PosePair
@@ -51,7 +52,7 @@ class HandEyeCalibrationGUI(QWidget):
     def __init__(
         self,
         data_directory: Path,
-        use_robot: bool,
+        robot_configuration: RobotConfiguration,
         hand_eye_configuration: HandEyeConfiguration,
         marker_configuration: MarkerConfiguration,
         cv2_handler: CV2Handler,
@@ -69,7 +70,7 @@ class HandEyeCalibrationGUI(QWidget):
         ]
 
         self.data_directory = data_directory
-        self.use_robot = use_robot
+        self.robot_configuration = robot_configuration
         self.hand_eye_configuration = hand_eye_configuration
         self.marker_configuration = marker_configuration
         self.fixed_objects = FixedCalibrationObjectsData(
@@ -84,7 +85,6 @@ class HandEyeCalibrationGUI(QWidget):
         self.update_instructions(
             has_detection_result=self.has_detection_result,
             robot_pose_confirmed=self.has_confirmed_robot_pose,
-            used_data=False,
             calibrated=False,
         )
 
@@ -98,7 +98,7 @@ class HandEyeCalibrationGUI(QWidget):
         self.robot_pose_widget.setObjectName("HE-Calibration-robot_pose_widget")
         self.confirm_robot_pose_button = QPushButton("Confirm Robot Pose")
         self.confirm_robot_pose_button.setCheckable(True)
-        self.confirm_robot_pose_button.setVisible(not self.use_robot)
+        self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.confirm_robot_pose_button.setObjectName("HE-Calibration-confirm_robot_pose_button")
         self.detection_visualization_widget = DetectionVisualizationWidget(
             hand_eye_configuration=self.hand_eye_configuration
@@ -106,7 +106,6 @@ class HandEyeCalibrationGUI(QWidget):
         self.pose_pair_selection_widget = PosePairSelectionWidget(directory=self.data_directory)
         self.pose_pair_selection_widget.setVisible(False)
         self.hand_eye_calibration_buttons = HandEyeCalibrationButtonsWidget()
-        self.hand_eye_calibration_buttons.use_data_button.setEnabled(False)
         self.hand_eye_calibration_buttons.calibrate_button.setEnabled(False)
         self.hand_eye_calibration_buttons.setObjectName("HE-Calibration-hand_eye_calibration_buttons")
 
@@ -134,7 +133,6 @@ class HandEyeCalibrationGUI(QWidget):
         self.setLayout(layout)
 
     def connect_signals(self):
-        self.hand_eye_calibration_buttons.use_data_button_clicked.connect(self.on_use_data_button_clicked)
         self.hand_eye_calibration_buttons.calibrate_button_clicked.connect(self.on_calibrate_button_clicked)
         self.hand_eye_calibration_buttons.use_fixed_objects_toggled.connect(self.on_use_fixed_objects_toggled)
         self.confirm_robot_pose_button.clicked.connect(self.on_confirm_robot_pose_button_clicked)
@@ -142,16 +140,14 @@ class HandEyeCalibrationGUI(QWidget):
         self.pose_pair_selection_widget.pose_pair_clicked.connect(self.on_pose_pair_clicked)
         self.pose_pair_selection_widget.pose_pairs_updated.connect(self.on_pose_pairs_update)
 
-    def update_instructions(
-        self, has_detection_result: bool, robot_pose_confirmed: bool, used_data: bool, calibrated: bool
-    ):
+    def update_instructions(self, has_detection_result: bool, robot_pose_confirmed: bool, calibrated: bool):
         self.has_confirmed_robot_pose = robot_pose_confirmed
         self.has_detection_result = has_detection_result and self.has_confirmed_robot_pose
         minimum_captures_to_go = (
             self.minimum_pose_pairs_for_calibration - self.pose_pair_selection_widget.number_of_active_pose_pairs()
         )
         self.instruction_steps = {}
-        if self.use_robot:
+        if self.robot_configuration.can_control:
             self.instruction_steps[
                 "Move Robot (click 'Move to next target', 'Home' or Disconnect→manually move robot→Connect)"
             ] = self.has_confirmed_robot_pose
@@ -161,13 +157,9 @@ class HandEyeCalibrationGUI(QWidget):
             self.instruction_steps[f"Capture (at least {minimum_captures_to_go} more)"] = self.has_detection_result
         else:
             self.instruction_steps["Capture"] = self.has_detection_result
-        self.instruction_steps["Use data"] = used_data
         if minimum_captures_to_go <= 0:
             self.instruction_steps["Calibrate"] = calibrated
         self.instructions_updated.emit()
-        self.hand_eye_calibration_buttons.use_data_button.setEnabled(
-            self.has_detection_result and self.has_confirmed_robot_pose
-        )
         self.confirm_robot_pose_button.setStyleSheet(
             "background-color: green;" if self.has_confirmed_robot_pose else ""
         )
@@ -189,6 +181,15 @@ class HandEyeCalibrationGUI(QWidget):
     def rotation_format_update(self, rotation_format: RotationInformation):
         self.robot_pose_widget.set_rotation_format(rotation_format)
 
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+        self.robot_configuration = robot_configuration
+        self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
+        self.update_instructions(
+            has_detection_result=self.has_detection_result,
+            robot_pose_confirmed=self.has_confirmed_robot_pose,
+            calibrated=False,
+        )
+
     def on_select_fixed_objects_action_triggered(self):
         updated_fixed_objects = set_fixed_objects(self.fixed_objects, self.robot_pose_widget.rotation_information)
         if updated_fixed_objects is not None:
@@ -196,16 +197,6 @@ class HandEyeCalibrationGUI(QWidget):
 
     def toggle_advanced_view(self, checked):
         self.robot_pose_widget.toggle_advanced_section(checked)
-
-    def toggle_use_robot(self, use_robot: bool):
-        self.use_robot = use_robot
-        self.confirm_robot_pose_button.setVisible(not self.use_robot)
-        self.update_instructions(
-            has_detection_result=self.has_detection_result,
-            robot_pose_confirmed=self.has_confirmed_robot_pose,
-            used_data=False,
-            calibrated=False,
-        )
 
     def on_start_auto_run(self) -> bool:
         if self.pose_pair_selection_widget.number_of_active_pose_pairs() == 0:
@@ -270,22 +261,23 @@ class HandEyeCalibrationGUI(QWidget):
                 detection_result=detection_result,
                 camera_pose=copy.deepcopy(camera_pose),
             )
-            self.update_instructions(
-                has_detection_result=True,
-                robot_pose_confirmed=self.has_confirmed_robot_pose,
-                used_data=False,
-                calibrated=False,
-            )
+            if self.has_confirmed_robot_pose:
+                self.use_data()
+            else:
+                self.update_instructions(
+                    has_detection_result=True,
+                    robot_pose_confirmed=self.has_confirmed_robot_pose,
+                    calibrated=False,
+                )
         except RuntimeError as ex:
             self.detection_visualization_widget.set_error_message(str(ex))
             raise ex
 
-    def on_use_data_button_clicked(self):
+    def use_data(self):
         self.pose_pair_selection_widget.add_pose_pair(self.pose_pair)
         self.update_instructions(
             has_detection_result=False,
             robot_pose_confirmed=False,
-            used_data=True,
             calibrated=False,
         )
 
@@ -325,7 +317,6 @@ class HandEyeCalibrationGUI(QWidget):
                 self.update_instructions(
                     has_detection_result=False,
                     robot_pose_confirmed=False,
-                    used_data=False,
                     calibrated=True,
                 )
                 self.calibration_finished.emit(TransformationMatrix.from_matrix(hand_eye_transform))
@@ -340,7 +331,6 @@ class HandEyeCalibrationGUI(QWidget):
         self.update_instructions(
             has_detection_result=False,
             robot_pose_confirmed=confirmed,
-            used_data=False,
             calibrated=False,
         )
 

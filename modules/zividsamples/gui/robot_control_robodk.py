@@ -1,15 +1,14 @@
-import random
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-import robodk
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from robodk.robolink import ITEM_TYPE_ROBOT, RUNMODE_RUN_ROBOT, Item, Robolink, TargetReachError
 from robodk.robomath import Mat
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotControl, RobotTarget
 from zividsamples.transformation_matrix import Distance, TransformationMatrix
 
@@ -27,8 +26,8 @@ class RobotControlRoboDK(RobotControl):
     translation_tolerance: float = 2.0
     rotation_tolerance: float = 1e-3
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, robot_configuration: RobotConfiguration):
+        super().__init__(robot_configuration=robot_configuration)
         self.robot_handle = None
 
     def _robodk_pose_to_transformation_matrix(self, pose: Any) -> TransformationMatrix:
@@ -169,17 +168,19 @@ class RobotControlRoboDK(RobotControl):
             )
         self.custom_target = robodk_items["CustomTarget"]
 
-    def connect(self, ip_address: str):
+    def connect(self):
         self.rdk = Robolink(args=["/NOSPLASH", "/NOSHOW", "/HIDDEN"], quit_on_close=True)
         if self.rdk is None:
             raise RuntimeError("Robolink failed to initialize")
         self.setup_station()
         self.setup_targets()
         self.robot_handle = self.rdk.ItemUserPick("", ITEM_TYPE_ROBOT)
-        print(f"Connecting to robot on {ip_address}")
+        print(f"Connecting to robot on {self.robot_configuration.ip_addr}")
+        if self.robot_handle is None:
+            raise RuntimeError("No robot found in the station. Please add a robot to the station.")
         if (
             self.robot_handle.ConnectSafe(
-                robot_ip=ip_address,
+                robot_ip=self.robot_configuration.ip_addr,
                 max_attempts=3,
                 wait_connection=2,
                 callback_abort=None,
@@ -232,26 +233,18 @@ class RobotControlRoboDK(RobotControl):
                     self.robot_handle.MoveJ(self.robodk_targets[self.target_name_mapping[target.name]], blocking=False)
             else:
                 target_pose = Mat.fromNumpy(self.current_target.pose.as_matrix())
-                try:
+
+                solution = self._find_joint_target(target_pose)
+
+                if solution is not None:
+                    # Move to the best collision-free solution
+                    self.robot_moving = True
                     if moveL:
-                        self.robot_handle.MoveL(target_pose, blocking=False)
+                        self.robot_handle.MoveL(solution, blocking=False)
                     else:
-                        self.robot_handle.MoveJ(target_pose, blocking=False)
-                except TargetReachError as ex:
-                    # Get current joint positions
-                    current_joints = self.robot_handle.Joints()
-
-                    solution = self._find_joint_target(current_joints, target_pose)
-
-                    if solution is not None:
-                        # Move to the best collision-free solution
-                        self.robot_moving = True
-                        if moveL:
-                            self.robot_handle.MoveL(solution, blocking=False)
-                        else:
-                            self.robot_handle.MoveJ(solution, blocking=False)
-                    else:
-                        raise RuntimeError(f"No collision-free solution found to target {target_pose.Pos()}") from ex
+                        self.robot_handle.MoveJ(solution, blocking=False)
+                else:
+                    raise RuntimeError(f"No collision-free solution found to target {target_pose.Pos()}")
 
             start = datetime.now()
             start_of_interval = start
@@ -270,50 +263,27 @@ class RobotControlRoboDK(RobotControl):
             self.robot_moving = False
             raise RuntimeError(f"Cannot move here, would collide. ({ex})") from ex
 
-    def _find_joint_target(self, current_joints: List[float], target_pose: Mat) -> Optional[List[float]]:
+    def _find_joint_target(self, target_pose: Mat) -> Optional[List[float]]:
         assert self.rdk is not None
         assert self.robot_handle is not None
 
-        def are_configurations_close(config1, config2, tolerance_deg=0.1):
-            # ruff: noqa: B905
-            return all(abs(a - b) < tolerance_deg for a, b in zip(config1.tolist(), config2.tolist()))
+        current_joints_config = self.robot_handle.JointsConfig(self.robot_handle.Joints())
+        current_RLF_configuration_flags = current_joints_config.list()
+        current_rear = current_RLF_configuration_flags[0]
+        current_lower = current_RLF_configuration_flags[1]
+        current_flip = current_RLF_configuration_flags[2]
+        all_solutions = self.robot_handle.SolveIK_All(target_pose)
+        solution = []
 
-        # Initialize list to store solutions
-        solutions: List[Mat] = []
+        for j in all_solutions:
+            conf_RLF = self.robot_handle.JointsConfig(j).list()
+            rear = conf_RLF[0]
+            lower = conf_RLF[1]
+            flip = conf_RLF[2]
 
-        # Try to find multiple solutions by slightly perturbing the target pose
-        for _ in range(5):  # Adjust the range as needed
-            perturbed_pose = target_pose * robodk.transl(
-                random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1)
-            )
-            solution = self.robot_handle.SolveIK(perturbed_pose)
-            if solution is not None and len(solution) > 0:
-                solutions.append(solution)
+            # Ensure a solution with the same joint configuration
+            if rear == current_rear and lower == current_lower and flip == current_flip:
+                solution = j
+                break
 
-        # Add the original solution
-        original_solution = self.robot_handle.SolveIK(target_pose)
-        if original_solution is not None and len(original_solution) > 1:
-            solutions.append(original_solution)
-
-        # Remove duplicate solutions
-        unique_solutions: List[Mat] = []
-        for sol in solutions:
-            if len(sol) > 1 and not any(
-                are_configurations_close(sol, existing_sol) for existing_sol in unique_solutions
-            ):
-                unique_solutions.append(sol)
-
-        best_solution = None
-        min_distance = float("inf")
-
-        for solution in unique_solutions:
-            # Check if this solution is collision-free
-            self.robot_handle.setJoints(solution)
-            if (-180 < solution.tolist()[1] < 0) and not self.rdk.Collisions():
-                # Calculate distance from current joint configuration
-                distance = sum((a - b) ** 2 for a, b in zip(current_joints, solution.tolist()))  # noqa: B905
-                if distance < min_distance:
-                    min_distance = distance
-                    best_solution = solution
-
-        return best_solution
+        return solution

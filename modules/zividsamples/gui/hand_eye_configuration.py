@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QSettings, pyqtSignal
 from PyQt5.QtWidgets import (
     QButtonGroup,
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QGroupBox,
@@ -22,8 +24,31 @@ class CalibrationObject(Enum):
 
 @dataclass
 class HandEyeConfiguration:
-    eye_in_hand: bool = True
-    calibration_object: CalibrationObject = CalibrationObject.Checkerboard
+
+    def __init__(self, *, eye_in_hand: Optional[bool] = None, calibration_object: Optional[CalibrationObject] = None):
+        settings = QSettings("Zivid", "HandEyeGUI")
+        settings.beginGroup("hand_eye_configuration")
+        if eye_in_hand is not None:
+            self.eye_in_hand = eye_in_hand
+        else:
+            self.eye_in_hand = settings.value("eye_in_hand", True, type=bool)
+        if calibration_object is not None:
+            self.calibration_object = calibration_object
+        else:
+            calibration_object_name = settings.value(
+                "calibration_object", CalibrationObject.Checkerboard.name, type=str
+            )
+            self.calibration_object = CalibrationObject[calibration_object_name]
+        self.show_dialog = settings.value("show_dialog", True, type=bool)
+        settings.endGroup()
+
+    def save_choice(self):
+        settings = QSettings("Zivid", "HandEyeGUI")
+        settings.beginGroup("hand_eye_configuration")
+        settings.setValue("eye_in_hand", self.eye_in_hand)
+        settings.setValue("calibration_object", self.calibration_object.name)
+        settings.setValue("show_dialog", self.show_dialog)
+        settings.endGroup()
 
 
 class HandEyeButtonsWidget(QWidget):
@@ -147,19 +172,28 @@ class HandEyeConfigurationSelection(QDialog):
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         self.button_box.accepted.connect(self.accept)
 
+        self.remember_choice_checkbox = QCheckBox("Show this dialog")
+        self.remember_choice_checkbox.setChecked(self.hand_eye_configuration.show_dialog)
+
         layout = QVBoxLayout()
         layout.addWidget(self.hand_eye_buttons)
         layout.addWidget(self.button_box)
+        layout.addWidget(self.remember_choice_checkbox)
         self.setLayout(layout)
 
     def accept(self):
         self.hand_eye_configuration = self.hand_eye_buttons.hand_eye_configuration
+        self.hand_eye_configuration.show_dialog = self.remember_choice_checkbox.isChecked()
+        self.hand_eye_configuration.save_choice()
         super().accept()
 
 
 def select_hand_eye_configuration(
     initial_hand_eye_configuration: HandEyeConfiguration = HandEyeConfiguration(),
+    show_anyway: bool = False,
 ) -> HandEyeConfiguration:
+    if not show_anyway and not initial_hand_eye_configuration.show_dialog:
+        return initial_hand_eye_configuration
     dialog = HandEyeConfigurationSelection(initial_hand_eye_configuration)
     dialog.exec_()
     return dialog.hand_eye_configuration
@@ -167,5 +201,5 @@ def select_hand_eye_configuration(
 
 if __name__ == "__main__":  # NOLINT
     with ZividQtApplication():
-        hand_eye_configuration = select_hand_eye_configuration()
-        print(f"Selected settings: {hand_eye_configuration}")
+        hand_eye_configuration = select_hand_eye_configuration(show_anyway=True)
+        print(f"Selected Hand-Eye Configuration: {hand_eye_configuration}")

@@ -22,13 +22,14 @@ from zividsamples.gui.infield_correction_data_selection_widget import (
 )
 from zividsamples.gui.infield_correction_result_widget import InfieldCorrectionResultWidget
 from zividsamples.gui.qt_application import styled_link
+from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
 class InfieldCorrectionGUI(QWidget):
     data_directory: Path
-    use_robot: bool
+    robot_configuration: RobotConfiguration
     infield_correction_input_data: Optional[InfieldCorrectionInputData] = None
     has_detection_result: bool = False
     applied_correction: bool = False
@@ -129,8 +130,11 @@ class InfieldCorrectionGUI(QWidget):
         self.hand_eye_configuration = hand_eye_configuration
         self.detection_visualization_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
 
-    def toggle_use_robot(self, use_robot: bool):
-        self.use_robot = use_robot
+    def rotation_format_update(self, _):
+        pass
+
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+        self.robot_configuration = robot_configuration
         self.update_instructions(
             has_detection_result=self.has_detection_result, applied_correction=self.applied_correction
         )
