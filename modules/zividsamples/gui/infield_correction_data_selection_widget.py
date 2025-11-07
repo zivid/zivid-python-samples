@@ -1,6 +1,7 @@
+import json
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Union
 
 import numpy as np
 import zivid
@@ -53,7 +54,90 @@ class ButtonWithLabels(QPushButton):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
 
-class InfieldCorrectionInputData:
+class InfieldCorrectionInputDataCore:
+    camera_frame: zivid.Frame
+    rgba: NDArray[Shape["N, M, 4"], UInt8]  # type: ignore
+    rgba_annotated: NDArray[Shape["N, M, 4"], UInt8]  # type: ignore
+    local_trueness: float
+    position_in_fov: PositionInFOV
+    can_be_used_for_correction: bool
+
+    def __init__(
+        self,
+        *,
+        camera_frame: zivid.Frame,
+        rgba: NDArray[Shape["N, M, 4"], UInt8],  # type: ignore
+        rgba_annotated: NDArray[Shape["N, M, 4"], UInt8],  # type: ignore
+        local_trueness: float = 0.0,
+        position_in_fov: PositionInFOV,
+        can_be_used_for_correction: bool,
+    ):
+        self.camera_frame = camera_frame
+        self.rgba = rgba
+        self.rgba_annotated = rgba_annotated
+        self.local_trueness = local_trueness
+        self.position_in_fov = position_in_fov
+        self.can_be_used_for_correction = can_be_used_for_correction
+
+    def local_trueness_as_string(self) -> str:
+        return f"{self.local_trueness * 100:.3f}%"
+
+    def save_data(self, data_path) -> None:
+        with open(data_path.with_suffix(".json"), "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "local_trueness": self.local_trueness,
+                    "position_in_fov": self.position_in_fov.as_dict(),
+                },
+                f,
+            )
+        self.camera_frame.save(data_path.with_suffix(".zdf"))
+        qimage = QImage(self.rgba.data, self.rgba.shape[1], self.rgba.shape[0], QImage.Format_RGBA8888)
+        qimage.save(str(data_path.with_suffix(".png")))
+        qimage_annotated = QImage(
+            self.rgba_annotated.data, self.rgba_annotated.shape[1], self.rgba_annotated.shape[0], QImage.Format_RGBA8888
+        )
+        qimage_annotated.save(str(data_path.with_suffix(".png")).replace(".png", "_annotated.png"))
+
+    @classmethod
+    def from_path(cls, data_path: Path, cv2_handler: CV2Handler) -> "InfieldCorrectionInputDataCore":
+        with open(data_path.with_suffix(".json"), "r", encoding="utf-8") as f:
+            data_dict = json.load(f)
+            try:
+                camera_frame = zivid.Frame(data_path.with_suffix(".zdf"))
+            except Exception as ex:
+                raise RuntimeError(f"Failed to load ZDF file from {data_path.with_suffix('.zdf')}: {ex}") from ex
+            try:
+                rgba = cv2_handler.cv2.cvtColor(
+                    cv2_handler.cv2.imread(str(data_path.with_suffix(".png")), cv2_handler.cv2.IMREAD_UNCHANGED),
+                    cv2_handler.cv2.COLOR_BGRA2RGBA,
+                )
+            except Exception as ex:
+                raise RuntimeError(f"Failed to load RGBA image from {data_path.with_suffix('.png')}: {ex}") from ex
+            try:
+                rgba_annotated = cv2_handler.cv2.cvtColor(
+                    cv2_handler.cv2.imread(
+                        str(data_path.with_suffix(".png")).replace(".png", "_annotated.png"),
+                        cv2_handler.cv2.IMREAD_UNCHANGED,
+                    ),
+                    cv2_handler.cv2.COLOR_BGRA2RGBA,
+                )
+            except Exception as ex:
+                raise RuntimeError(
+                    f"Failed to load annotated RGBA image from {str(data_path.with_suffix('.png')).replace('.png', '_annotated.png')}: {ex}"
+                ) from ex
+            return cls(
+                camera_frame=camera_frame,
+                rgba=rgba,
+                rgba_annotated=rgba_annotated,
+                local_trueness=data_dict["local_trueness"],
+                position_in_fov=PositionInFOV.from_dict(data_dict["position_in_fov"]),
+                can_be_used_for_correction=False,
+            )
+
+
+class InfieldCorrectionInputData(InfieldCorrectionInputDataCore):
+    projector_image: NDArray[Shape["N, M, 4"], UInt8]  # type: ignore
 
     def __init__(
         self,
@@ -61,14 +145,16 @@ class InfieldCorrectionInputData:
         camera: zivid.Camera,
         camera_frame: zivid.Frame,
         rgba: NDArray[Shape["N, M, 4"], UInt8],  # type: ignore
-        infield_input: zivid.experimental.calibration.InfieldCorrectionInput,
+        infield_input: zivid.calibration.InfieldCorrectionInput,
         intrinsics: zivid.CameraIntrinsics,
     ):
+        # TODO: Refactor so that we can call super().__init__()  # pylint: disable=super-init-not-called
         self.cv2_handler = CV2Handler()
         self.camera_frame = camera_frame
         self.intrinsics = intrinsics
         self.infield_input = infield_input
-        camera_verification = zivid.experimental.calibration.verify_camera(self.infield_input)
+        self.can_be_used_for_correction = True
+        camera_verification = zivid.calibration.verify_camera(self.infield_input)
         self.fov = CameraFOV.from_model_and_distance(
             camera_info=self.camera_frame.camera_info, distance=camera_verification.position()[2]
         )
@@ -402,18 +488,15 @@ class InfieldCorrectionInputData:
         top_left_idx = np.lexsort((full_fov_corner_pixel_coordinates[:, 0], full_fov_corner_pixel_coordinates[:, 1]))[0]
         return np.roll(full_fov_corner_pixel_coordinates, -top_left_idx, axis=0)
 
-    def local_trueness_as_string(self) -> str:
-        return f"{self.local_trueness * 100:.3f}%"
-
 
 class InfieldCorrectionInputWidget(QWidget):
-    infield_correction_input_data: InfieldCorrectionInputData
+    infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore]
 
     def __init__(
         self,
         poseID: int,
         directory: Path,
-        infield_correction_input_data: InfieldCorrectionInputData,
+        infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore],
         parent=None,
     ):
         super().__init__(parent)
@@ -422,11 +505,11 @@ class InfieldCorrectionInputWidget(QWidget):
         self.directory = directory
         self.camera_frame_path: Path = self.directory / f"infield_calibration_input_{self.poseID}.zdf"
         self.camera_image_path: Path = self.directory / f"infield_calibration_input_{self.poseID}.png"
-        self.infield_correction_input_data = infield_correction_input_data
 
         self.selected_checkbox = QCheckBox(f"{self.poseID:>2}")
         self.selected_checkbox.setLayoutDirection(Qt.RightToLeft)
-        self.selected_checkbox.setChecked(True)
+        self.selected_checkbox.setChecked(infield_correction_input_data.can_be_used_for_correction)
+        self.selected_checkbox.setCheckable(infield_correction_input_data.can_be_used_for_correction)
         self.position_in_fov_label = QLabel()
         self.trueness_label = QLabel()
         self.clickable_labels = ButtonWithLabels(
@@ -442,42 +525,38 @@ class InfieldCorrectionInputWidget(QWidget):
 
         pose_pair_layout = QHBoxLayout()
         pose_pair_layout.addWidget(self.selected_checkbox)
-        pose_pair_layout.addWidget(self.clickable_labels)  # , stretch=1)
+        pose_pair_layout.addWidget(self.clickable_labels)
         self.setLayout(pose_pair_layout)
 
         self.update_information(infield_correction_input_data)
 
-    def update_information(self, infield_correction_input_data: InfieldCorrectionInputData):
+    def update_information(
+        self, infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore]
+    ):
         self.infield_correction_input_data = infield_correction_input_data
-        self.infield_correction_input_data.camera_frame.save(self.camera_frame_path)
-        rgba = self.infield_correction_input_data.rgba
-        qimage = QImage(rgba.data, rgba.shape[1], rgba.shape[0], QImage.Format_RGBA8888)
-        qimage.save(str(self.camera_image_path))
+        self.infield_correction_input_data.save_data(self.directory / f"infield_calibration_input_{self.poseID}")
+        self.update_gui()
+
+    def update_gui(self):
         self.position_in_fov_label.setText(str(self.infield_correction_input_data.position_in_fov))
         self.trueness_label.setText(self.infield_correction_input_data.local_trueness_as_string())
 
 
-def directory_has_infield_input_data(directory: Path) -> bool:
-    return len(list(directory.glob("infield_calibration_input_*.zdf"))) > 0
-
-
 class InfieldCorrectionDataSelectionWidget(QWidget):
-    directory: Path
-    infield_input_data_clicked = pyqtSignal(InfieldCorrectionInputData)
+    data_directory: Path
+    infield_input_data_clicked = pyqtSignal(InfieldCorrectionInputDataCore)
     infield_input_data_updated = pyqtSignal(int)
 
     def __init__(self, directory: Path, parent=None):
         super().__init__(parent)
 
         self.cv2_handler = CV2Handler()
-
+        self.data_directory = directory
         self.infield_input_data_widgets: OrderedDict[int, InfieldCorrectionInputWidget] = OrderedDict()
 
         self.create_widgets()
         self.setup_layout()
         self.connect_signals()
-
-        self.set_directory(directory)
 
     def create_widgets(self):
         self.infield_input_container = QWidget()
@@ -517,11 +596,51 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
         self.clear_infield_input_button.clicked.connect(self.on_clear_button_clicked)
         self.remove_last_infield_input_button.clicked.connect(self.on_remove_last_infield_input_button_clicked)
 
-    def set_directory(self, directory: Path):
-        self.directory = directory
+    def update_data_directory(self, data_directory: Path):
+        existing_files = list(data_directory.glob("infield_calibration_input_*.json"))
+        warning_text = (
+            """\
+You are about to load old data. This will remove all current Infield Correction Input Data.
+Do you want to proceed?
+Note that while it is possible to review the infield session, it is not possible to
+recalculate and apply infield correction from a previous session."""
+            if existing_files
+            else f"""\
+This will remove all current Infield Correction Input Data.
+Do you want to proceed?
+Your current data is kept in {self.data_directory}."""
+        )
+        if len(self.infield_input_data_widgets) > 0:
+            reply = QMessageBox.question(
+                self,
+                "Clear All Infield Input Data",
+                warning_text,
+                QMessageBox.Yes | QMessageBox.No,
+            )
+            if reply != QMessageBox.Yes:
+                return
+        self.clear_gui()
+        self.data_directory = data_directory
+        if len(existing_files) > 0:
+            self.load_existing_data(existing_files)
+
+    def load_existing_data(self, existing_files: List[Path]):
+        self.infield_input_group_box.setStyleSheet(r"QGroupBox {border: 2px solid yellow;}")
+        self.infield_input_group_box.setTitle("Infield Correction Input Data (loading...)")
+        self.setVisible(True)
+        QApplication.processEvents()
+        for file in sorted(existing_files):
+            try:
+                infield_input_data = InfieldCorrectionInputDataCore.from_path(file, self.cv2_handler)
+                self.add_infield_input_data(infield_input_data)
+            except Exception as e:
+                print(f"Failed to load: {e}")
+            QApplication.processEvents()
+        self.infield_input_group_box.setStyleSheet("")
+        self.infield_input_group_box.setTitle("Infield Correction Input Data")
 
     def on_infield_input_data_widget_selection_box_clicked(self):
-        self.infield_input_data_updated.emit(len(self.infield_input_data_widgets))
+        self.infield_input_data_updated.emit(self.can_calculate_correction())
 
     def on_infield_input_data_widget_clicked(self, infield_correction_input_widget: InfieldCorrectionInputWidget):
         for clickable_area in [p.clickable_labels for p in self.infield_input_data_widgets.values()]:
@@ -536,10 +655,10 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
             self.infield_input_layout.removeWidget(widget_to_remove)
             widget_to_remove.deleteLater()
             QApplication.processEvents()
-            self.infield_input_data_updated.emit(len(self.infield_input_data_widgets))
+            self.infield_input_data_updated.emit(self.can_calculate_correction())
 
     def on_clear_button_clicked(self):
-        self.clear()
+        self.clear_all()
 
     def create_title_row(self) -> QHBoxLayout:
         checkbox_and_poseID_spacer = QSpacerItem(75, 40, QSizePolicy.Fixed, QSizePolicy.Minimum)
@@ -551,9 +670,17 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
         title_layout.addItem(remove_button_spacer)
         return title_layout
 
+    def show_as_busy(self, active: bool):
+        self.setVisible(active or len(self.infield_input_data_widgets) > 0)
+        self.infield_input_group_box.setStyleSheet(r"QGroupBox {border: 2px solid yellow;}" if active else "")
+        self.infield_input_group_box.setTitle(
+            "Infield Correction Input Data (processing...)" if active else "Infield Correction Input Data"
+        )
+        QApplication.processEvents()
+
     def add_infield_input_data(
-        self, infield_input_data: InfieldCorrectionInputData
-    ) -> Optional[InfieldCorrectionInputWidget]:
+        self, infield_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore]
+    ) -> None:
         poseID = self.get_current_poseID()
         if poseID in self.infield_input_data_widgets:
             reply = QMessageBox.question(
@@ -564,11 +691,10 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
             )
             if reply == QMessageBox.Yes:
                 self.infield_input_data_widgets[poseID].update_information(infield_input_data)
-                return self.infield_input_data_widgets[poseID]
-            return None
+            return
 
         infield_correction_input_widget = InfieldCorrectionInputWidget(
-            poseID=poseID, directory=self.directory, infield_correction_input_data=infield_input_data
+            poseID=poseID, directory=self.data_directory, infield_correction_input_data=infield_input_data
         )
         infield_correction_input_widget.clickable_labels.clicked.connect(
             lambda: self.on_infield_input_data_widget_clicked(infield_correction_input_widget)
@@ -579,9 +705,8 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
 
         self.infield_input_layout.insertWidget(infield_correction_input_widget.poseID, infield_correction_input_widget)
         self.infield_input_data_widgets[poseID] = infield_correction_input_widget
-        self.infield_input_data_updated.emit(len(self.infield_input_data_widgets))
+        self.infield_input_data_updated.emit(self.can_calculate_correction())
         self.remove_last_infield_input_button.setEnabled(True)
-        return infield_correction_input_widget
 
     def get_current_poseID(self) -> int:
         for infield_correction_input_widget in self.infield_input_data_widgets.values():
@@ -598,11 +723,26 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
             ]
         )
 
-    def get_correction_results(self) -> List[zivid.experimental.calibration.InfieldCorrectionInput]:
+    def can_calculate_correction(self) -> bool:
+        return (
+            len(
+                [
+                    infield_correction_input_widget
+                    for infield_correction_input_widget in self.infield_input_data_widgets.values()
+                    if infield_correction_input_widget.selected_checkbox.isChecked()
+                    and infield_correction_input_widget.infield_correction_input_data.can_be_used_for_correction
+                ]
+            )
+            > 0
+        )
+
+    def get_correction_results(self) -> List[zivid.calibration.InfieldCorrectionInput]:
         return [
             infield_correction_input_widget.infield_correction_input_data.infield_input
             for infield_correction_input_widget in self.infield_input_data_widgets.values()
             if infield_correction_input_widget.selected_checkbox.isChecked()
+            and isinstance(infield_correction_input_widget.infield_correction_input_data, InfieldCorrectionInputData)
+            and infield_correction_input_widget.infield_correction_input_data.can_be_used_for_correction
         ]
 
     def _clear_layout(self, layout):
@@ -615,8 +755,23 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
             if sublayout:
                 self._clear_layout(sublayout)
 
-    def clear(self):
+    def clear_gui(self):
         self._clear_layout(self.infield_input_layout)
         self.infield_input_data_widgets.clear()
-        self.infield_input_data_updated.emit(0)
+        self.infield_input_data_updated.emit(self.can_calculate_correction())
         self.remove_last_infield_input_button.setEnabled(False)
+        self.setVisible(False)
+
+    def clear_all(self):
+        self.clear_gui()
+        if self.infield_input_data_widgets:
+            reply = QMessageBox.question(
+                self,
+                "Clear All Infield Input Data",
+                "This will remove all loaded Infield Correction Input Data. Do you want to proceed?"
+                "Note that while it is possible to review the infield session, it is not possible to"
+                "recalculate and apply infield correction from a previous session.",
+                QMessageBox.Yes | QMessageBox.No,
+            )
+            if reply == QMessageBox.Yes:
+                self.clear_gui()

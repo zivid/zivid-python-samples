@@ -261,7 +261,7 @@ class RobotControlWidget(QWidget):
             if self.get_pose_timer is not None:
                 self.get_pose_timer.cancel()
                 self.get_pose_timer = None
-            print("Disconnecting")
+            print("Disconnecting from robot")
             self.robot_control.disconnect()
             self.btn_connect_robot.setChecked(False)
             self.btn_connect_robot.setStyleSheet("")

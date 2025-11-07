@@ -19,7 +19,6 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 """
 
 import zivid
-import zivid.experimental.calibration
 from zividsamples.paths import get_sample_data_path
 
 
@@ -46,14 +45,14 @@ def _main() -> None:
     print("Detecting calibration board")
     detection_result = zivid.calibration.detect_calibration_board(frame)
 
-    infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
+    infield_input = zivid.calibration.InfieldCorrectionInput(detection_result)
     if not infield_input.valid():
         raise RuntimeError(
             f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
         )
 
     print(f"Successful measurement at {detection_result.centroid()}")
-    camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
+    camera_verification = zivid.calibration.verify_camera(infield_input)
     print(
         f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness() * 100:.3f}%"
     )

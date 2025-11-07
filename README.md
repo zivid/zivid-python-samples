@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.16.0. For
+This repository contains python code samples for Zivid SDK v2.17.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -49,10 +49,7 @@ from the camera can be used.
             from the Zivid camera with settings from YML file.
       - **advanced**
           - [capture\_2d\_and\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py) - Capture 2D and 3D with the Zivid camera.
-          - [capture\_hdr\_loop](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_loop.py) - Cover the same dynamic range in a scene with different
-            acquisition settings to optimize for quality, speed, or to
-            find a compromise.
-          - [capture\_hdr\_print\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_hdr_print_normals.py) - Capture Zivid point clouds, compute normals and print a
+          - [capture\_and\_print\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_and_print_normals.py) - Capture Zivid point clouds, compute normals and print a
             subset.
       - **info\_util\_other**
           - [adapt\_settings\_for\_flickering\_ambient\_light](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/adapt_settings_for_flickering_ambient_light.py) - Adapt camera acquisition settings based on known ambient
@@ -64,7 +61,7 @@ from the camera can be used.
             for each connected camera.
           - [camera\_user\_data](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_user_data.py) - Store user data on the Zivid camera.
           - [capture\_with\_diagnostics](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/capture_with_diagnostics.py) - Capture point clouds, with color, from the Zivid camera,
-            with settings from YML file and diagnostics enabled.
+            with default settings and diagnostics enabled.
           - [context\_manager\_with\_zivid](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/context_manager_with_zivid.py) - Sample showing how to use a context manager with Zivid
             Application and safely return processed data.
           - [firmware\_updater](https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/firmware_updater.py) - Update firmware on the Zivid camera.
@@ -87,15 +84,13 @@ from the camera can be used.
   - **applications**
       - **basic**
           - **visualization**
+              - [capture\_and\_visualize\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_and_visualize_normals.py) - Capture Zivid point clouds, compute normals and
+                convert to color map and display.
               - [capture\_from\_file\_camera\_vis\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_from_file_camera_vis_3d.py) - Capture point clouds, with color, with the Zivid file
                 camera.
-              - [capture\_hdr\_vis\_normals](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_hdr_vis_normals.py) - Capture Zivid point clouds, compute normals and
-                convert to color map and display.
               - [capture\_vis\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_vis_3d.py) - Capture point clouds, with color, from the Zivid
                 camera, and visualize it.
               - [project\_image\_start\_and\_stop](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/project_image_start_and_stop.py) - Start the Image Projection and Stop it.
-              - [read\_and\_project\_image](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/read_and_project_image.py) - Read a 2D image from file and project it using the
-                camera projector.
               - [read\_zdf\_vis\_3d](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/read_zdf_vis_3d.py) - Read point cloud data from a ZDF file and visualize
                 it.
           - **file\_formats**
@@ -106,6 +101,8 @@ from the camera can be used.
       - **advanced**
           - [auto\_2d\_settings](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/auto_2d_settings.py) - Automatically find 2D settings for a 2D capture by using a
             Zivid calibration board.
+          - [barcode\_detector](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/barcode_detector.py) - Detect and decode linear and matrix barcodes from a 2D
+            capture.
           - [color\_balance](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/color_balance.py) - Balance color of a 2D image by using a Zivid calibration
             board.
           - [create\_depth\_map](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/create_depth_map.py) - Read point cloud data from a ZDF file, convert it to
@@ -119,6 +116,8 @@ from the camera can be used.
             mask, and visualize it.
           - [project\_and\_find\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/project_and_find_marker.py) - Show a marker using the projector, capture a set of 2D
             images to find the marker coordinates (2D and 3D).
+          - [read\_project\_and\_capture\_image](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/read_project_and_capture_image.py) - Read a 2D image from file and project it using the camera
+            projector.
           - [reproject\_points](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/reproject_points.py) - Illuminate checkerboard (Zivid Calibration Board) centers
             by getting the checkerboard feature points
           - [roi\_box\_via\_aruco\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/roi_box_via_aruco_marker.py) - Filter the point cloud based on a ROI box given relative
@@ -184,6 +183,9 @@ from the camera can be used.
           - [robodk\_tools](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/robodk_tools.py) - Robot Control Module
           - [save\_load\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_load_matrix.py) - Save and load Zivid 4x4 transformation matrices from and
             to YAML files.
+          - [save\_load\_transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_load_transformation_matrix.py) -
+            assert\_affine\_matrix\_and\_save(transformation\_matrix.as\_matrix(),
+            yaml\_path)
           - [settings\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/settings_utils.py) - categories = zivid.presets.categories2d(camera.info.model)
           - [transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/transformation_matrix.py) - Convenience functions and a class for 4x4 transformation
             matrices.

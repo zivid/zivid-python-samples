@@ -103,7 +103,7 @@ def main() -> None:
         settings_path = (
             get_sample_data_path()
             / "Settings"
-            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace(' ', '_')}_ManufacturingSpecular.yml"
+            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace('3', 'Three').replace(' ', '_')}_ManufacturingSpecular.yml"
         )
         print(f"Imaging from camera: {camera.info.serial_number}")
         frame = camera.capture(zivid.Settings.load(settings_path))

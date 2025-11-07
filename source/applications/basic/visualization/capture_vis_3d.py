@@ -17,7 +17,6 @@ def _main() -> None:
     print("Configuring settings")
     settings = zivid.Settings()
     settings.acquisitions.append(zivid.Settings.Acquisition())
-    settings.acquisitions[0].aperture = 5.66
     settings_2d = zivid.Settings2D()
     settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
     settings.color = settings_2d

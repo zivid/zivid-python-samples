@@ -25,6 +25,7 @@ class RobotControlRoboDK(RobotControl):
     robot_moving: bool = False
     translation_tolerance: float = 2.0
     rotation_tolerance: float = 1e-3
+    targets: Dict = {}
 
     def __init__(self, robot_configuration: RobotConfiguration):
         super().__init__(robot_configuration=robot_configuration)
@@ -136,7 +137,6 @@ class RobotControlRoboDK(RobotControl):
     def setup_targets(self):
         assert self.rdk
         list_items = self.rdk.ItemList()
-        self.targets = {}
         robodk_items = {item.Name(): item for item in list_items}
         self.robodk_targets = {
             key: value for key, value in robodk_items.items() if key.startswith("Target") or key.startswith("HE-Pose")

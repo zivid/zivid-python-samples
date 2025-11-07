@@ -10,10 +10,10 @@ The `zividsamples` package is available in the /modules folder in the
 
 """
 
+import functools
 import sys
 import time
 from enum import Enum
-from pathlib import Path
 from typing import Dict, List, Optional
 
 import zivid
@@ -33,6 +33,7 @@ from PyQt5.QtWidgets import (
 from zividsamples.gui.buttons_widget import CameraButtonsWidget
 from zividsamples.gui.camera_selection import select_camera
 from zividsamples.gui.cv2_handler import CV2Handler
+from zividsamples.gui.data_directory import DataDirectoryManager
 from zividsamples.gui.hand_eye_calibration_gui import HandEyeCalibrationGUI
 from zividsamples.gui.hand_eye_configuration import (
     CalibrationObject,
@@ -67,6 +68,7 @@ class AutoRunState(Enum):
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class HandEyeGUI(QMainWindow):
     camera: Optional[zivid.Camera]
+    data_directory_manager: DataDirectoryManager
     settings: SettingsForHandEyeGUI
     hand_eye_configuration: HandEyeConfiguration
     marker_configuration: MarkerConfiguration
@@ -78,6 +80,8 @@ class HandEyeGUI(QMainWindow):
     projection_handle: Optional[zivid.projection.ProjectedImage]
     last_frame: Optional[zivid.Frame]
     common_instructions: Dict[str, bool]
+    projection_error_dialog: QMessageBox
+    tab_widgets: List[QWidget]
 
     def __init__(self, zivid_app: zivid.Application, parent=None):  # noqa: ANN001
         super().__init__(parent)
@@ -91,16 +95,23 @@ class HandEyeGUI(QMainWindow):
         self.create_toolbar()
         self.connect_signals()
         self.current_tab_widget = self.hand_eye_calibration_gui
-        self.main_tab_widget.setCurrentWidget(self.hand_eye_calibration_gui)
         self.on_instructions_updated()
+        for widget in self.tab_widgets:
+            self.data_directory_manager.register_tab_widget(widget, widget.objectName())
 
         if self.camera:
             self.live2d_widget.update_settings_2d(self.settings.production.settings_2d3d.color, self.camera.info.model)
             self.live2d_widget.start_live_2d()
 
-        QTimer.singleShot(0, self.update_tab_order)
+        QTimer.singleShot(0, functools.partial(self.main_tab_widget.setCurrentWidget, self.hand_eye_calibration_gui))
+        QTimer.singleShot(100, self.update_tab_order)
 
     def configuration_wizard(self) -> None:
+        self.data_directory_manager = DataDirectoryManager()
+        if self.data_directory_manager.show_on_startup():
+            self.data_directory_manager.select_folder()
+        else:
+            self.data_directory_manager.start_new_session()
         self.camera = select_camera(self.zivid_app, connect=True)
         self.hand_eye_configuration = select_hand_eye_configuration()
         self.marker_configuration = (
@@ -128,51 +139,57 @@ class HandEyeGUI(QMainWindow):
 
         self.preparation_tab_widget = QTabWidget()
         self.preparation_tab_widget.setObjectName("preparation_tab_widget")
-        self.warmup_gui = WarmUpGUI()
+        self.warmup_gui = WarmUpGUI(data_directory=self.data_directory_manager.folder("Warmup"))
+        self.warmup_gui.setObjectName("Warmup")
         self.preparation_tab_widget.addTab(self.warmup_gui, "Warmup")
         self.infield_correction_gui = InfieldCorrectionGUI(
-            data_directory=Path(__file__).parent,
+            data_directory=self.data_directory_manager.folder("Infield"),
             hand_eye_configuration=self.hand_eye_configuration,
             cv2_handler=cv2_handler,
             get_camera=lambda: self.camera,
         )
+        self.infield_correction_gui.setObjectName("Infield")
         self.preparation_tab_widget.addTab(self.infield_correction_gui, "Infield Correction")
         self.main_tab_widget.addTab(self.preparation_tab_widget, "PREPARE")
 
         self.hand_eye_calibration_gui = HandEyeCalibrationGUI(
-            data_directory=Path(__file__).parent,
+            data_directory=self.data_directory_manager.folder("Calibration"),
             robot_configuration=self.robot_configuration,
             hand_eye_configuration=self.hand_eye_configuration,
             marker_configuration=self.marker_configuration,
             cv2_handler=cv2_handler,
             initial_rotation_information=self.rotation_information,
         )
+        self.hand_eye_calibration_gui.setObjectName("Calibration")
         self.main_tab_widget.addTab(self.hand_eye_calibration_gui, "CALIBRATE")
 
         self.verification_tab_widget = QTabWidget()
         self.verification_tab_widget.setObjectName("verification_tab_widget")
         self.touch_gui = TouchGUI(
-            data_directory=Path(__file__).parent,
+            data_directory=self.data_directory_manager.folder("Touch"),
             hand_eye_configuration=self.hand_eye_configuration,
             initial_rotation_information=self.rotation_information,
         )
+        self.touch_gui.setObjectName("Touch")
         if self.robot_configuration.can_control():
             self.verification_tab_widget.addTab(self.touch_gui, "by Touching")
         self.hand_eye_verification_gui = HandEyeVerificationGUI(
-            data_directory=Path(__file__).parent,
+            data_directory=self.data_directory_manager.folder("Projection"),
             robot_configuration=self.robot_configuration,
             hand_eye_configuration=self.hand_eye_configuration,
             marker_configuration=self.marker_configuration,
             cv2_handler=cv2_handler,
             initial_rotation_information=self.rotation_information,
         )
+        self.hand_eye_verification_gui.setObjectName("Projection")
         self.verification_tab_widget.addTab(self.hand_eye_verification_gui, "with Projection")
         self.stitch_gui = StitchGUI(
-            data_directory=Path(__file__).parent,
+            data_directory=self.data_directory_manager.folder("Stitching"),
             robot_configuration=self.robot_configuration,
             hand_eye_configuration=self.hand_eye_configuration,
             initial_rotation_information=self.rotation_information,
         )
+        self.stitch_gui.setObjectName("Stitching")
         self.verification_tab_widget.addTab(self.stitch_gui, "by Stitching")
         self.main_tab_widget.addTab(self.verification_tab_widget, "VERIFY")
 
@@ -197,9 +214,23 @@ class HandEyeGUI(QMainWindow):
         self.camera_buttons = CameraButtonsWidget(capture_button_text="Capture (F5)")
         self.camera_buttons.set_connection_status(self.camera)
 
+        self.projection_error_dialog = QMessageBox(self)
+        self.projection_error_dialog.setWindowTitle("Projection")
+        self.projection_error_dialog.setIcon(QMessageBox.Critical)
+        self.projection_error_dialog.setStandardButtons(QMessageBox.Ok)
+
         self.setup_instructions()
         self.tutorial_widget = TutorialWidget()
         self.tutorial_widget.setMinimumWidth(600)
+
+        self.tab_widgets: List[QWidget] = [
+            self.warmup_gui,
+            self.infield_correction_gui,
+            self.hand_eye_calibration_gui,
+            self.hand_eye_verification_gui,
+            self.stitch_gui,
+            self.touch_gui,
+        ]
 
         self.setCentralWidget(self.central_widget)
 
@@ -236,10 +267,10 @@ class HandEyeGUI(QMainWindow):
 
     def create_toolbar(self) -> None:
         file_menu = self.menuBar().addMenu("File")
-        self.load_from_directory = QAction("Load data from directory", self)
-        file_menu.addAction(self.load_from_directory)
-        self.save_to_directory = QAction("Choose directory to save to", self)
-        file_menu.addAction(self.save_to_directory)
+        self.directory_load_session_action = QAction("Load Session", self)
+        self.directory_new_session_action = QAction("New Session", self)
+        file_menu.addAction(self.directory_load_session_action)
+        file_menu.addAction(self.directory_new_session_action)
         self.save_frame_action = QAction("Save last capture", self)
         self.save_frame_action.setEnabled(False)
         self.save_frame_action.setToolTip("Save the last captured frame")
@@ -278,8 +309,8 @@ class HandEyeGUI(QMainWindow):
         self.main_tab_widget.currentChanged.connect(self.on_tab_changed)
         self.preparation_tab_widget.currentChanged.connect(self.on_tab_changed)
         self.verification_tab_widget.currentChanged.connect(self.on_tab_changed)
-        self.load_from_directory.triggered.connect(self.on_load_from_data_directory_action_triggered)
-        self.save_to_directory.triggered.connect(self.on_save_to_data_directory_action_triggered)
+        self.directory_load_session_action.triggered.connect(self.on_data_directory_load_session_action_triggered)
+        self.directory_new_session_action.triggered.connect(self.on_data_directory_new_session_action_triggered)
         self.save_frame_action.triggered.connect(self.on_save_last_frame_action_triggered)
         self.select_hand_eye_configuration_action.triggered.connect(self.hand_eye_configuration_action_triggered)
         self.select_marker_configuration_action.triggered.connect(self.on_select_marker_configuration)
@@ -308,17 +339,7 @@ class HandEyeGUI(QMainWindow):
         self.robot_control_widget.target_pose_updated.connect(self.on_target_pose_updated)
         self.robot_control_widget.actual_pose_updated.connect(self.on_actual_pose_updated)
 
-    def actual_widgets(self) -> List[QWidget]:
-        return [
-            self.warmup_gui,
-            self.infield_correction_gui,
-            self.hand_eye_calibration_gui,
-            self.hand_eye_verification_gui,
-            self.stitch_gui,
-            self.touch_gui,
-        ]
-
-    def widgets_with_robot_support(self) -> List[QWidget]:
+    def tab_widgets_with_robot_support(self) -> List[QWidget]:
         return [
             self.infield_correction_gui,
             self.hand_eye_calibration_gui,
@@ -389,12 +410,15 @@ class HandEyeGUI(QMainWindow):
             assert frame_2d
             rgba = frame_2d.image_srgb().copy_data()
             self.current_tab_widget.process_capture(frame, rgba, settings)
-            if self.current_tab_widget in [self.hand_eye_verification_gui, self.infield_correction_gui]:
+            if self.current_tab_widget in [self.hand_eye_verification_gui]:
                 if was_projecting:
+                    # In case we resume live 2D before projection is ready with an update,
+                    # we reset the capture function here to avoid calling an invalid
+                    # projection API.
+                    self.live2d_widget.set_capture_function(self.camera.capture_2d)
                     self.update_projection(True)
-                    if self.current_tab_widget == self.hand_eye_verification_gui:
-                        rgba = self.live2d_widget.get_current_rgba()
-                        self.current_tab_widget.process_capture(frame, rgba, self.settings.production)
+                    rgba = self.live2d_widget.get_current_rgba()
+                    self.current_tab_widget.process_capture(frame, rgba, self.settings.production)
             if not self.live2d_widget.is_active():
                 self.live2d_widget.start_live_2d()
             if self.robot_configuration.can_control() and self.auto_run_state == AutoRunState.RUNNING:
@@ -491,7 +515,7 @@ class HandEyeGUI(QMainWindow):
 
     def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose = robot_target.pose
-        if self.current_tab_widget in self.widgets_with_robot_support():
+        if self.current_tab_widget in self.tab_widgets_with_robot_support():
             self.current_tab_widget.on_actual_pose_updated(robot_target)
         if self.robot_control_widget.robot_is_home():
             if self.auto_run_state == AutoRunState.HOMING:
@@ -548,15 +572,17 @@ class HandEyeGUI(QMainWindow):
                         raise ValueError(ex) from ex
                     self.projection_handle = zivid.projection.show_image_bgra(self.camera, projector_image)
                     assert self.projection_handle is not None
-                    self.live2d_widget.capture_function = self.projection_handle.capture
+                    self.live2d_widget.set_capture_function(self.projection_handle.capture)
                 except (RuntimeError, ValueError, AssertionError) as ex:
                     if not error_msg:
                         error_msg = f"Failed to project: {ex}"
-                    QMessageBox.critical(self, "Projection", error_msg)
+                    if not self.projection_error_dialog.isVisible():
+                        self.projection_error_dialog.setText(error_msg)
+                        self.projection_error_dialog.show()
                     if self.camera is not None:
-                        self.live2d_widget.capture_function = self.camera.capture_2d
+                        self.live2d_widget.set_capture_function(self.camera.capture_2d)
             elif self.camera is not None:
-                self.live2d_widget.capture_function = self.camera.capture_2d
+                self.live2d_widget.set_capture_function(self.camera.capture_2d)
             self.live2d_widget.start_live_2d()
 
     def on_tab_changed(self, _: int) -> None:
@@ -565,7 +591,6 @@ class HandEyeGUI(QMainWindow):
         self.previous_tab_widget = self.current_tab_widget
         self.current_tab_widget = self.get_currently_selected_tab_widget()
         if self.previous_tab_widget == self.warmup_gui:
-            self.warmup_gui.stop_warmup()
             self.camera_buttons.enable_buttons()
         if (self.previous_tab_widget in [self.hand_eye_verification_gui, self.infield_correction_gui]) and (
             self.current_tab_widget not in [self.hand_eye_verification_gui, self.infield_correction_gui]
@@ -574,7 +599,7 @@ class HandEyeGUI(QMainWindow):
                 self.live2d_widget.stop_live_2d()
                 self.projection_handle.stop()
                 if self.camera is not None:
-                    self.live2d_widget.capture_function = self.camera.capture_2d
+                    self.live2d_widget.set_capture_function(self.camera.capture_2d)
                 self.live2d_widget.start_live_2d()
         if self.current_tab_widget == self.infield_correction_gui:
             if self.infield_correction_gui.infield_correction_input_data is not None:
@@ -602,28 +627,20 @@ class HandEyeGUI(QMainWindow):
         self.robot_control_widget.set_get_pose_interval(
             fast=(self.current_tab_widget != self.hand_eye_verification_gui)
         )
-        if self.current_tab_widget == self.stitch_gui:
-            self.stitch_gui.start_3d_visualizer()
-        else:
-            self.stitch_gui.stop_3d_visualizer()
+        for widget in self.tab_widgets:
+            widget.notify_current_tab(self.current_tab_widget)
         self.on_instructions_updated()
         self.update_tab_order()
 
-    def on_load_from_data_directory_action_triggered(self) -> None:
-        data_directory = QFileDialog.getExistingDirectory(
-            self, "Select Data Directory", self.current_tab_widget.data_directory.resolve().as_posix()
-        )
-        if not data_directory:
-            return
-        self.current_tab_widget.set_load_directory(data_directory)
+    def on_data_directory_load_session_action_triggered(self) -> None:
+        self.data_directory_manager.select_folder()
+        for widget in self.tab_widgets:
+            widget.notify_current_tab(self.current_tab_widget)
 
-    def on_save_to_data_directory_action_triggered(self) -> None:
-        data_directory = Path(
-            QFileDialog.getExistingDirectory(
-                self, "Select Data Directory", self.current_tab_widget.data_directory.resolve().as_posix()
-            )
-        )
-        self.current_tab_widget.set_save_directory(data_directory)
+    def on_data_directory_new_session_action_triggered(self) -> None:
+        self.data_directory_manager.start_new_session()
+        for widget in self.tab_widgets:
+            widget.notify_current_tab(self.current_tab_widget)
 
     def on_save_last_frame_action_triggered(self) -> None:
         if self.last_frame is not None:
@@ -656,7 +673,7 @@ class HandEyeGUI(QMainWindow):
             current_rotation_information=self.rotation_information, show_anyway=True
         )
         if self.rotation_information is not None:
-            for widget in self.widgets_with_robot_support():
+            for widget in self.tab_widgets_with_robot_support():
                 widget.rotation_format_update(self.rotation_information)
 
     def on_select_fixed_objects_action_triggered(self) -> None:
@@ -680,7 +697,7 @@ class HandEyeGUI(QMainWindow):
                 self.verification_tab_widget.addTab(self.touch_gui, "by Touching")
         else:
             self.verification_tab_widget.removeTab(self.verification_tab_widget.indexOf(self.touch_gui))
-        for widget in self.actual_widgets():
+        for widget in self.tab_widgets:
             widget.robot_configuration_update(self.robot_configuration)
 
     def on_connect_button_clicked(self) -> None:
@@ -702,7 +719,7 @@ class HandEyeGUI(QMainWindow):
                     / self.settings.production.intrinsics.camera_matrix.cy,
                 )
                 if self.camera.state.connected:
-                    self.live2d_widget.capture_function = self.camera.capture_2d
+                    self.live2d_widget.set_capture_function(self.camera.capture_2d)
                     self.live2d_widget.update_settings_2d(
                         self.settings.production.settings_2d3d.color, self.camera.info.model
                     )
@@ -732,7 +749,11 @@ class HandEyeGUI(QMainWindow):
         self.on_instructions_updated()
 
     def closeEvent(self, event: QCloseEvent) -> None:  # pylint: disable=C0103
+        for widget in self.tab_widgets:
+            widget.closeEvent(event)
         self.live2d_widget.closeEvent(event)
+        self.robot_control_widget.disconnect()
+        self.data_directory_manager.close_session()
         super().closeEvent(event)
 
 

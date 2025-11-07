@@ -7,6 +7,7 @@ Warmup GUI tab for the Hand Eye GUI
 import threading
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -35,6 +36,7 @@ from zividsamples.camera_verification import (
     capture_and_measure_from_frame,
 )
 from zividsamples.gui.robot_configuration import RobotConfiguration
+from zividsamples.gui.tab_content_widget import TabContentWidget
 from zividsamples.paths import get_data_file_path
 
 
@@ -235,23 +237,34 @@ class WarmupData:
         self._update_rate_of_change()
 
     def _update_rate_of_change(self):
-        if len(self.df) < self.window_size:
+        # Ensure enough data and window size is odd
+        if len(self.df) < self.window_size or self.window_size % 2 == 0:
             return
 
-        self.df["smoothed_temperature"] = savgol_filter(
-            self.df["temperature"], window_length=self.window_size, polyorder=2
-        )
-        self.df["savitzky_golay_derivative"] = (
+        # Ensure timestamps are sorted and monotonic
+        self.df = self.df.sort_values("timestamp").reset_index(drop=True)
+
+        smoothed = savgol_filter(self.df["temperature"], window_length=self.window_size, polyorder=2)
+        derivative = (
             savgol_filter(self.df["temperature"], window_length=self.window_size, polyorder=2, deriv=1) * 60
         )  # Convert to degrees per minute
+
+        if len(smoothed) == len(self.df):
+            self.df["smoothed_temperature"] = smoothed
+        if len(derivative) == len(self.df):
+            self.df["savitzky_golay_derivative"] = derivative
+
         elapsed_time = (self.df["timestamp"] - self.df["timestamp"].iloc[0]).dt.to_pytimedelta()[-1]
         rolling_window = "1min"
         if elapsed_time > timedelta(minutes=5):
             rolling_window = "2min"
         if elapsed_time > timedelta(minutes=10):
             rolling_window = "5min"
+
+        # Set index for the data frame to use rolling with a time-based window
+        df_rolling = self.df.set_index("timestamp")
         self.df["average_rate_of_change"] = (
-            self.df.set_index("timestamp")["savitzky_golay_derivative"]
+            df_rolling["savitzky_golay_derivative"]
             .rolling(rolling_window)
             .mean()
             .reset_index(drop=True)  # type: ignore
@@ -316,7 +329,7 @@ class WarmupData:
         )
 
 
-class WarmUpGUI(QWidget):
+class WarmUpGUI(TabContentWidget):
     warmup_finished = pyqtSignal(bool)
     warmup_start_requested: pyqtSignal = pyqtSignal()
     instructions_updated: pyqtSignal = pyqtSignal()
@@ -326,8 +339,8 @@ class WarmUpGUI(QWidget):
     instruction_steps: Dict[str, bool]
 
     # pylint: disable=too-many-positional-arguments
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, data_directory: Path, parent=None):
+        super().__init__(data_directory, parent)
 
         temperature_change_threshold_degrees_per_minute = 2.0
 
@@ -439,6 +452,13 @@ class WarmUpGUI(QWidget):
         self.instruction_steps["Start Warmup"] = self.started
         self.instruction_steps["Warmup Completed"] = self.equilibrium_reached
         self.instructions_updated.emit()
+
+    def on_pending_changes(self):
+        pass
+
+    def on_tab_visibility_changed(self, is_current: bool):
+        if not is_current:
+            self.stop_warmup()
 
     def robot_configuration_update(self, _: RobotConfiguration):
         return

@@ -295,7 +295,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
                 self.camera_buttons.set_connection_status(self.camera)
                 self.configure_settings()
                 if self.camera.state.connected:
-                    self.live2d_widget.capture_function = self.camera.capture_2d
+                    self.live2d_widget.set_capture_function(self.camera.capture_2d)
                     self.live2d_widget.show()
                     self.update_live2d_settings()
                     self.live2d_widget.start_live_2d()

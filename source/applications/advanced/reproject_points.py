@@ -58,19 +58,20 @@ def _get_2d_capture_settings(camera: zivid.Camera) -> zivid.Settings2D:
         Returns:
             Sampling color for the camera model
         """
-        if model in [
+        if model in {
             zivid.CameraInfo.Model.zividTwo,
             zivid.CameraInfo.Model.zividTwoL100,
             zivid.CameraInfo.Model.zivid2PlusM130,
             zivid.CameraInfo.Model.zivid2PlusM60,
             zivid.CameraInfo.Model.zivid2PlusL110,
-        ]:
+        }:
             sampling_color = zivid.Settings2D.Sampling.Color.rgb
-        elif model in [
+        elif model in {
             zivid.CameraInfo.Model.zivid2PlusMR130,
             zivid.CameraInfo.Model.zivid2PlusMR60,
             zivid.CameraInfo.Model.zivid2PlusLR110,
-        ]:
+            zivid.CameraInfo.Model.zivid3XL250,
+        }:
             sampling_color = zivid.Settings2D.Sampling.Color.grayscale
         else:
             raise ValueError(f"Unsupported camera model '{model}'")
@@ -82,7 +83,7 @@ def _get_2d_capture_settings(camera: zivid.Camera) -> zivid.Settings2D:
     except RuntimeError:
         settings_2d = zivid.Settings2D(
             acquisitions=[
-                zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=2.83)
+                zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=timedelta(microseconds=20000), aperture=3.0)
             ],
             sampling=zivid.Settings2D.Sampling(color=sampling_color, pixel=zivid.Settings2D.Sampling.Pixel.all),
         )

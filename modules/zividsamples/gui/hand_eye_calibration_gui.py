@@ -21,7 +21,7 @@ from zividsamples.gui.cv2_handler import CV2Handler
 from zividsamples.gui.detection_visualization import DetectionVisualizationWidget
 from zividsamples.gui.hand_eye_configuration import CalibrationObject, HandEyeConfiguration
 from zividsamples.gui.marker_widget import MarkerConfiguration
-from zividsamples.gui.pose_pair_selection_widget import PosePair, PosePairSelectionWidget, directory_has_pose_pair_data
+from zividsamples.gui.pose_pair_selection_widget import PosePair, PosePairSelectionWidget
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
@@ -29,11 +29,12 @@ from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.gui.set_fixed_objects import FixedCalibrationObjectsData, set_fixed_objects
 from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.gui.show_yaml_dialog import show_yaml_dialog
+from zividsamples.gui.tab_with_robot_support import TabWidgetWithRobotSupport
+from zividsamples.save_load_transformation_matrix import load_transformation_matrix, save_transformation_matrix
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
-class HandEyeCalibrationGUI(QWidget):
-    data_directory: Path
+class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
     robot_configuration: RobotConfiguration
     hand_eye_configuration: HandEyeConfiguration
     marker_configuration: MarkerConfiguration = MarkerConfiguration()
@@ -59,7 +60,7 @@ class HandEyeCalibrationGUI(QWidget):
         initial_rotation_information: RotationInformation,
         parent=None,
     ):
-        super().__init__(parent)
+        super().__init__(data_directory, parent)
 
         self.description = [
             "In order to calibrate the hand-eye transformation we need to collect data from the robot and the camera. "
@@ -69,7 +70,6 @@ class HandEyeCalibrationGUI(QWidget):
             "The steps above will guide you through the process.",
         ]
 
-        self.data_directory = data_directory
         self.robot_configuration = robot_configuration
         self.hand_eye_configuration = hand_eye_configuration
         self.marker_configuration = marker_configuration
@@ -90,7 +90,6 @@ class HandEyeCalibrationGUI(QWidget):
 
     def create_widgets(self, initial_rotation_information: RotationInformation):
         self.robot_pose_widget = PoseWidget.Robot(
-            self.data_directory / "robot_pose.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
@@ -165,6 +164,20 @@ class HandEyeCalibrationGUI(QWidget):
         )
         self.confirm_robot_pose_button.setChecked(self.has_confirmed_robot_pose)
 
+    def on_pending_changes(self):
+        if self.data_directory_has_data():
+            self.pose_pair_selection_widget.set_directory(self.data_directory)
+            self.pose_pair_selection_widget.load_pose_pairs(
+                calibration_object=self.hand_eye_configuration.calibration_object,
+                marker_configuration=self.marker_configuration,
+            )
+            self.calibration_finished.emit(load_transformation_matrix(self.data_directory / "hand_eye_transform.yaml"))
+        else:
+            self.pose_pair_selection_widget.set_directory(self.data_directory)
+
+    def on_tab_visibility_changed(self, is_current: bool):
+        pass
+
     def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
         self.hand_eye_configuration = hand_eye_configuration
         self.detection_visualization_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
@@ -178,8 +191,8 @@ class HandEyeCalibrationGUI(QWidget):
         self.marker_configuration = marker_configuration
         self.fixed_objects.update_marker_configuration(self.marker_configuration)
 
-    def rotation_format_update(self, rotation_format: RotationInformation):
-        self.robot_pose_widget.set_rotation_format(rotation_format)
+    def rotation_format_update(self, rotation_information: RotationInformation):
+        self.robot_pose_widget.set_rotation_format(rotation_information)
 
     def robot_configuration_update(self, robot_configuration: RobotConfiguration):
         self.robot_configuration = robot_configuration
@@ -309,9 +322,9 @@ class HandEyeCalibrationGUI(QWidget):
             if calibration_result is not None and calibration_result.valid():
                 print("Hand-Eye calibration OK")
                 print(f"Result:\n{calibration_result}")
-                hand_eye_transform = calibration_result.transform()
+                hand_eye_transformation_matrix = TransformationMatrix.from_matrix(calibration_result.transform())
                 hand_eye_transform_path = self.data_directory / "hand_eye_transform.yaml"
-                zivid.Matrix4x4(hand_eye_transform).save(hand_eye_transform_path)
+                save_transformation_matrix(hand_eye_transformation_matrix, hand_eye_transform_path)
                 self.pose_pair_selection_widget.set_residuals(calibration_result.residuals())
                 show_yaml_dialog(hand_eye_transform_path, "Hand Eye Calibration Transform")
                 self.update_instructions(
@@ -319,7 +332,7 @@ class HandEyeCalibrationGUI(QWidget):
                     robot_pose_confirmed=False,
                     calibrated=True,
                 )
-                self.calibration_finished.emit(TransformationMatrix.from_matrix(hand_eye_transform))
+                self.calibration_finished.emit(hand_eye_transformation_matrix)
             else:
                 raise RuntimeError()
         except RuntimeError as ex:
@@ -348,26 +361,6 @@ class HandEyeCalibrationGUI(QWidget):
 
     def on_target_pose_updated(self, robot_target: RobotTarget):
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
-
-    def set_save_directory(self, data_directory: Path):
-        if self.data_directory != data_directory:
-            if directory_has_pose_pair_data(data_directory):
-                message_box = QMessageBox()
-                message_box.setText("Directory already contains pose pair data. Overwrite?")
-                message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                message_box.setDefaultButton(QMessageBox.No)
-                if message_box.exec() == QMessageBox.No:
-                    return
-            self.data_directory = data_directory
-            self.pose_pair_selection_widget.set_directory(self.data_directory)
-
-    def set_load_directory(self, data_directory: Path):
-        self.data_directory = Path(data_directory)
-        self.pose_pair_selection_widget.set_directory(self.data_directory)
-        self.pose_pair_selection_widget.load_pose_pairs(
-            calibration_object=self.hand_eye_configuration.calibration_object,
-            marker_configuration=self.marker_configuration,
-        )
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []

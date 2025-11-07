@@ -115,6 +115,13 @@ def _get_acquisition_settings_limits(camera_model: str) -> dict:
             "brightness": [0, 1.8],
             "gain": [1.0, 16.0],
         }
+    elif camera_model == "zivid3XL250":
+        limits = {
+            "exposure_time": [timedelta(microseconds=600), timedelta(microseconds=20000)],
+            "aperture": [3.0, 3.0],
+            "brightness": [1.0, 3.0],
+            "gain": [1.0, 16.0],
+        }
     else:
         raise RuntimeError(f"Unsupported camera model: {camera_model}")
 
@@ -259,13 +266,16 @@ def _adjust_acquisition(acquisition: zivid.settings.Settings.Acquisition, freque
             )
 
 
-def _adapt_settings_to_ambient_light_frequency(settings_file: Path, frequency: int, limits: dict) -> zivid.Settings:
+def _adapt_settings_to_ambient_light_frequency(
+    settings_file: Path, frequency: int, limits: dict, camera_model: str
+) -> zivid.Settings:
     """Adjusts the settings to counter the flickering frequency of the ambient light.
 
     Args:
         settings_file: Path to the settings file to be adjusted.
         frequency: Integer holding the flickering frequency (50 or 60).
         limits: Dictionary holding the upper and lower limits of the exposure settings.
+        camera_model: String with the camera model name.
 
     Returns:
         Zivid settings object holding the new settings.
@@ -274,13 +284,20 @@ def _adapt_settings_to_ambient_light_frequency(settings_file: Path, frequency: i
     settings = zivid.Settings.load(settings_file)
 
     # Upper aperture limit to ensure the camera will be in focus
-    limits["aperture"][-1] = max(_find_max_aperture(settings), 5.66)
+    limits["aperture"][-1] = max(_find_max_aperture(settings), min(5.66, limits["aperture"][-1]))
 
     acquisitions_2d = settings.color.acquisitions
     acquisitions_3d = settings.acquisitions
 
     for acquisition in acquisitions_2d:
         _adjust_acquisition(acquisition, frequency, limits)
+
+    if camera_model == "zivid3XL250":
+        return settings
+
+    if camera_model in ["zivid2PlusMR130", "zivid2PlusMR60", "zivid2PlusLR110"]:
+        if settings.engine == zivid.Settings.Engine.omni:
+            return settings
 
     for acquisition in acquisitions_3d:
         # Lower limit for brightness to ensure sufficient signal for 3D
@@ -312,7 +329,7 @@ def _main() -> None:
 
         acquisition_settings_limits = _get_acquisition_settings_limits(camera_model)
         new_settings = _adapt_settings_to_ambient_light_frequency(
-            settings_file, args.frequency, acquisition_settings_limits
+            settings_file, args.frequency, acquisition_settings_limits, camera_model
         )
 
         adapted_filename = settings_path.name.replace(".yml", f"_{args.frequency}Hz.yml")

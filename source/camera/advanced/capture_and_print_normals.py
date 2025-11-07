@@ -1,8 +1,6 @@
 """
 Capture Zivid point clouds, compute normals and print a subset.
 
-For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud.
-
 """
 
 import numpy as np
@@ -39,7 +37,7 @@ def _main() -> None:
     camera = app.connect_camera()
 
     print("Configuring settings")
-    settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (5.66, 4.00, 2.83)])
+    settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition()])
 
     print("Capturing frame (HDR)")
     frame = camera.capture_3d(settings)

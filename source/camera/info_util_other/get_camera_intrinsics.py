@@ -50,6 +50,7 @@ def _subsampled_settings_for_camera(camera: zivid.Camera) -> zivid.Settings:
         model is zivid.CameraInfo.Model.zivid2PlusMR130
         or model is zivid.CameraInfo.Model.zivid2PlusMR60
         or model is zivid.CameraInfo.Model.zivid2PlusLR110
+        or model is zivid.CameraInfo.Model.zivid3XL250
     ):
         settings_subsampled.sampling.pixel = zivid.Settings.Sampling.Pixel.by2x2
         settings_subsampled.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.by2x2
@@ -75,7 +76,11 @@ def _main() -> None:
 
     print("\nDifference between fixed intrinsics and estimated intrinsics for different apertures and temperatures:")
 
-    for fnum in (5.66, 4.00, 2.83):
+    apertures = [5.66, 4.00, 2.83]
+    if camera.info.model in {zivid.CameraInfo.Model.zivid3XL250}:
+        apertures = [3.00, 3.00, 3.00]
+
+    for fnum in apertures:
         settings = zivid.Settings(
             acquisitions=[zivid.Settings.Acquisition(aperture=fnum)],
             color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),

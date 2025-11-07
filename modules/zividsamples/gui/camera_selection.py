@@ -9,7 +9,7 @@ from typing import Optional
 
 import zivid
 from PyQt5.QtCore import QObject, QSize, QThread, QTimer, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QDialog, QListWidget, QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QDialog, QListWidget, QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout
 from zividsamples.gui.qt_application import ZividQtApplication
 
 CAMERA_ROLE = 1
@@ -58,6 +58,7 @@ class CameraSelectionDialog(QDialog):
         layout.addWidget(self.camera_list_widget)
 
         self.select_button = QPushButton("Select", self)
+        self.select_button.setCheckable(True)
         self.select_button.clicked.connect(self.on_select)
         self.select_button.setEnabled(False)
         layout.addWidget(self.select_button)
@@ -143,6 +144,7 @@ class CameraSelectionDialog(QDialog):
     def update_firmware(self, camera: zivid.Camera):
         if camera is not None:
             try:
+                self.select_button.setText("Updating Firmware...")
                 self.select_button.setEnabled(False)
                 self.camera_list_widget.clear()
                 self.camera_list_widget.addItem("Updating firmware... Please wait.")
@@ -168,6 +170,9 @@ class CameraSelectionDialog(QDialog):
                 )
 
     def on_select(self):
+        self.select_button.setChecked(True)
+        self.select_button.setStyleSheet("background-color: yellow;")
+        QApplication.processEvents()
         selected_items = self.camera_list_widget.selectedItems()
         if selected_items:
             self.selected_camera = selected_items[0].data(CAMERA_ROLE)
@@ -200,9 +205,16 @@ class CameraSelectionDialog(QDialog):
             else:
                 self.camera_list_widget.clear()
                 self.camera_list_widget.addItem("Connecting...")
+                self.select_button.setText("Connecting...")
+                self.select_button.setEnabled(False)
                 QTimer.singleShot(100, lambda: self.connect_camera(self.selected_camera))
         else:
             self.accept()
+
+    def accept(self):
+        self.select_button.setChecked(False)
+        self.select_button.setStyleSheet("")
+        super().accept()
 
 
 def select_camera(zivid_app: zivid.Application, connect: bool) -> Optional[zivid.Camera]:

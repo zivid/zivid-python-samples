@@ -75,7 +75,7 @@ If you want to capture a point cloud without color, you can use the
 `Zivid::Camera::capture3D()` method.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L122))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L124))
 
 ``` sourceCode python
 frame_3d = camera.capture_3d(settings)
@@ -276,7 +276,7 @@ Downsampling can be done in-place, which modifies the current point
 cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L63))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L61))
 
 ``` sourceCode python
 point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
@@ -286,7 +286,7 @@ It is also possible to get the downsampled point cloud as a new point
 cloud instance, which does not alter the existing point cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L57))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L55))
 
 ``` sourceCode python
 downsampled_point_cloud = point_cloud.downsampled(zivid.PointCloud.Downsampling.by2x2)
@@ -340,7 +340,7 @@ Some applications require computing
 from the point cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/advanced/capture_hdr_print_normals.py#L48-L49))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/advanced/capture_and_print_normals.py#L46-L47))
 
 ``` sourceCode python
 print("Computing normals and copying them to CPU memory")

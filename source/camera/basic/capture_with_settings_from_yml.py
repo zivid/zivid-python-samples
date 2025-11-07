@@ -14,39 +14,41 @@ import zivid
 from zividsamples.paths import get_sample_data_path
 
 
-def _settings_folder(camera: zivid.Camera) -> str:
-    """Get folder name for settings files in Zivid Sample Data.
+def _preset_path(camera: zivid.Camera) -> Path:
+    """Get path to preset settings YML file, depending on camera model.
 
     Args:
         camera: Zivid camera
 
     Raises:
-        RuntimeError: If camera is not supported
+        ValueError: If unsupported camera model for this code sample
 
     Returns:
-        Folder name
+        Path: Zivid 2D and 3D settings YML path
 
     """
+    presets_path = get_sample_data_path() / "Settings"
 
-    model = camera.info.model
+    if camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        return presets_path / "Zivid_Three_XL250_DepalletizationQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR60:
+        return presets_path / "Zivid_Two_Plus_MR60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR130:
+        return presets_path / "Zivid_Two_Plus_MR130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusLR110:
+        return presets_path / "Zivid_Two_Plus_LR110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        return presets_path / "Zivid_Two_Plus_M60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return presets_path / "Zivid_Two_Plus_M130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        return presets_path / "Zivid_Two_Plus_L110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+        return presets_path / "Zivid_Two_M70_ManufacturingSpecular.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
+        return presets_path / "Zivid_Two_L100_ManufacturingSpecular.yml"
 
-    if model == zivid.CameraInfo.Model.zividTwo:
-        return "zivid2"
-    if model == zivid.CameraInfo.Model.zividTwoL100:
-        return "zivid2"
-    if model == zivid.CameraInfo.Model.zivid2PlusM130:
-        return "zivid2Plus"
-    if model == zivid.CameraInfo.Model.zivid2PlusM60:
-        return "zivid2Plus"
-    if model == zivid.CameraInfo.Model.zivid2PlusL110:
-        return "zivid2Plus"
-    if model == zivid.CameraInfo.Model.zivid2PlusMR130:
-        return "zivid2Plus/R"
-    if model == zivid.CameraInfo.Model.zivid2PlusMR60:
-        return "zivid2Plus/R"
-    if model == zivid.CameraInfo.Model.zivid2PlusLR110:
-        return "zivid2Plus/R"
-    raise RuntimeError(f"Unhandled enum value {camera.info.model}")
+    raise ValueError("Invalid camera model")
 
 
 def _options() -> argparse.Namespace:
@@ -82,10 +84,10 @@ def _main() -> None:
     camera = app.connect_camera()
 
     if user_options.settings_path is None:
-        user_options.settings_path = get_sample_data_path() / "Settings" / _settings_folder(camera) / "Settings01.yml"
-    print("Loading settings from file")
-    settings_file = Path(user_options.settings_path)
-    settings = zivid.Settings.load(settings_file)
+        user_options.settings_path = _preset_path(camera)
+    print(f"Loading settings from file: {user_options.settings_path}")
+
+    settings = zivid.Settings.load(user_options.settings_path)
 
     print("Capturing 2D frame")
     frame_2d = camera.capture_2d(settings)

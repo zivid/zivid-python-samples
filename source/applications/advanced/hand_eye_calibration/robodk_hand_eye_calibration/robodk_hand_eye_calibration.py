@@ -26,7 +26,7 @@ import cv2
 import numpy as np
 import zivid
 from robodk.robolink import Item
-from zivid.capture_assistant import SuggestSettingsParameters
+from zividsamples.paths import get_sample_data_path
 from zividsamples.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
 from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 
@@ -48,19 +48,22 @@ def _generate_directory() -> Path:
     return directory_path
 
 
-def _get_frame_and_transform(robot: Item, camera: zivid.Camera) -> Tuple[zivid.Frame, np.ndarray]:
+def _get_frame_and_transform(
+    robot: Item, camera: zivid.Camera, settings: zivid.Settings
+) -> Tuple[zivid.Frame, np.ndarray]:
     """Capture image with Zivid camera and read robot pose.
 
     Args:
         robot: Robot item in open RoboDK rdk file
         camera: Zivid camera
+        settings: Zivid capture settings
 
     Returns:
         Zivid frame
         Transformation matrix (4x4)
 
     """
-    frame = _assisted_capture(camera)
+    frame = camera.capture_2d_3d(settings)
     transform = np.array(robot.Pose()).T
     return frame, transform
 
@@ -110,6 +113,7 @@ def _capture_one_frame_and_robot_pose(
     *,
     robot: Item,
     camera: zivid.Camera,
+    settings: zivid.Settings,
     save_directory: Path,
     image_and_pose_iterator: int,
     next_target: Item,
@@ -121,6 +125,7 @@ def _capture_one_frame_and_robot_pose(
     Args:
         robot: Robot item in open RoboDK rdk file
         camera: Zivid camera
+        settings: Zivid camera settings
         save_directory: Path to where data will be saved
         image_and_pose_iterator: Counter for point cloud and pose acquisition sequence
         next_target: Next pose the robot should move to in sequence
@@ -131,7 +136,7 @@ def _capture_one_frame_and_robot_pose(
     # Make sure the robot is completely stopped and no miniscule movement is occurring
     time.sleep(0.2)
 
-    frame, transform = _get_frame_and_transform(robot, camera)
+    frame, transform = _get_frame_and_transform(robot, camera, settings)
 
     _save_point_cloud_and_pose(save_directory, image_and_pose_iterator, frame, transform)
     # Verifying capture from previous pose while moving to new pose
@@ -181,16 +186,20 @@ def generate_hand_eye_dataset(
         Path: Save_directory for where data will be saved
 
     """
-    num_targets = len(targets)
     robot.MoveJ(targets.pop(0))
     camera = app.connect_camera()
+    if user_options.settings_path is None:
+        user_options.settings_path = _preset_path(camera)
+    settings = zivid.Settings.load(user_options.settings_path)
     save_directory = _generate_directory()
+    num_targets = len(targets)
     image_and_pose_iterator = 1
     while not image_and_pose_iterator > num_targets:
         print(f"Capturing calibration object at robot pose {num_targets - len(targets)}")
         _capture_one_frame_and_robot_pose(
             robot=robot,
             camera=camera,
+            settings=settings,
             save_directory=save_directory,
             image_and_pose_iterator=image_and_pose_iterator,
             next_target=targets.pop(0) if targets else None,
@@ -203,23 +212,41 @@ def generate_hand_eye_dataset(
     return save_directory
 
 
-def _assisted_capture(camera: zivid.Camera, max_time_milliseconds: int = 800) -> zivid.Frame:
-    """Capturing image with Zivid camera using assisted capture settings.
+def _preset_path(camera: zivid.Camera) -> Path:
+    """Get path to preset settings YML file, depending on camera model.
 
     Args:
         camera: Zivid camera
-        max_time_milliseconds: Maximum capture time allowed in milliseconds
+
+    Raises:
+        ValueError: If unsupported camera model for this code sample
 
     Returns:
-        Zivid frame
+        Path: Zivid 2D and 3D settings YML path
 
     """
-    suggest_settings_parameters = SuggestSettingsParameters(
-        max_capture_time=datetime.timedelta(milliseconds=max_time_milliseconds),
-        ambient_light_frequency=SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
-    settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    return camera.capture_2d_3d(settings)
+    presets_path = get_sample_data_path() / "Settings"
+
+    if camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        return presets_path / "Zivid_Three_XL250_DepalletizationQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR60:
+        return presets_path / "Zivid_Two_Plus_MR60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR130:
+        return presets_path / "Zivid_Two_Plus_MR130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusLR110:
+        return presets_path / "Zivid_Two_Plus_LR110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        return presets_path / "Zivid_Two_Plus_M60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return presets_path / "Zivid_Two_Plus_M130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        return presets_path / "Zivid_Two_Plus_L110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+        return presets_path / "Zivid_Two_M70_ManufacturingSpecular.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
+        return presets_path / "Zivid_Two_L100_ManufacturingSpecular.yml"
+
+    raise ValueError("Invalid camera model")
 
 
 def perform_hand_eye_calibration(
@@ -307,6 +334,12 @@ def options() -> argparse.Namespace:
 
     type_group.add_argument("--eih", "--eye-in-hand", action="store_true", help="eye-in-hand calibration")
     type_group.add_argument("--eth", "--eye-to-hand", action="store_true", help="eye-to-hand calibration")
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        type=Path,
+        help="Path to the camera settings YML file",
+    )
     parser.add_argument("--ip", required=True, help="IP address of the robot controller")
     parser.add_argument(
         "--target-keyword",

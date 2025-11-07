@@ -15,6 +15,7 @@ tutorial see:
 [**Configure**](#Configure) |
 [**Capture**](#Capture-2D3D) |
 [**Save**](#Save) |
+[**File**](#File-Camera) |
 [**Multithreading**](#Multithreading) |
 [**Conclusion**](#Conclusion)
 
@@ -97,56 +98,6 @@ for camera in cameras:
 	print(f"Camera State: {camera.state}")
 ```
 
-### File Camera
-
-The file camera option allows you to experiment with the SDK without
-access to a physical camera. The file cameras can be found in [Sample
-Data](https://support.zivid.com/latest/api-reference/samples/sample-data.html)
-where there are multiple file cameras to choose from. Each file camera
-demonstrates a use case within one of the main applications of the
-respective camera model. The example below shows how to create a file
-camera using the Zivid 2 M70 file camera from [Sample
-Data](https://support.zivid.com/latest/api-reference/samples/sample-data.html).
-
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L33))
-
-``` sourceCode python
-default=get_sample_data_path() / "FileCameraZivid2PlusMR60.zfc",
-```
-
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L48))
-
-``` sourceCode python
-camera = app.create_file_camera(file_camera)
-```
-
-The acquisition settings should be initialized like shown below, but you
-are free to alter the processing settings.
-
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L51-L64))
-
-``` sourceCode python
-settings = zivid.Settings()
-settings.acquisitions.append(zivid.Settings.Acquisition())
-settings.processing.filters.smoothing.gaussian.enabled = True
-settings.processing.filters.smoothing.gaussian.sigma = 1
-settings.processing.filters.reflection.removal.enabled = True
-settings.processing.filters.reflection.removal.mode = "global"
-settings_2d = zivid.Settings2D()
-settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
-settings_2d.processing.color.balance.blue = 1.0
-settings_2d.processing.color.balance.green = 1.0
-settings_2d.processing.color.balance.red = 1.0
-
-settings.color = settings_2d
-```
-
-You can read more about the file camera option in [File
-Camera](https://support.zivid.com/latest/academy/camera/file-camera.html).
-
 ## Configure
 
 As with all cameras there are settings that can be configured.
@@ -167,7 +118,7 @@ You can export camera settings to .yml files from Zivid Studio. These
 can be loaded and applied in the API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L195-L200))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L264-L269))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -180,7 +131,7 @@ settings_from_file = zivid.Settings.load(settings_file)
 You can also save settings to .yml file.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L195-L197))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L264-L266))
 
 ``` sourceCode python
 settings_file = "Settings.yml"
@@ -212,26 +163,34 @@ settings = zivid.Settings(
 
 #### Multi Acquisition HDR
 
-We may also create settings to be used in a multi-acquisition HDR
+We may also create settings with multiple acquisitions for an HDR
 capture.
 
-([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/advanced/capture_hdr_print_normals.py#L42))
+([go to source]())
 
 ``` sourceCode python
-settings = zivid.Settings(acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (5.66, 4.00, 2.83)])
+settings = zivid.Settings()
+for exposure in [1000, 10000]:
+	print(f"Adding acquisition with exposure time of {exposure} microseconds")
+	settings.acquisitions.append(
+		zivid.Settings.Acquisition(exposure_time=datetime.timedelta(microseconds=exposure))
+	)
 ```
 
-Fully configured settings are demonstrated below.
+#### Fully Configured Settings
+
+2D Settings, such as color balance and gamma, configured manually:
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L99-L183))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L172-L185))
 
 ``` sourceCode python
 print("Configuring settings for capture:")
 settings_2d = zivid.Settings2D()
 settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.rgb
 settings_2d.sampling.pixel = zivid.Settings2D.Sampling.Pixel.all
+settings_2d.sampling.interval.enabled = False
+settings_2d.sampling.interval.duration = timedelta(microseconds=10000)
 
 settings_2d.processing.color.balance.red = 1.0
 settings_2d.processing.color.balance.blue = 1.0
@@ -239,9 +198,17 @@ settings_2d.processing.color.balance.green = 1.0
 settings_2d.processing.color.gamma = 1.0
 
 settings_2d.processing.color.experimental.mode = zivid.Settings2D.Processing.Color.Experimental.Mode.automatic
+```
 
+Manually configured 3D settings such as engine, region of interest,
+filter settings and more:
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L186-L237))
+
+``` sourceCode python
 settings = zivid.Settings()
-settings.engine = zivid.Settings.Engine.phase
+settings.engine = zivid.Settings.Engine.stripe
 
 settings.region_of_interest.box.enabled = True
 settings.region_of_interest.box.point_o = [1000, 1000, 1000]
@@ -291,6 +258,14 @@ settings.color = settings_2d
 
 _set_sampling_pixel(settings, camera)
 print(settings)
+```
+
+Different values per acquisition are also possible:
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_hdr_complete_settings.py#L239-L252))
+
+``` sourceCode python
 print("Configuring acquisition settings different for all HDR acquisitions")
 exposure_values = _get_exposure_values(camera)
 for aperture, gain, exposure_time, brightness in exposure_values:
@@ -302,15 +277,8 @@ for aperture, gain, exposure_time, brightness in exposure_values:
 			gain=gain,
 		)
 	)
-
-settings_2d.acquisitions.append(
-	zivid.Settings2D.Acquisition(
-		aperture=2.83,
-		exposure_time=timedelta(microseconds=10000),
-		brightness=1.8,
-		gain=1.0,
-	)
-)
+acquisition_settings_2d = make_settings_2d(camera).Acquisition()
+settings.color.acquisitions.append(acquisition_settings_2d)
 ```
 
 ## Capture 2D3D
@@ -334,7 +302,7 @@ If we only want to capture 3D, the points cloud without color, we can do
 so via the `capture3D` API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L122))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L124))
 
 ``` sourceCode python
 frame_3d = camera.capture_3d(settings)
@@ -346,7 +314,7 @@ If we only want to capture a 2D image, which is faster than 3D, we can
 do so via the `capture2D` API.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L91))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L93))
 
 ``` sourceCode python
 frame_2d = camera.capture_2d(settings)
@@ -408,7 +376,7 @@ the function name then the returned image will be in the sRGB color
 space
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L96))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L98))
 
 ``` sourceCode python
 image_rgba = frame_2d.image_rgba()
@@ -416,7 +384,7 @@ image_rgba = frame_2d.image_rgba()
 ```
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L107))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L109))
 
 ``` sourceCode python
 image_srgb = frame_2d.image_rgba_srgb()
@@ -425,7 +393,7 @@ image_srgb = frame_2d.image_rgba_srgb()
 Then, we can save the 2D image in linear RGB or sRGB color space.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L97-L99))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L99-L101))
 
 ``` sourceCode python
 image_file = "ImageRGBA_linear.png"
@@ -435,7 +403,7 @@ image_rgba.save(image_file)
 ```
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L108-L110))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L110-L112))
 
 ``` sourceCode python
 image_file = "ImageRGBA_sRGB.png"
@@ -463,6 +431,54 @@ resolution given by the 2D settings inside the 2D3D settings.
 ``` sourceCode python
 image_2d = frame.frame_2d().image_bgra_srgb()
 ```
+
+## File Camera
+
+A [file
+camera](https://support.zivid.com/latest//academy/camera/file-camera.html)
+allows you to experiment with the SDK without access to a physical
+camera. The file cameras can be found in [Sample
+Data](https://support.zivid.com/latest/api-reference/samples/sample-data.html)
+where there are multiple file cameras to choose from.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L33))
+
+``` sourceCode python
+default=get_sample_data_path() / "FileCameraZivid2PlusMR60.zfc",
+```
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L48))
+
+``` sourceCode python
+camera = app.create_file_camera(file_camera)
+```
+
+The acquisition settings should be initialized like shown below, but you
+are free to alter the processing settings.
+
+([go to
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_from_file_camera.py#L51-L64))
+
+``` sourceCode python
+settings = zivid.Settings()
+settings.acquisitions.append(zivid.Settings.Acquisition())
+settings.processing.filters.smoothing.gaussian.enabled = True
+settings.processing.filters.smoothing.gaussian.sigma = 1
+settings.processing.filters.reflection.removal.enabled = True
+settings.processing.filters.reflection.removal.mode = "global"
+settings_2d = zivid.Settings2D()
+settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
+settings_2d.processing.color.balance.blue = 1.0
+settings_2d.processing.color.balance.green = 1.0
+settings_2d.processing.color.balance.red = 1.0
+
+settings.color = settings_2d
+```
+
+You can read more about the file camera option in [File
+Camera](https://support.zivid.com/latest/academy/camera/file-camera.html).
 
 ## Multithreading
 

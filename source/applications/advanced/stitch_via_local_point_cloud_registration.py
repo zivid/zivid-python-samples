@@ -69,18 +69,24 @@ def _main() -> None:
         target=unorganized_point_cloud_1_lpcr, source=unorganized_point_cloud_2_lpcr, parameters=registration_params
     )
     assert local_point_cloud_registration_result.converged(), "Registration did not converge..."
-    point_cloud_1_to_point_cloud_2_transform = local_point_cloud_registration_result.transform()
 
-    print("Displaying point clouds after stitching")
-    final_point_cloud = zivid.UnorganizedPointCloud()
-    final_point_cloud.extend(unorganized_point_cloud_1)
+    point_cloud_1_to_point_cloud_2_transform = local_point_cloud_registration_result.transform()
     unorganized_point_cloud_2_transformed = unorganized_point_cloud_2.transformed(
         point_cloud_1_to_point_cloud_2_transform.to_matrix()
     )
+
+    print("Stitching and displaying painted point clouds to evaluate stitching quality")
+    final_point_cloud = zivid.UnorganizedPointCloud()
+    final_point_cloud.extend(unorganized_point_cloud_1)
     final_point_cloud.extend(unorganized_point_cloud_2_transformed)
+
+    painted_final_point_cloud = zivid.UnorganizedPointCloud()
+    painted_final_point_cloud.extend(unorganized_point_cloud_1.painted_uniform_color([255, 0, 0, 255]))
+    painted_final_point_cloud.extend(unorganized_point_cloud_2_transformed.painted_uniform_color([0, 255, 0, 255]))
+
     display_pointcloud(
-        xyz=final_point_cloud.copy_data("xyz"),
-        rgb=final_point_cloud.copy_data("rgba")[:, 0:3],
+        xyz=painted_final_point_cloud.copy_data("xyz"),
+        rgb=painted_final_point_cloud.copy_data("rgba")[:, 0:3],
     )
 
     print("Voxel-downsampling the stitched point cloud")

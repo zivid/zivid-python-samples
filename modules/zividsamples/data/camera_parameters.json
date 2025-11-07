@@ -694,5 +694,78 @@
             7.507e-09,
             -1.46368e-12
         ]
+    },
+    "Zivid 3 XL250": {
+        "key_a": 2500,
+        "key_b": {
+            "distance": {
+                "optimal": {
+                    "min": 1500,
+                    "max": 3500
+                },
+                "acceptable": {
+                    "min": 1300,
+                    "max": 5000
+                },
+                "calculator": {
+                    "min": 1000,
+                    "max": 5500
+                }
+            },
+            "width_at_distances": [
+                {
+                    "distance": 1000,
+                    "value": 707
+                },
+                {
+                    "distance": 5000,
+                    "value": 3537
+                }
+            ],
+            "height_at_distances": [
+                {
+                    "distance": 1000,
+                    "value": 707
+                },
+                {
+                    "distance": 5000,
+                    "value": 3537
+                }
+            ],
+            "width": {
+                "optimal": {
+                    "min": 1060.75,
+                    "max": 2475.75
+                },
+                "acceptable": {
+                    "min": 919.25,
+                    "max": 3537.0
+                },
+                "calculator": {
+                    "min": 707.0,
+                    "max": 3890.75
+                }
+            },
+            "height": {
+                "optimal": {
+                    "min": 1060.75,
+                    "max": 2475.75
+                },
+                "acceptable": {
+                    "min": 919.25,
+                    "max": 3537.0
+                },
+                "calculator": {
+                    "min": 707.0,
+                    "max": 3890.75
+                }
+            }
+        },
+        "key_c": [
+            0.000144379,
+            8.83e-07,
+            1.55e-12,
+            0.0
+        ]
     }
 }

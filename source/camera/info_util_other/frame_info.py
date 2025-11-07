@@ -39,6 +39,9 @@ def _main() -> None:
     print("Capture time:")
     print(f"{frame_info.metrics.capture_time.total_seconds() * 1000:.0f} ms")
 
+    print("Thermal throttling time:")
+    print(f"{frame_info.metrics.throttling_time.total_seconds() * 1000:.0f} ms")
+
 
 if __name__ == "__main__":
     _main()

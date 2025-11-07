@@ -11,7 +11,6 @@ in the future without notice.
 """
 
 import zivid
-import zivid.experimental.calibration
 
 
 def _main() -> None:
@@ -21,8 +20,8 @@ def _main() -> None:
     camera = app.connect_camera()
 
     # For convenience, print the timestamp of the latest correction
-    if zivid.experimental.calibration.has_camera_correction(camera):
-        timestamp = zivid.experimental.calibration.camera_correction_timestamp(camera)
+    if zivid.calibration.has_camera_correction(camera):
+        timestamp = zivid.calibration.camera_correction_timestamp(camera)
         print(f"Timestamp of current camera correction: {timestamp.strftime(r'%Y-%m-%d %H:%M:%S')}")
     else:
         print("This camera has no infield correction written to it.")
@@ -34,7 +33,7 @@ def _main() -> None:
         raise RuntimeError(f"Detection failed! Feedback: {detection_result.status_description()}")
 
     # Prepare data and check that it is appropriate for infield verification
-    infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
+    infield_input = zivid.calibration.InfieldCorrectionInput(detection_result)
     if not infield_input.valid():
         raise RuntimeError(
             f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
@@ -42,7 +41,7 @@ def _main() -> None:
 
     # Show results
     print(f"Successful measurement at {detection_result.centroid()}")
-    camera_verification = zivid.experimental.calibration.verify_camera(infield_input)
+    camera_verification = zivid.calibration.verify_camera(infield_input)
     print(
         f"Estimated dimension trueness error at measured position: {camera_verification.local_dimension_trueness() * 100:.3f}%"
     )

@@ -167,6 +167,17 @@ def _settings_for_hand_eye(
                 timedelta(microseconds=20000),
             )
             brightnesses = (2.5, 2.5, 2.5)
+        elif camera.info.model in [
+            zivid.CameraInfo.Model.zivid3XL250,
+        ]:
+            apertures = (3.0, 3.0, 3.0)
+            gains = (1.0, 1.0, 1.0)
+            exposure_times = (
+                timedelta(microseconds=200),
+                timedelta(microseconds=5000),
+                timedelta(microseconds=20000),
+            )
+            brightnesses = (3.0, 3.0, 3.0)
         else:
             raise ValueError(f"Unhandled enum value {camera.info.model}")
 
@@ -235,6 +246,17 @@ def _settings_for_hand_eye(
                     exposure_time=timedelta(microseconds=20000),
                     aperture=2.43,
                     gain=1.0,
+                )
+            ],
+        )
+    elif camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        updated_settings.color = zivid.Settings2D(
+            [
+                zivid.Settings2D.Acquisition(
+                    brightness=updated_settings.acquisitions[0].brightness,
+                    exposure_time=timedelta(microseconds=10000),
+                    aperture=3.0,
+                    gain=2.0,
                 )
             ],
         )

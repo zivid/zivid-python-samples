@@ -8,7 +8,7 @@ import numpy as np
 import zivid
 from PyQt5.QtCore import QSignalBlocker, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QGridLayout, QGroupBox, QLabel, QLineEdit, QMessageBox, QScrollArea, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QGridLayout, QGroupBox, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
 from scipy.spatial.transform import Rotation
 from zividsamples.gui.aspect_ratio_label import AspectRatioLabel
 from zividsamples.gui.qt_application import create_horizontal_line, create_vertical_line
@@ -44,6 +44,10 @@ class PoseWidgetDisplayMode(Enum):
 
 class BasePoseWidget(QWidget):
     pose_updated = pyqtSignal()
+    rotation_information: RotationInformation
+    transformation_matrix: TransformationMatrix
+    display_mode: PoseWidgetDisplayMode
+    read_only: bool
 
     # pylint: disable=too-many-positional-arguments
     def __init__(
@@ -52,6 +56,7 @@ class BasePoseWidget(QWidget):
         initial_rotation_information: RotationInformation,
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode,
+        initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
         descriptive_image_paths: Optional[Tuple[Path, Path]] = None,
         read_only: bool = False,
         parent=None,
@@ -59,8 +64,8 @@ class BasePoseWidget(QWidget):
         super().__init__(parent)
         self.title = title
         self.eye_in_hand = eye_in_hand
-        self.rotation_information: RotationInformation = initial_rotation_information
-        self.transformation_matrix: TransformationMatrix = TransformationMatrix()
+        self.rotation_information = initial_rotation_information
+        self.transformation_matrix = initial_transformation_matrix
         self.display_mode = display_mode
         self.read_only = read_only
 
@@ -216,29 +221,29 @@ class PoseWidget(BasePoseWidget):
         self,
         title: str,
         initial_rotation_information: RotationInformation,
-        yaml_pose_path: Path,
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode,
+        initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
         descriptive_image_paths: Optional[Tuple[Path, Path]] = None,
         read_only: bool = False,
         parent=None,
     ):
         super().__init__(
-            title, initial_rotation_information, eye_in_hand, display_mode, descriptive_image_paths, read_only, parent
+            title,
+            initial_rotation_information,
+            eye_in_hand,
+            display_mode,
+            initial_transformation_matrix,
+            descriptive_image_paths,
+            read_only,
+            parent,
         )
-
-        self.yaml_pose_path = yaml_pose_path
 
         self.rotation_vector_user_parameters: List[float] = [0.0, 0.0, 0.0]
         self.rotation_parameters: List[float] = []
         self.setup_widgets()
         self.setup_layout()
         self.setup_connections()
-
-        if self.yaml_pose_path.exists():
-            self.load_yaml()
-        else:
-            print(f"{self.yaml_pose_path} does not exist.")
         self.update_from_transformation_matrix()
         self.toggle_advanced_section(display_mode == PoseWidgetDisplayMode.Advanced)
 
@@ -305,7 +310,6 @@ class PoseWidget(BasePoseWidget):
                 self.grid_layout.addWidget(
                     self.descriptive_image_label, row_offset, 3, 3, 1, alignment=Qt.AlignVCenter | Qt.AlignCenter
                 )
-                self.descriptive_image_label.setFixedHeight(self._height_of_yaml_text())
             elif self.display_mode == PoseWidgetDisplayMode.Basic:
                 rowspan = rowspan + 4
                 self.grid_layout.addWidget(
@@ -454,36 +458,6 @@ class PoseWidget(BasePoseWidget):
         for parameter_editor in self.rotation_parameter_editors:
             parameter_editor.setStyleSheet("")
 
-    def set_yaml_path_and_save(self, yaml_pose_path: Path):
-        self.yaml_pose_path = yaml_pose_path
-        self.save_yaml()
-
-    def set_yaml_path_and_load(self, yaml_pose_path: Path):
-        if not yaml_pose_path.exists():
-            QMessageBox.warning(self, "Warning", f"File {yaml_pose_path} does not exist!")
-        self.yaml_pose_path = yaml_pose_path
-        self.load_yaml()
-
-    def save_yaml(self):
-        self.zivid_transformation_matrix().save(self.yaml_pose_path)
-
-    def load_yaml(self):
-        error_message = None
-        try:
-            transformation_matrix = zivid.Matrix4x4(self.yaml_pose_path)
-            matrix = np.array(transformation_matrix)
-            if matrix is None:
-                raise ValueError("Invalid transform")
-            try:
-                zivid.calibration.Pose(matrix)
-            except RuntimeError as ex:
-                raise RuntimeError("matrix is not affine") from ex
-            self.transformation_matrix = TransformationMatrix.from_matrix(np.asarray(transformation_matrix))
-            self.update_from_transformation_matrix()
-        except Exception as ex:
-            error_message = f"Failed to load from {self.yaml_pose_path}: {ex}"
-            QMessageBox.warning(self, "Load Error", error_message)
-
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []
         for parameter_editor in self.translation_parameter_editors:
@@ -499,10 +473,10 @@ class PoseWidget(BasePoseWidget):
     @classmethod
     def HandEye(
         cls,
-        yaml_pose_path: Path,
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
+        initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
     ):
         ee_camera_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-ee-camera-pose-low-res.png"
@@ -513,8 +487,8 @@ class PoseWidget(BasePoseWidget):
         return cls(
             title="Hand Eye Transform",
             initial_rotation_information=initial_rotation_information,
-            yaml_pose_path=yaml_pose_path,
             eye_in_hand=eye_in_hand,
+            initial_transformation_matrix=initial_transformation_matrix,
             display_mode=display_mode,
             descriptive_image_paths=(ee_camera_pose_img_path, rob_camera_pose_img_path),
         )
@@ -522,10 +496,10 @@ class PoseWidget(BasePoseWidget):
     @classmethod
     def Robot(
         cls,
-        yaml_pose_path: Path,
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
+        initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
     ):
         robot_ee_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-ee-pose-low-res.png"
@@ -534,8 +508,8 @@ class PoseWidget(BasePoseWidget):
         return cls(
             title="Robot Pose",
             initial_rotation_information=initial_rotation_information,
-            yaml_pose_path=yaml_pose_path,
             eye_in_hand=eye_in_hand,
+            initial_transformation_matrix=initial_transformation_matrix,
             display_mode=display_mode,
             descriptive_image_paths=(robot_ee_pose_img_path, rob_ee_pose_img_path),
         )
@@ -543,10 +517,10 @@ class PoseWidget(BasePoseWidget):
     @classmethod
     def CalibrationBoardInCameraFrame(
         cls,
-        yaml_pose_path: Path,
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
+        calibration_object_in_camera_frame_pose: TransformationMatrix = TransformationMatrix(),
     ):
         eih_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-camera-object-pose-low-res.png"
@@ -557,9 +531,9 @@ class PoseWidget(BasePoseWidget):
         return cls(
             title="Checkerboard Pose In Camera Frame",
             initial_rotation_information=initial_rotation_information,
-            yaml_pose_path=yaml_pose_path,
             eye_in_hand=eye_in_hand,
             display_mode=display_mode,
+            initial_transformation_matrix=calibration_object_in_camera_frame_pose,
             descriptive_image_paths=(eih_camera_object_pose_img_path, eth_camera_object_pose_img_path),
             read_only=True,
         )
@@ -567,10 +541,10 @@ class PoseWidget(BasePoseWidget):
     @classmethod
     def CalibrationBoardInRobotFrame(
         cls,
-        yaml_pose_path: Path,
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
+        calibration_object_in_robot_base_frame_pose: TransformationMatrix = TransformationMatrix(),
     ):
         eih_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose-low-res.png"
@@ -581,16 +555,15 @@ class PoseWidget(BasePoseWidget):
         return cls(
             title="Checkerboard Pose In Robot Base Frame",
             initial_rotation_information=initial_rotation_information,
-            yaml_pose_path=yaml_pose_path,
             eye_in_hand=eye_in_hand,
             display_mode=display_mode,
+            initial_transformation_matrix=calibration_object_in_robot_base_frame_pose,
             descriptive_image_paths=(eih_robot_object_pose_img_path, eth_robot_object_pose_img_path),
             read_only=True,
         )
 
 
 class MarkerPosesWidget(BasePoseWidget):
-    yaml_pose_path: Path
     markers: Dict[str, TransformationMatrix] = {}
     rotation_parameters: Dict[str, List[float]] = {}
     translation_parameters: Dict[str, List[float]] = {}
@@ -609,7 +582,13 @@ class MarkerPosesWidget(BasePoseWidget):
         parent=None,
     ):
         super().__init__(
-            title, initial_rotation_information, eye_in_hand, display_mode, descriptive_image_paths, read_only, parent
+            title=title,
+            initial_rotation_information=initial_rotation_information,
+            eye_in_hand=eye_in_hand,
+            display_mode=display_mode,
+            descriptive_image_paths=descriptive_image_paths,
+            read_only=read_only,
+            parent=parent,
         )
 
         self.setup_widgets()
