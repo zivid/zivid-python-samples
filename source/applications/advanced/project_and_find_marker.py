@@ -14,6 +14,7 @@ import cv2
 import numpy as np
 import zivid
 import zivid.projection
+from zividsamples.paths import get_sample_data_path
 
 
 def _create_background_image(resolution: Tuple[int, int], background_color: Tuple[int, ...]) -> np.ndarray:
@@ -136,17 +137,19 @@ def _projector_to_camera_scale_factor(camera_info: zivid.CameraInfo) -> float:
     """
     # Note: these values are approximate and only for use in this demo
     model = camera_info.model
-    if model in [zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100]:
+    if model in {zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100}:
         ratio = 1.52
-    elif model in [
+    elif model in {
         zivid.CameraInfo.Model.zivid2PlusM130,
         zivid.CameraInfo.Model.zivid2PlusM60,
         zivid.CameraInfo.Model.zivid2PlusL110,
         zivid.CameraInfo.Model.zivid2PlusMR130,
         zivid.CameraInfo.Model.zivid2PlusMR60,
         zivid.CameraInfo.Model.zivid2PlusLR110,
-    ]:
+    }:
         ratio = 2.47
+    elif model in {zivid.CameraInfo.Model.zivid3XL250}:
+        ratio = 6.58
     else:
         raise ValueError(f"Invalid camera model '{model}'")
 
@@ -183,6 +186,7 @@ def camera_supports_projection_brightness_boost(camera: zivid.Camera) -> bool:
         zivid.CameraInfo.Model.zivid2PlusMR60,
         zivid.CameraInfo.Model.zivid2PlusMR130,
         zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid3XL250,
     }
 
 
@@ -198,19 +202,21 @@ def find_max_projector_brightness(camera: zivid.Camera) -> float:
     Returns:
         float: The maximum brightness level supported by the projector
     """
-    if camera.info.model in (
+    if camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        return 3.0
+    if camera.info.model in {
         zivid.CameraInfo.Model.zivid2PlusMR60,
         zivid.CameraInfo.Model.zivid2PlusMR130,
         zivid.CameraInfo.Model.zivid2PlusLR110,
-    ):
+    }:
         return 2.5
-    if camera.info.model in (
+    if camera.info.model in {
         zivid.CameraInfo.Model.zivid2PlusM60,
         zivid.CameraInfo.Model.zivid2PlusM130,
         zivid.CameraInfo.Model.zivid2PlusL110,
-    ):
+    }:
         return 2.2
-    if camera.info.model in (zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100):
+    if camera.info.model in {zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100}:
         return 1.8
     return 1.0
 
@@ -255,34 +261,41 @@ def _find_marker(
     return (brightest_location[0], brightest_location[1] + cropped_rows)
 
 
-def _capture_with_capture_assistant(camera: zivid.Camera) -> zivid.Frame:
-    """Capture with the Capture Assistant.
+def _load_preset_settings_from_yml(camera: zivid.Camera) -> zivid.Settings:
+    """Load preset settings from YML file, depending on camera model.
 
     Args:
         camera: Zivid camera
 
+    Raises:
+        ValueError: If unsupported camera model for this code sample
+
     Returns:
-        Frame from capture
+        preset: Zivid 2D and 3D settings
 
     """
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=timedelta(milliseconds=1200),
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
-    settings: zivid.Settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
-    settings.processing.filters.reflection.removal.enabled = True
-    settings.processing.filters.reflection.removal.mode = "global"
-    settings.processing.filters.smoothing.gaussian.enabled = True
-    settings.processing.filters.smoothing.gaussian.sigma = 1.5
-    settings.sampling.pixel = "all"
-    settings.color.sampling.pixel = "all"
+    presets_path = get_sample_data_path() / "Settings"
 
-    # We must limit Brightness to a *maximum* of 2.2, when using `all` mode.
-    # This code can be removed by changing the Config.yml option 'Camera/Power/Limit'.
-    for acquisition in settings.acquisitions:
-        acquisition.brightness = min(acquisition.brightness, 2.2)
+    if camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        return zivid.Settings.load(presets_path / "Zivid_Three_XL250_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR60:
+        return zivid.Settings.load(presets_path / "Zivid_Two_Plus_MR60_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR130:
+        return zivid.Settings.load(presets_path / "Zivid_Two_Plus_MR130_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusLR110:
+        return zivid.Settings.load(presets_path / "Zivid_Two_Plus_LR110_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        return zivid.Settings.load(presets_path / "Zivid_Two_Plus_M60_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return zivid.Settings.load(presets_path / "Zivid_Two_Plus_M130_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        return zivid.Settings.load(presets_path / "Zivid_Two_Plus_L110_ManufacturingSmallFeatures.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+        return zivid.Settings.load(presets_path / "Zivid_Two_M70_ManufacturingSpecular.yml")
+    if camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
+        return zivid.Settings.load(presets_path / "Zivid_Two_L100_ManufacturingSpecular.yml")
 
-    return camera.capture_2d_3d(settings)
+    raise ValueError("Invalid camera model")
 
 
 def _annotate(frame_2d: zivid.Frame2D, location: Tuple[int, int]) -> np.ndarray:
@@ -340,16 +353,18 @@ def _main() -> None:
 
         input("Press enter to continue ...")
 
-        # Fine tune 2D settings until the "ProjectedMarker.png" image is well exposed if the projected marker well is not detected in ImageWithMarker.png.
+        # Fine tune 2D settings until the "ProjectedMarker.png" image is well exposed if the projected marker is not detected in ImageWithMarker.png.
         exposure_time = timedelta(microseconds=20000)
-        aperture = 2.38
+        aperture = 3.00  # Do not modify aperture for Zivid 3 camera because it does not have an adjustable aperture.
         gain = 1.0
 
         settings_2d_zero_brightness = zivid.Settings2D(
             acquisitions=[
                 zivid.Settings2D.Acquisition(brightness=0.0, exposure_time=exposure_time, aperture=aperture, gain=gain)
             ],
-            sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
+            sampling=zivid.Settings2D.Sampling(
+                _get_color_settings_for_camera(camera), zivid.Settings2D.Sampling.Pixel.all
+            ),
         )
 
         settings_2d_max_brightness = zivid.Settings2D(
@@ -361,7 +376,9 @@ def _main() -> None:
                     gain=gain,
                 )
             ],
-            sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
+            sampling=zivid.Settings2D.Sampling(
+                _get_color_settings_for_camera(camera), zivid.Settings2D.Sampling.Pixel.all
+            ),
         )
 
         settings_2d_projection = zivid.Settings2D(
@@ -373,7 +390,9 @@ def _main() -> None:
                     gain=gain,
                 )
             ],
-            sampling=zivid.Settings2D.Sampling(_get_color_settings_for_camera(camera)),
+            sampling=zivid.Settings2D.Sampling(
+                _get_color_settings_for_camera(camera), zivid.Settings2D.Sampling.Pixel.all
+            ),
         )
 
         print("Capturing a 2D frame with the marker")
@@ -400,15 +419,16 @@ def _main() -> None:
         )
         print(marker_location)
 
-        print("Capturing a point cloud using Capture Assistant")
-
-        frame = _capture_with_capture_assistant(camera)
+        print("Capturing frame")
+        settings = _load_preset_settings_from_yml(camera)
+        frame = camera.capture_3d(settings)
         print("Looking up 3D coordinate based on the marker position in the 2D image:")
         points_xyz = frame.point_cloud().copy_data("xyz")
 
         points_xyz_height, points_xyz_width = points_xyz.shape[:2]
-        row, col = marker_location[:2]
-        if col < points_xyz_width and row < points_xyz_height and points_xyz[row, col] is not np.nan:
+        col, row = marker_location[:2]
+
+        if col < points_xyz_width and row < points_xyz_height and points_xyz[row, col][0] is not np.nan:
             print(points_xyz[row, col])
 
             print("Annotating the 2D image captured while projecting the marker")

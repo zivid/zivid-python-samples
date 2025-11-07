@@ -134,7 +134,7 @@ def _find_white_mask_and_distance_to_checkerboard(camera: zivid.Camera) -> Tuple
         frame = zivid.calibration.capture_calibration_board(camera)
         checkerboard_pose = zivid.calibration.detect_calibration_board(frame).pose().to_matrix()
         distance_to_checkerboard = checkerboard_pose[2, 3]
-        rgb = frame.point_cloud().copy_data("rgba_sgrb")[:, :, :3]
+        rgb = frame.point_cloud().copy_data("rgba_srgb")[:, :, :3]
         white_squares_mask = find_white_mask_from_checkerboard(rgb)
 
     except RuntimeError as exc:
@@ -208,6 +208,9 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
                 f"WARNING: Closest imaging distance ({image_distance_near:.2f}) or farthest imaging distance"
                 f"({image_distance_far:.2f}) is outside recommended working distance for camera [700, 1700]"
             )
+    elif camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        # Zivid 3 camera has a fixed aperture
+        return 3.0
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -226,6 +229,40 @@ def _find_lowest_acceptable_fnum(camera: zivid.Camera, image_distance_near: floa
     fnum_far = min(max(fnum_far, 1), 32)
 
     return max(fnum_near, fnum_far, fnum_min)
+
+
+def _find_highest_exposure_time(camera: zivid.Camera) -> float:
+    """Find the highest exposure time [us] that a given camera can provide.
+
+    Args:
+        camera: Zivid camera
+
+    Raises:
+        RuntimeError: If camera model is not supported
+
+    Returns:
+        Highest exposure time [us] for given camera
+
+    """
+    if camera.info.model in (
+        zivid.CameraInfo.Model.zividTwo,
+        zivid.CameraInfo.Model.zividTwoL100,
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    ):
+        exposure_time = 100000
+    elif camera.info.model in (
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid3XL250,
+    ):
+        exposure_time = 20000
+    else:
+        raise RuntimeError("Unsupported camera model in this sample.")
+
+    return exposure_time
 
 
 def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
@@ -255,6 +292,8 @@ def _find_lowest_exposure_time(camera: zivid.Camera) -> float:
         zivid.CameraInfo.Model.zivid2PlusLR110,
     ):
         exposure_time = 900
+    elif camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        exposure_time = 600
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -288,6 +327,8 @@ def _find_max_brightness(camera: zivid.Camera) -> float:
         zivid.CameraInfo.Model.zivid2PlusLR110,
     ):
         brightness = 2.5
+    elif camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        brightness = 3.0
     else:
         raise RuntimeError("Unsupported camera model in this sample.")
 
@@ -341,34 +382,37 @@ def _adjust_acquisition_settings_2d(
     settings_2d: zivid.Settings2D,
     adjustment_factor: float,
     tuning_index: int,
-    min_fnum: float,
-    min_exposure_time: float,
+    fnum_limits: Tuple[float, float],
+    exposure_time_limits: Tuple[float, float],
 ) -> int:
     """Adjust acquisition settings by an adjustment factor to update acquisition settings. Which setting to adjust is
     determined by the tuning index. The algorithm transitions through the following steps if the limit in each step is
     reached:
-        Step 1: Change f-number (min: min_fnum, max: 32)
+        Step 1: Change f-number (min: fnum_limits[0], max: fnum_limits[1])
         Step 2: Change gain (min: 1, max: 2)
-        Step 3: Change exposure time (min: min_exposure_time, max: 20000)
+        Step 3: Change exposure time (min: exposure_time_limits[0], max: 20000)
         Step 4: Change gain (min: 1, max: 4)
-        Step 5: Change exposure time (min: min_exposure_time, max: 100000)
+        Step 5: Change exposure time (min: exposure_time_limits[0], max: exposure_time_limits[1])
         Step 6: Change gain (min: 1, max: 16)
 
     Args:
         settings_2d: Zivid 2D settings
         adjustment_factor: Factor to adjust acquisition settings
         tuning_index: Current step in algorithm
-        min_fnum: Lower f-number limit
-        min_exposure_time: Lower exposure time limit for specific camera
+        fnum_limits: Lower and upper f-number limits
+        exposure_time_limits: Lower and upper exposure time limits for specific camera
 
     Returns:
         Updated tuning index
 
     """
+    if fnum_limits[1] != fnum_limits[0]:
+        tuning_index = 2
+
     if tuning_index == 1:
-        new_aperture = np.clip(settings_2d.acquisitions[0].aperture / adjustment_factor, min_fnum, 32)
+        new_aperture = np.clip(settings_2d.acquisitions[0].aperture / adjustment_factor, fnum_limits[0], fnum_limits[1])
         settings_2d.acquisitions[0].aperture = new_aperture
-        if new_aperture in (min_fnum, 32):
+        if new_aperture in (fnum_limits[0], fnum_limits[1]):
             tuning_index = 2
 
     elif tuning_index == 2:
@@ -379,18 +423,18 @@ def _adjust_acquisition_settings_2d(
             tuning_index = 3
 
     elif tuning_index == 3:
-        max_exposure_time = 20000
+        desired_exposure_time_limit = 20000
         new_exposure_time = timedelta(
             microseconds=np.clip(
                 settings_2d.acquisitions[0].exposure_time.microseconds * adjustment_factor,
-                min_exposure_time,
-                max_exposure_time,
+                exposure_time_limits[0],
+                desired_exposure_time_limit,
             )
         )
         settings_2d.acquisitions[0].exposure_time = new_exposure_time
         if new_exposure_time in (
-            timedelta(microseconds=min_exposure_time),
-            timedelta(microseconds=max_exposure_time),
+            timedelta(microseconds=exposure_time_limits[0]),
+            timedelta(microseconds=desired_exposure_time_limit),
         ):
             tuning_index = 4
 
@@ -402,18 +446,17 @@ def _adjust_acquisition_settings_2d(
             tuning_index = 5
 
     elif tuning_index == 5:
-        max_exposure_time = 100000
         new_exposure_time = timedelta(
             microseconds=np.clip(
                 settings_2d.acquisitions[0].exposure_time.microseconds * adjustment_factor,
-                min_exposure_time,
-                max_exposure_time,
+                exposure_time_limits[0],
+                exposure_time_limits[1],
             )
         )
         settings_2d.acquisitions[0].exposure_time = new_exposure_time
         if new_exposure_time in (
-            timedelta(microseconds=min_exposure_time),
-            timedelta(microseconds=max_exposure_time),
+            timedelta(microseconds=exposure_time_limits[0]),
+            timedelta(microseconds=exposure_time_limits[1]),
         ):
             tuning_index = 6
 
@@ -430,7 +473,7 @@ def _adjust_acquisition_settings_2d(
 def _find_2d_settings_from_mask(
     camera: zivid.Camera,
     white_mask: np.ndarray,
-    min_fnum: float,
+    fnum_limits: Tuple[float, float],
     use_projector: bool = False,
     find_color_balance: bool = False,
 ) -> zivid.Settings2D:
@@ -439,7 +482,7 @@ def _find_2d_settings_from_mask(
     Args:
         camera: Zivid camera
         white_mask: Mask of bools (H, W) for pixels containing the white object to calibrate against
-        min_fnum: Lower limit on f-number for the calibrated settings
+        fnum_limits: Lower and upper limits on f-number for the calibrated settings
         use_projector: Use projector as part of acquisition settings
         find_color_balance: Set True to balance color, False otherwise
 
@@ -450,13 +493,17 @@ def _find_2d_settings_from_mask(
         settings_2d: Zivid 2D settings
 
     """
-    min_exposure_time = _find_lowest_exposure_time(camera)
+    exposure_time_limits = (_find_lowest_exposure_time(camera), _find_highest_exposure_time(camera))
     brightness = _find_max_brightness(camera) if use_projector else 0
-    settings_2d = _initialize_settings_2d(aperture=8, exposure_time=min_exposure_time, brightness=brightness, gain=1)
+    initial_aperture = 3 if camera.info.model == zivid.CameraInfo.Model.zivid3XL250 else 8
+    settings_2d = _initialize_settings_2d(
+        aperture=initial_aperture, exposure_time=exposure_time_limits[0], brightness=brightness, gain=1
+    )
     if not use_projector and camera.info.model in (
         zivid.CameraInfo.Model.zivid2PlusMR130,
         zivid.CameraInfo.Model.zivid2PlusMR60,
         zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid3XL250,
     ):
         settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
 
@@ -479,7 +526,7 @@ def _find_2d_settings_from_mask(
 
         acquisition_factor = float(np.mean([lower_white_range, upper_white_range]) / max_mean_color)
         tuning_index = _adjust_acquisition_settings_2d(
-            settings_2d, acquisition_factor, tuning_index, min_fnum, min_exposure_time
+            settings_2d, acquisition_factor, tuning_index, fnum_limits, exposure_time_limits
         )
 
         count = count + 1
@@ -581,10 +628,11 @@ def _main() -> None:
         image_distance_near = image_distance_far - user_options.desired_focus_range
 
     min_fnum = _find_lowest_acceptable_fnum(camera, image_distance_near, image_distance_far)
+    max_fnum = 3.0 if camera.info.model == zivid.CameraInfo.Model.zivid3XL250 else 32.0
 
     print("Finding 2D settings via white mask ...")
     settings_2d = _find_2d_settings_from_mask(
-        camera, white_mask, min_fnum, user_options.use_projector, user_options.find_color_balance
+        camera, white_mask, (min_fnum, max_fnum), user_options.use_projector, user_options.find_color_balance
     )
 
     print("Automatic 2D settings:")

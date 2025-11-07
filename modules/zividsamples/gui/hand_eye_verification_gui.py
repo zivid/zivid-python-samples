@@ -24,6 +24,8 @@ from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
 from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
+from zividsamples.gui.tab_with_robot_support import TabWidgetWithRobotSupport
+from zividsamples.save_load_transformation_matrix import load_transformation_matrix, save_transformation_matrix
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -37,7 +39,7 @@ def extract_marker_points_in_camera_frame(
     return marker_points
 
 
-class HandEyeVerificationGUI(QWidget):
+class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
     robot_configuration: RobotConfiguration
     detected_markers: Dict[str, MarkerShape] = {}
     detected_marker_poses_in_robot_frame: Dict[str, TransformationMatrix] = {}
@@ -69,7 +71,7 @@ class HandEyeVerificationGUI(QWidget):
         initial_rotation_information: RotationInformation,
         parent=None,
     ):
-        super().__init__(parent)
+        super().__init__(data_directory, parent)
 
         self.description = [
             "The best way to verify the hand-eye transformation is to perform a touch test. ",
@@ -82,7 +84,6 @@ class HandEyeVerificationGUI(QWidget):
             "The steps above will guide you through the process.",
         ]
 
-        self.data_directory = data_directory
         self.robot_configuration = robot_configuration
         self.hand_eye_configuration = hand_eye_configuration
         self.marker_configuration = marker_configuration
@@ -95,7 +96,6 @@ class HandEyeVerificationGUI(QWidget):
 
     def create_widgets(self, initial_rotation_information: RotationInformation):
         self.robot_pose_widget = PoseWidget.Robot(
-            self.data_directory / "robot_pose.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
@@ -105,17 +105,18 @@ class HandEyeVerificationGUI(QWidget):
         self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.confirm_robot_pose_button.setObjectName("HE-Verification-confirm_robot_pose_button")
         self.hand_eye_pose_widget = PoseWidget.HandEye(
-            self.data_directory / "hand_eye_transform.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
         )
         self.hand_eye_pose_widget.setObjectName("HE-Verification-hand_eye_pose_widget")
         self.calibration_board_in_camera_frame_pose_widget = PoseWidget.CalibrationBoardInCameraFrame(
-            self.data_directory / "calibration_object_in_camera_frame_pose.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
+            calibration_object_in_camera_frame_pose=load_transformation_matrix(
+                self.data_directory / "calibration_object_in_camera_frame_pose.yaml"
+            ),
         )
         self.markers_in_camera_frame_pose_widget = MarkerPosesWidget.MarkersInCameraFrame(
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
@@ -123,10 +124,12 @@ class HandEyeVerificationGUI(QWidget):
             initial_rotation_information=initial_rotation_information,
         )
         self.calibration_board_in_robot_base_frame_pose_widget = PoseWidget.CalibrationBoardInRobotFrame(
-            self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
+            calibration_object_in_robot_base_frame_pose=load_transformation_matrix(
+                self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml"
+            ),
         )
         self.markers_in_robot_base_frame_pose_widget = MarkerPosesWidget.MarkersInRobotFrame(
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
@@ -188,6 +191,27 @@ class HandEyeVerificationGUI(QWidget):
             "background-color: green;" if self.has_confirmed_robot_pose else ""
         )
 
+    def on_pending_changes(self):
+        if self.data_directory_has_data():
+            self.calibration_board_in_camera_frame_pose_widget.set_transformation_matrix(
+                load_transformation_matrix(self.data_directory / "calibration_object_in_camera_frame_pose.yaml")
+            )
+            self.calibration_board_in_robot_base_frame_pose_widget.set_transformation_matrix(
+                load_transformation_matrix(self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml")
+            )
+        else:
+            save_transformation_matrix(
+                self.calibration_board_in_camera_frame_pose_widget.get_transformation_matrix(),
+                self.data_directory / "calibration_object_in_camera_frame_pose.yaml",
+            )
+            save_transformation_matrix(
+                self.calibration_board_in_robot_base_frame_pose_widget.get_transformation_matrix(),
+                self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml",
+            )
+
+    def on_tab_visibility_changed(self, is_current: bool):
+        pass
+
     def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
         self.hand_eye_configuration = hand_eye_configuration
         self.on_hand_eye_configuration_updated()
@@ -195,13 +219,13 @@ class HandEyeVerificationGUI(QWidget):
     def marker_configuration_update(self, marker_configuration: MarkerConfiguration):
         self.marker_configuration = marker_configuration
 
-    def rotation_format_update(self, rotation_format: RotationInformation):
-        self.hand_eye_pose_widget.set_rotation_format(rotation_format)
-        self.robot_pose_widget.set_rotation_format(rotation_format)
-        self.calibration_board_in_camera_frame_pose_widget.set_rotation_format(rotation_format)
-        self.calibration_board_in_robot_base_frame_pose_widget.set_rotation_format(rotation_format)
-        self.markers_in_camera_frame_pose_widget.set_rotation_format(rotation_format)
-        self.markers_in_robot_base_frame_pose_widget.set_rotation_format(rotation_format)
+    def rotation_format_update(self, rotation_information: RotationInformation):
+        self.hand_eye_pose_widget.set_rotation_format(rotation_information)
+        self.robot_pose_widget.set_rotation_format(rotation_information)
+        self.calibration_board_in_camera_frame_pose_widget.set_rotation_format(rotation_information)
+        self.calibration_board_in_robot_base_frame_pose_widget.set_rotation_format(rotation_information)
+        self.markers_in_camera_frame_pose_widget.set_rotation_format(rotation_information)
+        self.markers_in_robot_base_frame_pose_widget.set_rotation_format(rotation_information)
 
     def robot_configuration_update(self, robot_configuration: RobotConfiguration):
         self.robot_configuration = robot_configuration
@@ -437,29 +461,6 @@ class HandEyeVerificationGUI(QWidget):
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
         self.calculate_calibration_object_in_camera_frame_pose()
         self.update_projection.emit(True)
-
-    def set_save_directory(self, data_directory: Path):
-        if self.data_directory != data_directory:
-            self.data_directory = data_directory
-            self.hand_eye_pose_widget.set_yaml_path_and_save(self.data_directory / "hand_eye_transform.yaml")
-            self.robot_pose_widget.set_yaml_path_and_save(self.data_directory / "robot_pose.yaml")
-            self.calibration_board_in_camera_frame_pose_widget.set_yaml_path_and_save(
-                self.data_directory / "calibration_object_in_camera_frame_pose.yaml"
-            )
-            self.calibration_board_in_robot_base_frame_pose_widget.set_yaml_path_and_save(
-                self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml"
-            )
-
-    def set_load_directory(self, data_directory: Path):
-        self.data_directory = Path(data_directory)
-        self.hand_eye_pose_widget.set_yaml_path_and_load(self.data_directory / "hand_eye_transform.yaml")
-        self.robot_pose_widget.set_yaml_path_and_load(self.data_directory / "robot_pose.yaml")
-        self.calibration_board_in_camera_frame_pose_widget.set_yaml_path_and_load(
-            self.data_directory / "calibration_object_in_camera_frame_pose.yaml"
-        )
-        self.calibration_board_in_robot_base_frame_pose_widget.set_yaml_path_and_load(
-            self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml"
-        )
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []

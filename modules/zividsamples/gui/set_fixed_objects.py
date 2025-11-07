@@ -6,7 +6,6 @@ Note: This script requires PyQt5 to be installed.
 """
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional
 
 from PyQt5.QtCore import QLocale, Qt
@@ -279,7 +278,6 @@ class FixedObjectsSelectionDialog(QDialog):
         self.pose_widget = PoseWidget(
             title="Calibration Board Pose",
             initial_rotation_information=initial_rotation_information,
-            yaml_pose_path=Path("fixed_calibration_object_pose.yaml"),
             eye_in_hand=self.fixed_calibration_objects_data.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.Basic,
         )

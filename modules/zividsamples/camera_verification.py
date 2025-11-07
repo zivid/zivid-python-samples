@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import zivid
-from zivid.experimental import calibration
 
 
 @dataclass
@@ -29,7 +28,7 @@ class RandomCaptureCycle:
 
 @dataclass
 class VerificationAndState:
-    verification: Optional[calibration.CameraVerification]
+    verification: Optional[zivid.calibration.CameraVerification]
     state: zivid.CameraState
     time: datetime
     info: zivid.CameraInfo
@@ -61,13 +60,13 @@ Temperatures:
 
 def capture_and_measure_from_frame(frame: zivid.Frame) -> VerificationAndState:
     detection_result = zivid.calibration.detect_calibration_board(frame)
-    infield_input = calibration.InfieldCorrectionInput(detection_result)
+    infield_input = zivid.calibration.InfieldCorrectionInput(detection_result)
     if not infield_input.valid():
         raise RuntimeError(
             f"Capture not valid for infield verification! Feedback: {infield_input.status_description()}"
         )
     return VerificationAndState(
-        verification=calibration.verify_camera(infield_input),
+        verification=zivid.calibration.verify_camera(infield_input),
         info=frame.camera_info,
         state=frame.state,
         time=frame.info.time_stamp,

@@ -20,7 +20,7 @@ def _get_2d_and_3d_settings(camera: zivid.Camera) -> zivid.Settings:
         ValueError: If camera model is not supported
 
     Returns:
-        Settings with sampling mode based on camera model
+        settings: Zivid settings with sampling mode based on camera model
 
     """
     settings = zivid.Settings(
@@ -29,23 +29,24 @@ def _get_2d_and_3d_settings(camera: zivid.Camera) -> zivid.Settings:
     )
 
     model = camera.info.model
-    if model in [zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100]:
+    if model in {zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100}:
         settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample2x2
         settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
         settings.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.all
-    elif model in [
+    elif model in {
         zivid.CameraInfo.Model.zivid2PlusM130,
         zivid.CameraInfo.Model.zivid2PlusM60,
         zivid.CameraInfo.Model.zivid2PlusL110,
-    ]:
+    }:
         settings.sampling.pixel = zivid.Settings.Sampling.Pixel.blueSubsample4x4
         settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
         settings.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.blueSubsample2x2
-    elif model in [
+    elif model in {
         zivid.CameraInfo.Model.zivid2PlusMR130,
         zivid.CameraInfo.Model.zivid2PlusMR60,
         zivid.CameraInfo.Model.zivid2PlusLR110,
-    ]:
+        zivid.CameraInfo.Model.zivid3XL250,
+    }:
         settings.sampling.pixel = zivid.Settings.Sampling.Pixel.by4x4
         settings.processing.resampling.mode = zivid.Settings.Processing.Resampling.Mode.upsample2x2
         settings.color.sampling.pixel = zivid.Settings2D.Sampling.Pixel.by2x2

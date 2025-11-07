@@ -1,8 +1,6 @@
 """
 Capture Zivid point clouds, compute normals and convert to color map and display.
 
-For scenes with high dynamic range we combine multiple acquisitions to get an HDR point cloud.
-
 """
 
 import zivid
@@ -17,11 +15,11 @@ def _main() -> None:
 
     print("Configuring settings")
     settings = zivid.Settings(
-        acquisitions=[zivid.Settings.Acquisition(aperture=fnum) for fnum in (5.66, 4.00, 2.83)],
+        acquisitions=[zivid.Settings.Acquisition()],
         color=zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()]),
     )
 
-    print("Capturing frame (HDR)")
+    print("Capturing frame")
     frame = camera.capture_2d_3d(settings)
     point_cloud = frame.point_cloud()
     rgba = point_cloud.copy_data("rgba_srgb")

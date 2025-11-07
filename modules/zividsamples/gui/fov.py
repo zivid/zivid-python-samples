@@ -328,3 +328,18 @@ class PositionInFOV:
             return DistanceInFOV.Far
 
         return cls(distance=distance_in_fov(point_xyz[2], fov_constants), location=location, is_outside=is_outside)
+
+    def as_dict(self) -> dict:
+        return {
+            "distance": self.distance.name,
+            "location": self.location.name,
+            "is_outside": self.is_outside,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "PositionInFOV":
+        return cls(
+            distance=DistanceInFOV[data["distance"]],
+            location=LocationInFOV[data["location"]],
+            is_outside=data["is_outside"],
+        )

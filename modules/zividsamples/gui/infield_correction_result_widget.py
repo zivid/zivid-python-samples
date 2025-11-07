@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from PyQt5.QtWidgets import QFormLayout, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
-from zivid.experimental.calibration import CameraCorrection
+from zivid.calibration import CameraCorrection
 from zividsamples.gui.qt_application import create_vertical_line
 
 

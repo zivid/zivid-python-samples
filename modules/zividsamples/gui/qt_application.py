@@ -285,5 +285,4 @@ class ZividQtApplication(QApplication):
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
-        if hasattr(self, "zivid_app"):
-            self.zivid_app.release()
+        pass

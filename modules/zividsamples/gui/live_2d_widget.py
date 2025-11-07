@@ -91,6 +91,7 @@ class Live2DWidget(QWidget):
             zivid.CameraInfo.Model.zivid2PlusMR60,
             zivid.CameraInfo.Model.zivid2PlusMR130,
             zivid.CameraInfo.Model.zivid2PlusLR110,
+            zivid.CameraInfo.Model.zivid3XL250,
         ]:
             settings_2d_copy.sampling.color = zivid.Settings2D.Sampling.Color.grayscale
         self.settings_2d = self.update_exposure_based_on_relative_brightness(settings_2d_copy)
@@ -150,6 +151,9 @@ class Live2DWidget(QWidget):
         QMetaObject.invokeMethod(
             self.live_2d_image, "set_pixmap", Qt.QueuedConnection, Q_ARG(QPixmap, error_pixmap), Q_ARG(bool, True)
         )
+
+    def set_capture_function(self, capture_function: Callable) -> None:
+        self.capture_function = capture_function
 
     def capture(self) -> bool:
         try:

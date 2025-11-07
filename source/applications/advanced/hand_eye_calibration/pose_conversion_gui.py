@@ -8,8 +8,6 @@ Convert between different rotation formats with a GUI:
 
 """
 
-from pathlib import Path
-
 from PyQt5.QtWidgets import QAction, QHBoxLayout, QMainWindow, QVBoxLayout, QWidget
 from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.qt_application import ZividQtApplication
@@ -45,7 +43,6 @@ class PoseConverter(QMainWindow):
         self.input_pose_widget = PoseWidget(
             title="Input Pose",
             initial_rotation_information=input_format,
-            yaml_pose_path=Path("input_pose.yaml"),
             eye_in_hand=True,
             display_mode=display_mode,
             descriptive_image_paths=(robot_ee_pose_img_path, rob_ee_pose_img_path),
@@ -54,7 +51,6 @@ class PoseConverter(QMainWindow):
         self.output_pose_widget = PoseWidget(
             title="Output Pose",
             initial_rotation_information=output_format,
-            yaml_pose_path=Path("output_pose.yaml"),
             eye_in_hand=True,
             display_mode=display_mode,
             descriptive_image_paths=(robot_ee_pose_img_path, rob_ee_pose_img_path),

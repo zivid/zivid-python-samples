@@ -28,6 +28,7 @@ import numpy as np
 import zivid
 from rtde import rtde, rtde_config
 from scipy.spatial.transform import Rotation
+from zividsamples.paths import get_sample_data_path
 from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 
 
@@ -42,6 +43,12 @@ def _options() -> argparse.Namespace:
     mode_group = parser.add_mutually_exclusive_group(required=True)
     mode_group.add_argument("--eih", "--eye-in-hand", action="store_true", help="eye-in-hand calibration")
     mode_group.add_argument("--eth", "--eye-to-hand", action="store_true", help="eye-to-hand calibration")
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        type=Path,
+        help="Path to the camera settings YML file",
+    )
     parser.add_argument("--ip", required=True, help="IP address to robot")
 
     subparsers = parser.add_subparsers(dest="calibration_object", required=True, help="Calibration object type")
@@ -59,24 +66,22 @@ def _options() -> argparse.Namespace:
 
 
 def _write_robot_state(
-    con: rtde.RTDE,
-    input_data: rtde.serialize.DataObject,
+    rtde_data: Tuple[rtde.RTDE, rtde.serialize.DataObject],
     finish_capture: bool = False,
     camera_ready: bool = False,
 ) -> None:
     """Write to robot I/O registers.
 
     Args:
-        con: Connection between computer and robot
-        input_data: Input package containing the specific input data registers
+        rtde_data: Tuple containing computer-robot connection and input package with specific input data registers
         finish_capture: Boolean value to robot_state that q_r scene capture is finished
         camera_ready: Boolean value to robot_state that camera is ready to capture images
 
     """
-    input_data.input_bit_register_64 = int(finish_capture)
-    input_data.input_bit_register_65 = int(camera_ready)
+    rtde_data[1].input_bit_register_64 = int(finish_capture)
+    rtde_data[1].input_bit_register_65 = int(camera_ready)
 
-    con.send(input_data)
+    rtde_data[0].send(rtde_data[1])
 
 
 def _initialize_robot_sync(host: str) -> Tuple[rtde.RTDE, rtde.serialize.DataObject]:
@@ -180,24 +185,41 @@ def _get_frame_and_transform_matrix(
     return frame, transform
 
 
-def _camera_settings(camera: zivid.Camera) -> zivid.Settings:
-    """Set camera settings.
+def _preset_path(camera: zivid.Camera) -> Path:
+    """Get path to preset settings YML file, depending on camera model.
 
     Args:
         camera: Zivid camera
 
+    Raises:
+        ValueError: If unsupported camera model for this code sample
+
     Returns:
-        settings: Zivid Settings
+        Path: Zivid 2D and 3D settings YML path
 
     """
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=datetime.timedelta(milliseconds=1200),
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
+    presets_path = get_sample_data_path() / "Settings"
 
-    settings = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+    if camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        return presets_path / "Zivid_Three_XL250_DepalletizationQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR60:
+        return presets_path / "Zivid_Two_Plus_MR60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR130:
+        return presets_path / "Zivid_Two_Plus_MR130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusLR110:
+        return presets_path / "Zivid_Two_Plus_LR110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        return presets_path / "Zivid_Two_Plus_M60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return presets_path / "Zivid_Two_Plus_M130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        return presets_path / "Zivid_Two_Plus_L110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+        return presets_path / "Zivid_Two_M70_ManufacturingSpecular.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
+        return presets_path / "Zivid_Two_L100_ManufacturingSpecular.yml"
 
-    return settings
+    raise ValueError("Invalid camera model")
 
 
 def _read_robot_state(con: rtde.RTDE) -> rtde.serialize:
@@ -290,10 +312,10 @@ def _verify_good_capture(frame: zivid.Frame, user_options: argparse.Namespace) -
 
 def _capture_one_frame_and_robot_pose(
     *,
-    con: rtde.RTDE,
+    rtde_data: Tuple[rtde.RTDE, rtde.serialize.DataObject],
     camera: zivid.Camera,
+    settings: zivid.Settings,
     save_dir: Path,
-    input_data: rtde.serialize.DataObject,
     image_num: int,
     ready_to_capture: bool,
     user_options: argparse.Namespace,
@@ -302,36 +324,34 @@ def _capture_one_frame_and_robot_pose(
     then signals robot to move to next posture.
 
     Args:
-        con: Connection between computer and robot
+        rtde_data: Tuple containing computer-robot connection and input package with specific input data registers
         camera: Zivid camera
+        settings: Zivid settings
         save_dir: Path to where data will be saved
-        input_data: Input package containing the specific input data registers
         image_num: Image number
         ready_to_capture: Boolean value to robot_state that camera is ready to capture images
         user_options: Input arguments
 
     """
-    settings = _camera_settings(camera)
-    frame, transform = _get_frame_and_transform_matrix(con, camera, settings)
+    frame, transform = _get_frame_and_transform_matrix(rtde_data[0], camera, settings)
     _verify_good_capture(frame, user_options)
 
     # Signal robot to move to next position, then set signal to low again.
-    _write_robot_state(con, input_data, finish_capture=True, camera_ready=ready_to_capture)
+    _write_robot_state(rtde_data=rtde_data, finish_capture=True, camera_ready=ready_to_capture)
     time.sleep(0.1)
-    _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
+    _write_robot_state(rtde_data=rtde_data, finish_capture=False, camera_ready=ready_to_capture)
     _save_zdf_and_pose(save_dir, image_num, frame, transform)
     print("Image and pose saved")
 
 
 def _generate_dataset(
-    app: zivid.Application, con: rtde.RTDE, input_data: rtde.serialize.DataObject, user_options: argparse.Namespace
+    app: zivid.Application, rtde_data: Tuple[rtde.RTDE, rtde.serialize.DataObject], user_options: argparse.Namespace
 ) -> Path:
     """Generate dataset based on predefined robot poses.
 
     Args:
         app: Zivid application instance
-        con: Connection between computer and robot
-        input_data: Input package containing the specific input data registers
+        rtde_data: Tuple containing computer-robot connection and input package with specific input data registers
         user_options: Input arguments
 
     Returns:
@@ -341,11 +361,15 @@ def _generate_dataset(
     camera = app.connect_camera()
     save_dir = _generate_folder()
 
+    if user_options.settings_path is None:
+        user_options.settings_path = _preset_path(camera)
+    settings = zivid.Settings.load(user_options.settings_path)
+
     # Signal robot that camera is ready
     ready_to_capture = True
-    _write_robot_state(con, input_data, finish_capture=False, camera_ready=ready_to_capture)
+    _write_robot_state(rtde_data, finish_capture=False, camera_ready=ready_to_capture)
 
-    robot_state = _read_robot_state(con)
+    robot_state = _read_robot_state(rtde_data[0])
 
     print(
         "Initial output robot_states: \n"
@@ -355,15 +379,15 @@ def _generate_dataset(
 
     images_captured = 1
     while _image_count(robot_state) != -1:
-        robot_state = _read_robot_state(con)
+        robot_state = _read_robot_state(rtde_data[0])
 
         if _ready_for_capture(robot_state) and images_captured == _image_count(robot_state):
             print(f"Capture image {_image_count(robot_state)}")
             _capture_one_frame_and_robot_pose(
-                con=con,
+                rtde_data=rtde_data,
                 camera=camera,
+                settings=settings,
                 save_dir=save_dir,
-                input_data=input_data,
                 image_num=images_captured,
                 ready_to_capture=ready_to_capture,
                 user_options=user_options,
@@ -372,10 +396,10 @@ def _generate_dataset(
 
         time.sleep(0.1)
 
-    _write_robot_state(con, input_data, finish_capture=False, camera_ready=False)
+    _write_robot_state(rtde_data, finish_capture=False, camera_ready=False)
     time.sleep(1.0)
-    con.send_pause()
-    con.disconnect()
+    rtde_data[0].send_pause()
+    rtde_data[1].disconnect()
 
     print(f"\n Data saved to: {save_dir}")
 
@@ -460,7 +484,7 @@ def _main() -> None:
     con, input_data = _initialize_robot_sync(robot_ip_address)
     con.send_start()
 
-    dataset_dir = _generate_dataset(app, con, input_data, user_options)
+    dataset_dir = _generate_dataset(app, (con, input_data), user_options)
 
     if user_options.eih:
         transform, residuals = perform_hand_eye_calibration("eye-in-hand", dataset_dir)

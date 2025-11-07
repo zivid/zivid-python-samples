@@ -57,10 +57,10 @@ camera = app.connect_camera()
 ## Configure
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L88))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/camera/basic/capture_with_settings_from_yml.py#L90))
 
 ``` sourceCode python
-settings = zivid.Settings.load(settings_file)
+settings = zivid.Settings.load(user_options.settings_path)
 ```
 
 ## Capture

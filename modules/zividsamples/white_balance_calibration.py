@@ -65,6 +65,7 @@ def camera_may_need_color_balancing(camera: zivid.Camera) -> bool:
         zivid.CameraInfo.Model.zivid2PlusMR130,
         zivid.CameraInfo.Model.zivid2PlusMR60,
         zivid.CameraInfo.Model.zivid2PlusLR110,
+        zivid.CameraInfo.Model.zivid3XL250,
     ):
         return False
     return True

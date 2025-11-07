@@ -23,11 +23,11 @@ from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.robot_configuration import RobotConfiguration
 from zividsamples.gui.robot_control import RobotTarget
 from zividsamples.gui.rotation_format_configuration import RotationInformation
+from zividsamples.gui.tab_with_robot_support import TabWidgetWithRobotSupport
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
-class StitchGUI(QWidget):
-    data_directory: Path
+class StitchGUI(TabWidgetWithRobotSupport):
     robot_configuration: RobotConfiguration
     qimage_rgba: Optional[QImage] = None
     hand_eye_configuration: HandEyeConfiguration
@@ -47,7 +47,7 @@ class StitchGUI(QWidget):
         initial_rotation_information: RotationInformation,
         parent=None,
     ):
-        super().__init__(parent)
+        super().__init__(data_directory, parent)
 
         self.description = [
             "Hand-Eye calibration can be used to convert between the coordinate systems of the camera and the robot. "
@@ -58,7 +58,6 @@ class StitchGUI(QWidget):
             "The steps above will guide you through the process.",
         ]
 
-        self.data_directory = data_directory
         self.robot_configuration = robot_configuration
         self.hand_eye_configuration = hand_eye_configuration
 
@@ -69,7 +68,6 @@ class StitchGUI(QWidget):
 
     def create_widgets(self, initial_rotation_information: RotationInformation):
         self.robot_pose_widget = PoseWidget.Robot(
-            self.data_directory / "robot_pose.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
@@ -79,7 +77,6 @@ class StitchGUI(QWidget):
         self.confirm_robot_pose_button.setCheckable(True)
         self.confirm_robot_pose_button.setObjectName("Stitch-confirm_robot_pose_button")
         self.hand_eye_pose_widget = PoseWidget.HandEye(
-            self.data_directory / "hand_eye_transform.yaml",
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
             initial_rotation_information=initial_rotation_information,
@@ -127,6 +124,24 @@ class StitchGUI(QWidget):
             "background-color: green;" if self.has_confirmed_robot_pose else ""
         )
 
+    def on_pending_changes(self):
+        if self.data_directory_has_data():
+            self.capture_at_pose_selection_widget.on_clear_button_clicked()
+            self.capture_at_pose_selection_widget.set_directory(self.data_directory)
+            self.capture_at_pose_selection_widget.load_capture_at_poses(
+                self.hand_eye_pose_widget.get_transformation_matrix(),
+                self.hand_eye_configuration.eye_in_hand,
+            )
+            self.update_stitched_view()
+        else:
+            self.capture_at_pose_selection_widget.set_directory(self.data_directory)
+
+    def on_tab_visibility_changed(self, is_current: bool):
+        if is_current:
+            self.start_3d_visualizer()
+        else:
+            self.stop_3d_visualizer()
+
     def stop_3d_visualizer(self):
         if self.point_cloud_widget is not None:
             self.point_cloud_widget.closeEvent(None)
@@ -142,9 +157,9 @@ class StitchGUI(QWidget):
         self.hand_eye_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
         self.robot_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
 
-    def rotation_format_update(self, rotation_format: RotationInformation):
-        self.hand_eye_pose_widget.set_rotation_format(rotation_format)
-        self.robot_pose_widget.set_rotation_format(rotation_format)
+    def rotation_format_update(self, rotation_information: RotationInformation):
+        self.hand_eye_pose_widget.set_rotation_format(rotation_information)
+        self.robot_pose_widget.set_rotation_format(rotation_information)
 
     def robot_configuration_update(self, robot_configuration: RobotConfiguration):
         self.robot_configuration = robot_configuration
@@ -189,22 +204,6 @@ class StitchGUI(QWidget):
 
     def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix):
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
-
-    def set_save_directory(self, data_directory: Path):
-        if self.data_directory != data_directory:
-            self.data_directory = data_directory
-            self.capture_at_pose_selection_widget.set_directory(self.data_directory)
-
-    def set_load_directory(self, data_directory: Path):
-        self.data_directory = Path(data_directory)
-        self.hand_eye_pose_widget.set_yaml_path_and_load(self.data_directory / "hand_eye_transform.yaml")
-        self.capture_at_pose_selection_widget.on_clear_button_clicked()
-        self.capture_at_pose_selection_widget.set_directory(self.data_directory)
-        self.capture_at_pose_selection_widget.load_capture_at_poses(
-            self.hand_eye_pose_widget.get_transformation_matrix(),
-            self.hand_eye_configuration.eye_in_hand,
-        )
-        self.update_stitched_view()
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []

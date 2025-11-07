@@ -39,6 +39,7 @@ def _set_sampling_pixel(settings: zivid.Settings, camera: zivid.Camera) -> None:
         camera.info.model is zivid.CameraInfo.Model.zivid2PlusMR130
         or camera.info.model is zivid.CameraInfo.Model.zivid2PlusMR60
         or camera.info.model is zivid.CameraInfo.Model.zivid2PlusLR110
+        or camera.info.model is zivid.CameraInfo.Model.zivid3XL250
     ):
         settings.sampling.pixel = zivid.Settings.Sampling.Pixel.by2x2
     else:
@@ -84,10 +85,82 @@ def _get_exposure_values(camera: zivid.Camera) -> Iterable[Tuple[float, float, t
         gains = (1.0, 1.0, 1.0)
         exposure_times = (timedelta(microseconds=900), timedelta(microseconds=1500), timedelta(microseconds=20000))
         brightnesses = (2.5, 2.5, 2.5)
+    elif camera.info.model is zivid.CameraInfo.Model.zivid3XL250:
+        apertures = (3.00, 3.00)
+        gains = (1.0, 1.0)
+        exposure_times = (timedelta(microseconds=1000), timedelta(microseconds=7000))
+        brightnesses = (3.0, 3.0)
     else:
         raise ValueError(f"Unhandled enum value {camera.info.model}")
 
     return zip(apertures, gains, exposure_times, brightnesses)  # noqa: B905
+
+
+def make_settings_2d(camera: zivid.Camera) -> zivid.Settings2D:
+    """Creates 2D settings for a given camera.
+
+    Args:
+        camera: Zivid camera instance
+
+    Returns:
+        settings_2d: Zivid 2D settings
+
+    """
+    settings_2d = zivid.Settings2D()
+    model = camera.info.model
+
+    if model in {
+        zivid.CameraInfo.Model.zividTwo,
+        zivid.CameraInfo.Model.zividTwoL100,
+    }:
+        settings_2d.acquisitions = [
+            zivid.Settings2D.Acquisition(
+                brightness=1.8,
+                exposure_time=timedelta(microseconds=20000),
+                aperture=2.38,
+                gain=1.0,
+            )
+        ]
+
+    if model in {
+        zivid.CameraInfo.Model.zivid2PlusM130,
+        zivid.CameraInfo.Model.zivid2PlusM60,
+        zivid.CameraInfo.Model.zivid2PlusL110,
+    }:
+        settings_2d.acquisitions = [
+            zivid.Settings2D.Acquisition(
+                brightness=2.2,
+                exposure_time=timedelta(microseconds=20000),
+                aperture=2.59,
+                gain=1.0,
+            )
+        ]
+
+    if model in {
+        zivid.CameraInfo.Model.zivid2PlusMR130,
+        zivid.CameraInfo.Model.zivid2PlusMR60,
+        zivid.CameraInfo.Model.zivid2PlusLR110,
+    }:
+        settings_2d.acquisitions = [
+            zivid.Settings2D.Acquisition(
+                brightness=2.5,
+                exposure_time=timedelta(microseconds=20000),
+                aperture=2.83,
+                gain=1.0,
+            )
+        ]
+
+    if model in {zivid.CameraInfo.Model.zivid3XL250}:
+        settings_2d.acquisitions = [
+            zivid.Settings2D.Acquisition(
+                brightness=3.0,
+                exposure_time=timedelta(microseconds=5000),
+                aperture=3.00,
+                gain=1.0,
+            )
+        ]
+
+    return settings_2d
 
 
 def _main() -> None:
@@ -101,6 +174,8 @@ def _main() -> None:
 
     settings_2d.sampling.color = zivid.Settings2D.Sampling.Color.rgb
     settings_2d.sampling.pixel = zivid.Settings2D.Sampling.Pixel.all
+    settings_2d.sampling.interval.enabled = False
+    settings_2d.sampling.interval.duration = timedelta(microseconds=10000)
 
     settings_2d.processing.color.balance.red = 1.0
     settings_2d.processing.color.balance.blue = 1.0
@@ -110,7 +185,7 @@ def _main() -> None:
     settings_2d.processing.color.experimental.mode = zivid.Settings2D.Processing.Color.Experimental.Mode.automatic
 
     settings = zivid.Settings()
-    settings.engine = zivid.Settings.Engine.phase
+    settings.engine = zivid.Settings.Engine.stripe
 
     settings.region_of_interest.box.enabled = True
     settings.region_of_interest.box.point_o = [1000, 1000, 1000]
@@ -173,14 +248,8 @@ def _main() -> None:
             )
         )
 
-    settings_2d.acquisitions.append(
-        zivid.Settings2D.Acquisition(
-            aperture=2.83,
-            exposure_time=timedelta(microseconds=10000),
-            brightness=1.8,
-            gain=1.0,
-        )
-    )
+    acquisition_settings_2d = make_settings_2d(camera).Acquisition()
+    settings.color.acquisitions.append(acquisition_settings_2d)
 
     for acquisition in settings.acquisitions:
         print(acquisition)

@@ -16,7 +16,6 @@ Note: This example uses experimental SDK features, which may be modified, moved,
 from typing import List
 
 import zivid
-import zivid.experimental.calibration
 
 
 def _yes_no_prompt(question: str) -> bool:
@@ -38,7 +37,7 @@ def _yes_no_prompt(question: str) -> bool:
         print("Invalid response. Please respond with either 'y' or 'n'.")
 
 
-def _collect_dataset(camera: zivid.Camera) -> List[zivid.experimental.calibration.InfieldCorrectionInput]:
+def _collect_dataset(camera: zivid.Camera) -> List[zivid.calibration.InfieldCorrectionInput]:
     """Collects input-data needed by infield verification and correction function.
 
     Args:
@@ -58,7 +57,7 @@ def _collect_dataset(camera: zivid.Camera) -> List[zivid.experimental.calibratio
             print("Capturing calibration board")
             detection_result = zivid.calibration.detect_calibration_board(camera)
             if detection_result.valid():
-                infield_input = zivid.experimental.calibration.InfieldCorrectionInput(detection_result)
+                infield_input = zivid.calibration.InfieldCorrectionInput(detection_result)
 
                 if infield_input.valid():
                     dataset.append(infield_input)
@@ -92,7 +91,7 @@ def _main() -> None:
     print(f"Collected {len(dataset)} valid measurements.")
     if len(dataset) > 0:
         print("Computing new camera correction...")
-        correction = zivid.experimental.calibration.compute_camera_correction(dataset)
+        correction = zivid.calibration.compute_camera_correction(dataset)
         accuracy_estimate = correction.accuracy_estimate()
 
         print(
@@ -104,7 +103,7 @@ def _main() -> None:
         # Optionally save to camera
         if _yes_no_prompt("Save to camera?"):
             print("Writing correction to camera")
-            zivid.experimental.calibration.write_camera_correction(camera, correction)
+            zivid.calibration.write_camera_correction(camera, correction)
             print("Success")
 
 

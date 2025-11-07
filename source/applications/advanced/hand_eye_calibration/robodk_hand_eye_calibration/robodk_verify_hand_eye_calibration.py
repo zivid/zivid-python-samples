@@ -19,7 +19,6 @@ More information about RoboDK is available at: https://robodk.com/doc/en/Getting
 """
 
 import argparse
-import datetime
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -30,28 +29,46 @@ import zivid.experimental.calibration
 from robodk import Mat
 from robodk.robolink import Item
 from zividsamples.display import display_rgb
+from zividsamples.paths import get_sample_data_path
 from zividsamples.robodk_tools import connect_to_robot, get_robot_targets, set_robot_speed_and_acceleration
 from zividsamples.save_load_matrix import load_and_assert_affine_matrix
 
 
-def _assisted_capture(camera: zivid.Camera) -> zivid.Frame:
-    """Acquire frame with capture assistant.
+def _preset_path(camera: zivid.Camera) -> Path:
+    """Get path to preset settings YML file, depending on camera model.
 
     Args:
         camera: Zivid camera
 
+    Raises:
+        ValueError: If unsupported camera model for this code sample
+
     Returns:
-        frame: Zivid frame
+        Path: Zivid 2D and 3D settings YML path
 
     """
-    suggest_settings_parameters = zivid.capture_assistant.SuggestSettingsParameters(
-        max_capture_time=datetime.timedelta(milliseconds=800),
-        ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
-    )
+    presets_path = get_sample_data_path() / "Settings"
 
-    settings_list = zivid.capture_assistant.suggest_settings(camera, suggest_settings_parameters)
+    if camera.info.model == zivid.CameraInfo.Model.zivid3XL250:
+        return presets_path / "Zivid_Three_XL250_DepalletizationQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR60:
+        return presets_path / "Zivid_Two_Plus_MR60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusMR130:
+        return presets_path / "Zivid_Two_Plus_MR130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusLR110:
+        return presets_path / "Zivid_Two_Plus_LR110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM60:
+        return presets_path / "Zivid_Two_Plus_M60_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusM130:
+        return presets_path / "Zivid_Two_Plus_M130_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zivid2PlusL110:
+        return presets_path / "Zivid_Two_Plus_L110_ConsumerGoodsQuality.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwo:
+        return presets_path / "Zivid_Two_M70_ManufacturingSpecular.yml"
+    if camera.info.model == zivid.CameraInfo.Model.zividTwoL100:
+        return presets_path / "Zivid_Two_L100_ManufacturingSpecular.yml"
 
-    return camera.capture_2d_3d(settings_list)
+    raise ValueError("Invalid camera model")
 
 
 def _estimate_calibration_object_pose(frame: zivid.Frame, user_options: argparse.Namespace) -> np.ndarray:
@@ -289,6 +306,12 @@ def _options() -> argparse.Namespace:
     type_group = parser.add_mutually_exclusive_group(required=True)
     type_group.add_argument("--eih", "--eye-in-hand", action="store_true", help="eye-in-hand configuration")
     type_group.add_argument("--eth", "--eye-to-hand", action="store_true", help="eye-to-hand configuration")
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        type=Path,
+        help="Path to the camera settings YML file",
+    )
     parser.add_argument("--ip", required=True, help="IP address of the robot controller")
     parser.add_argument(
         "--target-keyword",
@@ -332,6 +355,10 @@ def _main() -> None:
     camera = app.connect_camera()
 
     user_options = _options()
+    if user_options.settings_path is None:
+        user_options.settings_path = _preset_path(camera)
+    settings = zivid.Settings.load(user_options.settings_path)
+
     rdk, robot = connect_to_robot(user_options.ip)
     #  NOTE! Verify safe operation speeds and accelerations for your robot!
     set_robot_speed_and_acceleration(robot, speed=100, joint_speed=100, acceleration=50, joint_acceleration=50)
@@ -359,7 +386,7 @@ def _main() -> None:
 
     while True:
         try:
-            frame = _assisted_capture(camera)
+            frame = camera.capture_2d_3d(settings)
             bgra_image = frame.point_cloud().copy_data("bgra_srgb")
             camera_to_calibration_object_transform = _estimate_calibration_object_pose(frame, user_options)
 

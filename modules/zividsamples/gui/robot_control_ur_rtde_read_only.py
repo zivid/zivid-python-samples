@@ -1,4 +1,5 @@
 import tempfile
+from datetime import datetime
 from time import sleep
 
 import numpy as np
@@ -45,6 +46,20 @@ class RobotControlURRTDEReadOnly(RobotControlReadOnly):
         raise RuntimeError("No RTDE data received from robot.")
 
     def disconnect(self):
+        if self.robot_handle is not None:
+            try:
+                start_time = datetime.now()
+                timeout = 2.0  # seconds
+                while not self.robot_handle.is_connected():
+                    success = self.robot_handle.send_pause()
+                    if success:
+                        break
+                    if (datetime.now() - start_time).total_seconds() > timeout:
+                        raise RuntimeError("Timeout while waiting for RTDE connection to pause.")
+                    sleep(0.01)
+                self.robot_handle.disconnect()
+            except Exception as e:
+                print(f"Error while disconnecting RTDE: {e}")
         self.robot_handle = None
 
     def connect(self):
