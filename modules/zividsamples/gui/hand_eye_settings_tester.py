@@ -12,7 +12,7 @@ import numpy as np
 import zivid
 from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QCloseEvent, QColor, QImage, QPainter, QPixmap
+from PyQt5.QtGui import QCloseEvent, QColor, QImage, QKeyEvent, QPainter, QPixmap
 from PyQt5.QtWidgets import (
     QAction,
     QCheckBox,
@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (
 )
 from zivid.calibration import DetectionResult, DetectionResultFiducialMarkers, MarkerShape
 from zivid.experimental import PixelMapping
+from zividsamples.display import display_pointcloud
 from zividsamples.gui.buttons_widget import CameraButtonsWidget
 from zividsamples.gui.camera_selection import select_camera
 from zividsamples.gui.cv2_handler import CV2Handler
@@ -33,7 +34,6 @@ from zividsamples.gui.hand_eye_configuration import CalibrationObject, HandEyeBu
 from zividsamples.gui.image_viewer import ImageViewer, ImageViewerDialog
 from zividsamples.gui.live_2d_widget import Live2DWidget
 from zividsamples.gui.marker_widget import MarkersWidget
-from zividsamples.gui.pointcloud_visualizer import show_open3d_visualizer
 from zividsamples.gui.qt_application import ZividQtApplication
 from zividsamples.gui.settings_selector import SettingsForHandEyeGUI, select_settings_for_hand_eye
 from zividsamples.transformation_matrix import TransformationMatrix
@@ -218,10 +218,10 @@ class TestHandEyeCaptureSettings(QMainWindow):
         select_hand_eye_settings_action.triggered.connect(self.on_select_settings_action_triggered)
         self.menuBar().addAction(select_hand_eye_settings_action)
 
-    def keyPressEvent(self, a0):
+    def keyPressEvent(self, a0: QKeyEvent) -> None:  # pylint: disable=invalid-name
         if a0 is not None and a0.key() == Qt.Key_F5:
-            if self.capture_button.isEnabled():
-                self.capture_button.click()
+            if self.camera and self.camera.state.connected:
+                self.camera_buttons.on_capture_button_clicked()
         else:
             super().keyPressEvent(a0)
 
@@ -352,9 +352,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
             QImage.Format_RGB888,
         )
         ImageViewerDialog(qimage_depthmap, title="Sample Capture - DepthMap").exec_()
-        show_open3d_visualizer(
-            self.last_frame.point_cloud().copy_data("xyz").reshape([-1, 3]), rgba[:, :, :3].reshape([-1, 3])
-        )
+        display_pointcloud(self.last_frame)
 
     def on_save_last_frame_action_triggered(self):
         if self.last_frame is not None:

@@ -87,10 +87,7 @@ def _main() -> None:
         voxel_size=0.75, min_points_per_voxel=2
     )
 
-    display_pointcloud(
-        xyz=unorganized_stitched_point_cloud.copy_data("xyz"),
-        rgb=unorganized_stitched_point_cloud.copy_data("rgba")[:, 0:3],
-    )
+    display_pointcloud(unorganized_stitched_point_cloud)
 
     file_name = Path(__file__).parent / "StitchedPointCloudOfRotatingObject.ply"
     export_unorganized_point_cloud(unorganized_stitched_point_cloud, PLY(str(file_name), layout=PLY.Layout.unordered))

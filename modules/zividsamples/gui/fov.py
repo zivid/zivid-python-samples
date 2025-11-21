@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -48,8 +49,8 @@ class CameraFOVConstants:
         self.focus: float = self.camera_parameters.loc[camera_info.model_name]["key_a"]  # type: ignore
         self.maximum_distance: float = self.camera_parameters.loc[camera_info.model_name]["key_b"]["distance"]["acceptable"]["max"]  # type: ignore
         self.minimum_distance: float = self.camera_parameters.loc[camera_info.model_name]["key_b"]["distance"]["acceptable"]["min"]  # type: ignore
-        self.width_at_distances: list[dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["width_at_distances"]  # type: ignore
-        self.height_at_distances: list[dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["height_at_distances"]  # type: ignore
+        self.width_at_distances: List[Dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["width_at_distances"]  # type: ignore
+        self.height_at_distances: List[Dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["height_at_distances"]  # type: ignore
 
     def _find_value_range(self, distance, value_at_distances):
         if distance < value_at_distances[0]["distance"]:
@@ -211,7 +212,7 @@ class PositionInFOV:
             return f"{self.distance.name} - {self.location.name} - outside"
         return f"{self.distance.name} - {self.location.name}"
 
-    def point_in_polygon(self, point: tuple[float, float], polygon: np.ndarray) -> bool:
+    def point_in_polygon(self, point: Tuple[float, float], polygon: np.ndarray) -> bool:
         return Path(polygon).contains_point(point)
 
     @classmethod
@@ -290,7 +291,7 @@ class PositionInFOV:
 
         def classify_region(
             point_xy: NDArray[Shape["2"], Float32], points_of_interest: PointsOfInterest  # type: ignore
-        ) -> tuple[LocationInFOV, bool]:
+        ) -> Tuple[LocationInFOV, bool]:
 
             # Determine the location in FOV
             regions_inside = regions(points_of_interest)

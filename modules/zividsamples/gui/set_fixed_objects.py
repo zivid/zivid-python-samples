@@ -6,7 +6,7 @@ Note: This script requires PyQt5 to be installed.
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, List, Optional
 
 from PyQt5.QtCore import QLocale, Qt
 from PyQt5.QtGui import QDoubleValidator, QPixmap
@@ -43,8 +43,8 @@ from zividsamples.paths import get_image_file_path
 class FixedCalibrationObjectsData:
     hand_eye_configuration: HandEyeConfiguration
     marker_configuration: Optional[MarkerConfiguration] = None
-    marker_positions_eye_in_hand: Optional[dict[int, list[float]]] = None
-    marker_positions_eye_to_hand: Optional[dict[int, list[float]]] = None
+    marker_positions_eye_in_hand: Optional[Dict[int, List[float]]] = None
+    marker_positions_eye_to_hand: Optional[Dict[int, List[float]]] = None
     calibration_board_pose_eye_in_hand: Optional[TransformationMatrix] = None
     calibration_board_pose_eye_to_hand: Optional[TransformationMatrix] = None
     use_rotation: bool = False
@@ -138,7 +138,7 @@ class MarkerWithPosition:
     pose_y: QLineEdit
     pose_z: QLineEdit
 
-    def __init__(self, marker_id: int, position: list[float]):
+    def __init__(self, marker_id: int, position: List[float]):
         self.marker_id = QLabel(str(marker_id))
         self.marker_id.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
         self.pose_x = QLineEdit(str(position[0]))
@@ -151,7 +151,7 @@ class MarkerWithPosition:
         self.pose_z.setValidator(QDoubleValidator())
         self.pose_z.setAlignment(Qt.AlignVCenter | Qt.AlignCenter)
 
-    def position(self) -> list[float]:
+    def position(self) -> List[float]:
         current_locale = QLocale()
         return [current_locale.toDouble(pose.text())[0] for pose in [self.pose_x, self.pose_y, self.pose_z]]
 
@@ -160,7 +160,7 @@ class DynamicMarkerList(QWidget):
 
     def __init__(self, fixed_calibration_objects: FixedCalibrationObjectsData):
         super().__init__()
-        self.markers_with_position_widgets: list[MarkerWithPosition] = []
+        self.markers_with_position_widgets: List[MarkerWithPosition] = []
 
         self.marker_container = QWidget()
         self.marker_scrollable_area = QScrollArea()
@@ -195,7 +195,7 @@ class DynamicMarkerList(QWidget):
                 self.add_marker(row, marker_id, [0.0, 0.0, 0.0])
         self.setLayout(layout)
 
-    def add_marker(self, row: int, marker_id: int, position: list[float]):
+    def add_marker(self, row: int, marker_id: int, position: List[float]):
         marker_with_position = MarkerWithPosition(
             marker_id=marker_id,
             position=position,
@@ -206,7 +206,7 @@ class DynamicMarkerList(QWidget):
         self.grid_layout.addWidget(marker_with_position.pose_z, row, 3)
         self.markers_with_position_widgets.append(marker_with_position)
 
-    def get_markers(self) -> dict[int, list[float]]:
+    def get_markers(self) -> Dict[int, List[float]]:
         return {
             int(marker_with_position.marker_id.text()): marker_with_position.position()
             for marker_with_position in self.markers_with_position_widgets

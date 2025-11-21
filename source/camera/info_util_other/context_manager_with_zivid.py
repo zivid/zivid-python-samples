@@ -11,7 +11,7 @@ from typing import Tuple
 
 import numpy as np
 import zivid
-from zividsamples.display import display_pointcloud
+from zividsamples.display import display_depthmap
 from zividsamples.paths import get_sample_data_path
 
 
@@ -50,7 +50,8 @@ def use_zivid_application_with_context() -> None:
     for i in range(2):
         print(f"\nIteration {i + 1}")
         xyz, rgba = load_point_cloud_as_numpy()
-        display_pointcloud(xyz, rgba[:, :, 0:3])  # Only RGB used for display
+        print(f"Point cloud shape: {xyz.shape}, Color data shape: {rgba.shape}")
+        display_depthmap(xyz)  # Only xyz used for display
 
 
 if __name__ == "__main__":

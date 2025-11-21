@@ -56,10 +56,7 @@ def _main() -> None:
     unorganized_not_stitched_point_cloud = zivid.UnorganizedPointCloud()
     unorganized_not_stitched_point_cloud.extend(unorganized_point_cloud_1)
     unorganized_not_stitched_point_cloud.extend(unorganized_point_cloud_2)
-    display_pointcloud(
-        xyz=unorganized_not_stitched_point_cloud.copy_data("xyz"),
-        rgb=unorganized_not_stitched_point_cloud.copy_data("rgba")[:, 0:3],
-    )
+    display_pointcloud(unorganized_not_stitched_point_cloud)
 
     print("Estimating transformation between point clouds")
     unorganized_point_cloud_1_lpcr = unorganized_point_cloud_1.voxel_downsampled(voxel_size=1.0, min_points_per_voxel=3)
@@ -84,17 +81,11 @@ def _main() -> None:
     painted_final_point_cloud.extend(unorganized_point_cloud_1.painted_uniform_color([255, 0, 0, 255]))
     painted_final_point_cloud.extend(unorganized_point_cloud_2_transformed.painted_uniform_color([0, 255, 0, 255]))
 
-    display_pointcloud(
-        xyz=painted_final_point_cloud.copy_data("xyz"),
-        rgb=painted_final_point_cloud.copy_data("rgba")[:, 0:3],
-    )
+    display_pointcloud(painted_final_point_cloud)
 
     print("Voxel-downsampling the stitched point cloud")
     final_point_cloud = final_point_cloud.voxel_downsampled(voxel_size=2.0, min_points_per_voxel=1)
-    display_pointcloud(
-        xyz=final_point_cloud.copy_data("xyz"),
-        rgb=final_point_cloud.copy_data("rgba")[:, 0:3],
-    )
+    display_pointcloud(final_point_cloud)
 
 
 if __name__ == "__main__":

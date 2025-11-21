@@ -42,12 +42,10 @@ def _main() -> None:
         frame = zivid.Frame(data_file)
 
         point_cloud = frame.point_cloud()
-        xyz = point_cloud.copy_data("xyz")
-        rgba = point_cloud.copy_data("rgba_srgb")
 
         print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-        display_pointcloud(xyz, rgba[:, :, 0:3])
+        display_pointcloud(point_cloud)
 
         print("Downsampling point cloud")
         print("This does not modify the current point cloud but returns")
@@ -60,12 +58,9 @@ def _main() -> None:
         print("This modifies the current point cloud.")
         point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
 
-        xyz_donwsampled = point_cloud.copy_data("xyz")
-        rgba_downsampled = point_cloud.copy_data("rgba_srgb")
-
         print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-        display_pointcloud(xyz_donwsampled, rgba_downsampled[:, :, 0:3])
+        display_pointcloud(point_cloud)
 
 
 if __name__ == "__main__":

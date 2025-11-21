@@ -1,9 +1,2 @@
 ./modules
-matplotlib
-numpy
 open3d
-opencv-python
-pyyaml
-robodk
-scipy
-zivid

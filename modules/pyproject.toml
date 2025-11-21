@@ -12,13 +12,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "importlib_resources; python_version < '3.9'",
     "matplotlib",
-    "nptyping",
+    "np2typing; python_version >= '3.12'",
+    "nptyping; python_version < '3.12'",
     "numpy",
-    "open3d",
     "opencv-python",
     "pandas",
     "pyyaml",

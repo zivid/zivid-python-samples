@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.17.0. For
+This repository contains python code samples for Zivid SDK v2.17.1. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying
 releases](https://github.com/zivid/zivid-python-samples/tree/master/../../releases).
@@ -200,6 +200,8 @@ Note:
 
 The recommended Python version for these samples is 3.7 - 3.9.
 
+Note that Open3D is not available for Python 3.13 and later.
+
 -----
 
 1.  [Install Zivid
@@ -222,6 +224,20 @@ The recommended Python version for these samples is 3.7 - 3.9.
 > cd zivid-python-samples
 > pip install -r requirements.txt
 > ```
+> 
+> -----
+> 
+> Note:
+> 
+> If Open3D fails to install, ensure you are using a Python version
+> supported by Open3D. Alternatively, you can install only dependencies
+> required for non-Open3D samples by running:
+> 
+> ``` sourceCode bash
+> pip install ./modules
+> ```
+> 
+> -----
 
 5.  Open and run one of the samples.
     

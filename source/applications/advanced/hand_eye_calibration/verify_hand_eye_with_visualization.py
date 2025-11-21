@@ -20,93 +20,32 @@ in MeshLab for visual inspection.
 """
 
 import argparse
+import colorsys
 from pathlib import Path
 from typing import List
 
 import numpy as np
-import open3d as o3d
 import zivid
+from zivid.experimental.point_cloud_export import export_unorganized_point_cloud
+from zivid.experimental.point_cloud_export.file_format import PLY, ColorSpace
+from zividsamples.display import display_pointcloud
 from zividsamples.save_load_matrix import load_and_assert_affine_matrix
 
 
-def _filter_calibration_object_roi(frame: zivid.Frame, args: argparse.Namespace) -> np.ndarray:
-    """Filters out the data outside the region of interest defined by the calibration_object centroid.
+def _distinct_colors(number_of_colors: int) -> List[List[int]]:
+    """Generate n visually distinct RGB colors.
 
     Args:
-        frame: Zivid frame
-        args: Input arguments
-
-    Raises:
-        RuntimeError: If the calibration object is not detected
+        number_of_colors: Number of distinct colors to generate
 
     Returns:
-        xyz: A numpy array of X, Y and Z point cloud coordinates within the region of interest
+        List of distinct RGB colors
 
     """
 
-    xyz = frame.point_cloud().copy_data("xyz")
-
-    if args.calibration_object == "checkerboard":
-
-        detection_result = zivid.calibration.detect_calibration_board(frame)
-        camera_to_checkerboard_transform = detection_result.pose().to_matrix()
-        checkerboard_to_camera_transform = np.linalg.inv(camera_to_checkerboard_transform)
-
-        camera_to_target_transform = camera_to_checkerboard_transform
-
-        xyz_in_target_frame = transform_xyz(xyz, checkerboard_to_camera_transform)
-
-        number_of_feature_points = len(detection_result.feature_points())
-        if number_of_feature_points == 12:
-            checker_size = 20
-            boarder_size_x = 2.5
-            boarder_size_y = 2.5
-            board_width = 125
-            board_height = 150
-        elif number_of_feature_points == 30:
-            checker_size = 30
-            boarder_size_x = 30
-            boarder_size_y = 10
-            board_width = 300
-            board_height = 300
-        else:
-            raise RuntimeError(
-                "Unknown number of feature points detected. Expected 12 for ZVDA-CB02 or 30 for ZVDA-CB01."
-            )
-
-        left_boarder = checker_size + boarder_size_x
-        right_boarder = board_width - boarder_size_x - checker_size
-        top_boarder = checker_size + boarder_size_y
-        bottom_boarder = board_height - boarder_size_y - checker_size
-
-    else:
-
-        detection_result = zivid.calibration.detect_markers(
-            frame, args.id, zivid.calibration.MarkerDictionary.aruco4x4_50
-        )
-        camera_to_marker_transform = detection_result.detected_markers()[0].pose.to_matrix()
-        marker_to_camera_transform = np.linalg.inv(camera_to_marker_transform)
-
-        camera_to_target_transform = camera_to_marker_transform
-
-        xyz_in_target_frame = transform_xyz(xyz, marker_to_camera_transform)
-
-        marker_size = args.size
-        boarder_size = 5
-
-        left_boarder = marker_size / 2 + boarder_size
-        right_boarder = marker_size / 2 + boarder_size
-        top_boarder = marker_size / 2 + boarder_size
-        bottom_boarder = marker_size / 2 + boarder_size
-
-    bounds = np.array([[-left_boarder, right_boarder], [-top_boarder, bottom_boarder], [-10, 10]])
-
-    mask = np.all((xyz_in_target_frame >= bounds[:, 0]) & (xyz_in_target_frame <= bounds[:, 1]), axis=2)
-    xyz_in_target_frame[~mask] = np.nan
-
-    xyz_masked_in_camera_frame = transform_xyz(xyz_in_target_frame, camera_to_target_transform)
-
-    return xyz_masked_in_camera_frame
+    return [
+        [round(c * 255) for c in colorsys.hsv_to_rgb(i / number_of_colors, 0.75, 0.9)] for i in range(number_of_colors)
+    ]
 
 
 def _options() -> argparse.Namespace:
@@ -139,52 +78,6 @@ def _options() -> argparse.Namespace:
     marker_parser.add_argument("--size", required=True, type=float, help="ArUco marker size in mm")
 
     return parser.parse_args()
-
-
-def transform_xyz(xyz: np.ndarray, transform: np.ndarray) -> np.ndarray:
-    """
-    Applies a homogeneous transformation to the point cloud.
-
-    Args:
-        xyz: A numpy array of X, Y and Z point cloud coordinates
-        transform: homogenous transformation matrix (4x4)
-
-    Returns:
-        xyz: A numpy array of X, Y and Z transformed point cloud coordinates
-    """
-    xyz_flat = xyz.reshape(-1, 3)
-    ones = np.ones((xyz_flat.shape[0], 1))
-    xyz_hom = np.hstack([xyz_flat, ones])  # (N, 4)
-
-    xyz_transformed_hom = (transform @ xyz_hom.T).T  # (N, 4)
-    xyz_transformed = xyz_transformed_hom[:, :3].reshape(xyz.shape)
-
-    return xyz_transformed
-
-
-def _create_open3d_point_cloud(rgba: np.ndarray, xyz: np.ndarray) -> o3d.geometry.PointCloud:
-    """Creates a point cloud in Open3D format from NumPy array.
-
-    Args:
-        xyz: A numpy array of X, Y and Z point cloud coordinates
-        rgba: A numpy array of R, G and B point cloud pixels
-
-    Returns:
-        refined_point_cloud_open3d: Point cloud in Open3D format without Nans
-        or non finite values
-
-    """
-    xyz = xyz.reshape(-1, 3)
-    rgb = rgba[:, :, 0:3].reshape(-1, 3)
-
-    point_cloud_open3d = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz.astype(np.float64)))
-    point_cloud_open3d.colors = o3d.utility.Vector3dVector(rgb.astype(np.float64) / 255)
-
-    refined_point_cloud_open3d = o3d.geometry.PointCloud.remove_non_finite_points(
-        point_cloud_open3d, remove_nan=True, remove_infinite=True
-    )
-
-    return refined_point_cloud_open3d
 
 
 def _path_list_creator(
@@ -241,7 +134,9 @@ def _main() -> None:
     list_of_paths_to_hand_eye_dataset_robot_poses = _path_list_creator(path, "pos", 2, ".yaml")
 
     if len(list_of_paths_to_hand_eye_dataset_robot_poses) != len(list_of_paths_to_hand_eye_dataset_point_clouds):
-        raise RuntimeError("The number of point clouds (ZDF files) and robot poses (YAML files) must be the same")
+        raise RuntimeError(
+            f"The number of point clouds (ZDF files - {len(list_of_paths_to_hand_eye_dataset_point_clouds)}) and robot poses (YAML files - {len(list_of_paths_to_hand_eye_dataset_robot_poses)}) must be the same"
+        )
 
     if len(list_of_paths_to_hand_eye_dataset_robot_poses) == 0:
         raise RuntimeError("There are no robot poses (YAML files) in the data folder")
@@ -254,8 +149,10 @@ def _main() -> None:
 
         number_of_dataset_pairs = len(list_of_paths_to_hand_eye_dataset_point_clouds)
 
-        list_of_open_3d_point_clouds = []
-        for data_pair_id in range(number_of_dataset_pairs):
+        stitched_point_cloud = zivid.UnorganizedPointCloud()
+        for data_pair_id, rgb_color in zip(
+            range(number_of_dataset_pairs), _distinct_colors(number_of_dataset_pairs), strict=False
+        ):
             # Updating the user about the process status through the terminal
             percentage = int(100 * data_pair_id / number_of_dataset_pairs)
             print(f"{data_pair_id} / {number_of_dataset_pairs} - {percentage:>3}%")
@@ -265,33 +162,35 @@ def _main() -> None:
 
             robot_pose = load_and_assert_affine_matrix(list_of_paths_to_hand_eye_dataset_robot_poses[data_pair_id])
 
+            point_cloud = frame.point_cloud()
+
             # Transforms point cloud to the robot end-effector frame
             if robot_camera_configuration.lower() == "eth":
                 inv_robot_pose = np.linalg.inv(robot_pose)
-                frame.point_cloud().transform(np.matmul(inv_robot_pose, hand_eye_transform))
+                point_cloud.transform(np.matmul(inv_robot_pose, hand_eye_transform))
 
             # Transforms point cloud to the robot base frame
             if robot_camera_configuration.lower() == "eih":
-                frame.point_cloud().transform(np.matmul(robot_pose, hand_eye_transform))
+                point_cloud.transform(np.matmul(robot_pose, hand_eye_transform))
 
-            # Extracting the points within the ROI (calibration object)
-            xyz_filtered = _filter_calibration_object_roi(frame, args)
-
-            # Converting from NumPy array to Open3D format
-            point_cloud_open3d = _create_open3d_point_cloud(frame.point_cloud().copy_data("rgba_srgb"), xyz_filtered)
+            transformed_point_cloud = point_cloud.to_unorganized_point_cloud()
 
             # Saving point cloud to PLY file
-            o3d.io.write_point_cloud(f"img{data_pair_id + 1}.ply", point_cloud_open3d)
+            export_unorganized_point_cloud(
+                transformed_point_cloud,
+                PLY(f"img{data_pair_id + 1}.ply", layout=PLY.Layout.unordered, color_space=ColorSpace.srgb),
+            )
 
-            # Appending the Open3D point cloud to a list for visualization
-            list_of_open_3d_point_clouds.append(point_cloud_open3d)
+            # Setting monochrome color and adding to stitched point cloud
+            transformed_point_cloud.paint_uniform_color(rgb_color + [128])
+            stitched_point_cloud.extend(transformed_point_cloud)
 
     print(f"{number_of_dataset_pairs} / {number_of_dataset_pairs} - 100%")
     print("\nAll done!\n")
 
-    if data_pair_id > 1:
+    if number_of_dataset_pairs > 1:
         print("Visualizing transformed point clouds\n")
-        o3d.visualization.draw_geometries(list_of_open_3d_point_clouds)
+        display_pointcloud(stitched_point_cloud)
     else:
         raise RuntimeError("Not enough data!")
 
