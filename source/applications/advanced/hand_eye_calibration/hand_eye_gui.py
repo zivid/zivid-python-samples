@@ -754,6 +754,7 @@ class HandEyeGUI(QMainWindow):
         self.live2d_widget.closeEvent(event)
         self.robot_control_widget.disconnect()
         self.data_directory_manager.close_session()
+        self.stitch_gui.closeEvent(event)
         super().closeEvent(event)
 
 

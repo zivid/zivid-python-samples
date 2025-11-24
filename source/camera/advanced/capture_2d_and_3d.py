@@ -7,7 +7,7 @@ Then use color from 2D when visualizing the 3D point cloud.
 """
 
 import zivid
-from zividsamples.display import display_pointcloud
+from zividsamples.display import display_pointcloud, display_rgb
 
 
 def _get_2d_and_3d_settings(camera: zivid.Camera) -> zivid.Settings:
@@ -70,13 +70,13 @@ def _main() -> None:
     print("Getting RGBA image")
     image = frame.frame_2d().image_rgba_srgb()
     rgba = image.copy_data()
+    display_rgb(rgba[:, :, 0:3])
 
     print("Getting point cloud")
     point_cloud = frame.point_cloud()
-    xyz = point_cloud.copy_data("xyz")
 
     print("Visualizing point cloud")
-    display_pointcloud(xyz, rgba[:, :, :3])
+    display_pointcloud(point_cloud)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from typing import Dict, List
 import zivid
 from zivid.experimental.point_cloud_export import export_unorganized_point_cloud
 from zivid.experimental.point_cloud_export.file_format import PLY, ColorSpace
-from zividsamples.display import copy_to_open3d_point_cloud, display_open3d_point_cloud
+from zividsamples.display import display_pointcloud
 from zividsamples.paths import get_sample_data_path
 
 
@@ -115,13 +115,8 @@ def main() -> None:
     print("Voxel-downsampling the stitched point cloud")
     final_point_cloud = stitched_point_cloud.voxel_downsampled(0.5, 1)
 
-    print("Copying the stitched point cloud to Open3D")
-    open3d_point_cloud = copy_to_open3d_point_cloud(
-        final_point_cloud.copy_data("xyz"), final_point_cloud.copy_data("rgba_srgb")
-    )
-
-    print(f"Visualizing the stitched point cloud ({len(open3d_point_cloud.points)} data points)")
-    display_open3d_point_cloud(open3d_point_cloud)
+    print(f"Visualizing the stitched point cloud ({len(final_point_cloud.size())} data points)")
+    display_pointcloud(final_point_cloud)
 
     if args.output_file:
         print(f"Saving {len(final_point_cloud.size())} data points to {args.output_file}")

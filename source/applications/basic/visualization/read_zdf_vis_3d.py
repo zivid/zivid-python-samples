@@ -25,7 +25,7 @@ def _main() -> None:
 
         display_depthmap(xyz, block=True)
 
-        display_pointcloud(xyz, rgba[:, :, 0:3])
+        display_pointcloud(point_cloud)
 
 
 if __name__ == "__main__":

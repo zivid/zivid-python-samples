@@ -3,7 +3,7 @@ import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from PyQt5 import sip
 from PyQt5.QtCore import QSettings, Qt, pyqtSignal
@@ -113,7 +113,7 @@ class DataDirectory:
         self.show_on_startup = qsettings.value("show_on_startup", True, type=bool)
         qsettings.endGroup()
 
-    def existing_sessions(self) -> dict[str, SessionInfo]:
+    def existing_sessions(self) -> Dict[str, SessionInfo]:
         if not self.root_folder.exists():
             return {}
         sessions = {

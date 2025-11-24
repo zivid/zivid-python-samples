@@ -276,7 +276,7 @@ Downsampling can be done in-place, which modifies the current point
 cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L61))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L59))
 
 ``` sourceCode python
 point_cloud.downsample(zivid.PointCloud.Downsampling.by2x2)
@@ -286,7 +286,7 @@ It is also possible to get the downsampled point cloud as a new point
 cloud instance, which does not alter the existing point cloud.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L55))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/downsample.py#L53))
 
 ``` sourceCode python
 downsampled_point_cloud = point_cloud.downsampled(zivid.PointCloud.Downsampling.by2x2)

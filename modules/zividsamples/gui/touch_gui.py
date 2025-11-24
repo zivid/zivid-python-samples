@@ -5,7 +5,7 @@ This sample demonstrates how to capture, detect aruco marker and then
 touch the marker based on robot pose, aruco pose and hand-eye calibration.
 In addition it allows control of Robot via RoboDK.
 
-Note: This script requires the Zivid Python API, Open3D, RoboDK and PyQt5 to be
+Note: This script requires the Zivid Python API, RoboDK and PyQt5 to be
 installed.
 
 """

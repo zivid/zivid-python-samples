@@ -20,6 +20,29 @@ from PyQt5.QtWidgets import (
 )
 from zividsamples.transformation_matrix import TransformationMatrix
 
+UNIQUE_COLORS = [
+    [255, 128, 192],  # Light Pink
+    [128, 255, 192],  # Mint
+    [192, 128, 255],  # Lavender
+    [255, 255, 128],  # Light Lemon
+    [128, 192, 255],  # Sky Blue
+    [255, 192, 128],  # Peach
+    [192, 255, 128],  # Pale Green
+    [64, 255, 64],  # Light Green
+    [64, 128, 255],  # Light Blue
+    [255, 255, 64],  # Light Yellow
+    [255, 64, 255],  # Light Magenta
+    [64, 255, 255],  # Light Cyan
+    [255, 64, 64],  # Light Red
+    [255, 128, 0],  # Orange
+    [128, 255, 0],  # Lime Green
+    [255, 0, 128],  # Pink
+    [128, 0, 255],  # Purple
+    [0, 255, 128],  # Spring Green
+    [255, 192, 64],  # Gold
+    [192, 128, 64],  # Brown
+]
+
 
 class CaptureAtPose:
 
@@ -39,6 +62,7 @@ class CaptureAtPose:
     ):
 
         self.poseID = poseID
+        self.color = UNIQUE_COLORS[poseID % len(UNIQUE_COLORS)]
         self.directory = directory
         self.robot_pose_yaml_path: Path = self.directory / f"robot_pose_{self.poseID}.yaml"
         self.camera_frame_path: Path = self.directory / f"capture_{self.poseID}.zdf"
@@ -59,6 +83,17 @@ class CaptureAtPose:
 
         self.selected_checkbox = QCheckBox("")
         self.selected_checkbox.setChecked(True)
+        self.selected_checkbox.setStyleSheet(
+            f"""
+            QCheckBox::indicator:checked {{
+            background-color: rgb({self.color[0]}, {self.color[1]}, {self.color[2]});
+            }}
+            QCheckBox::indicator:checked::hover {{
+            background-color: rgb({min(self.color[0] + 30,255)}, {min(self.color[1] + 30,255)}, {min(self.color[2] + 30,255)});
+            border: 2px solid rgb({self.color[0]}, {self.color[1]}, {self.color[2]});
+            }}
+        """
+        )
         self.capture_pose_button = QPushButton(self._translation_to_string(self.robot_pose.translation))
         self.capture_pose_button.setCheckable(True)
         self.capture_pose_button.setChecked(False)

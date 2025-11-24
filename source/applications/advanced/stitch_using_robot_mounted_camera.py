@@ -182,19 +182,13 @@ def _main() -> None:
 
     print("Stitching small object...")
     final_point_cloud_small = _stitch_point_clouds(small_object_dir, args.full_resolution)
-    display_pointcloud(
-        xyz=final_point_cloud_small.copy_data("xyz"),
-        rgb=final_point_cloud_small.copy_data("rgba_srgb")[:, 0:3],
-    )
+    display_pointcloud(final_point_cloud_small)
     file_name_small = Path(__file__).parent / "StitchedPointCloudSmallObject.ply"
     export_unorganized_point_cloud(final_point_cloud_small, PLY(str(file_name_small), layout=PLY.Layout.unordered))
 
     print("Stitching big  object...")
     final_point_cloud_big = _stitch_point_clouds(big_object_dir, args.full_resolution)
-    display_pointcloud(
-        xyz=final_point_cloud_big.copy_data("xyz"),
-        rgb=final_point_cloud_big.copy_data("rgba_srgb")[:, 0:3],
-    )
+    display_pointcloud(final_point_cloud_big)
     file_name_big = Path(__file__).parent / "StitchedPointCloudBigObject.ply"
     export_unorganized_point_cloud(final_point_cloud_big, PLY(str(file_name_big), layout=PLY.Layout.unordered))
 

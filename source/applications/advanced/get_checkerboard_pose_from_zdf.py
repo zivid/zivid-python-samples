@@ -7,13 +7,23 @@ The ZDF file for this sample can be found under the main instructions for Zivid 
 
 """
 
+import sys
 from pathlib import Path
 
 import numpy as np
-import open3d as o3d
 import zivid
 from zividsamples.paths import get_sample_data_path
 from zividsamples.save_load_matrix import assert_affine_matrix_and_save
+
+try:
+    import open3d as o3d
+except ImportError:
+    print(
+        "⚠️  Failed to import Open3D. It is installed via `pip install -r requirements.txt`, "
+        f"however it might not be available for your Python version: {sys.version_info.major}.{sys.version_info.minor}. "
+        "See https://pypi.org/project/open3d/ for supported versions."
+    )
+    sys.exit(1)
 
 
 def _create_open3d_point_cloud(point_cloud: zivid.PointCloud) -> o3d.geometry.PointCloud:
