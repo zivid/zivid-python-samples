@@ -1,3 +1,4 @@
+import os
 import tempfile
 from datetime import datetime
 from time import sleep
@@ -63,20 +64,33 @@ class RobotControlURRTDEReadOnly(RobotControlReadOnly):
         self.robot_handle = None
 
     def connect(self):
-        with tempfile.NamedTemporaryFile() as temp_file:
-            temp_file.write(UR_RTDE_RECIPE.encode())
+        # Use NamedTemporaryFile with delete=False and mode='w+t' for Windows compatibility
+        with tempfile.NamedTemporaryFile(mode="w+t", delete=False, suffix=".xml") as temp_file:
+            temp_file.write(UR_RTDE_RECIPE)
             temp_file.flush()
-            configuration = rtde_config.ConfigFile(temp_file.name)
+            temp_file_name = temp_file.name
+
+        # Now the file is closed and can be accessed by other processes on Windows
+        try:
+            configuration = rtde_config.ConfigFile(temp_file_name)
             output_names, output_types = configuration.get_recipe("out")
             self.robot_handle = rtde.RTDE(self.robot_configuration.ip_addr)
             self.robot_handle.connect()
             self.robot_handle.send_output_setup(output_names, output_types, frequency=125)
             self.robot_handle.send_start()
+        finally:
+            # Clean up the temporary file
+            try:
+                os.unlink(temp_file_name)
+            except OSError:
+                pass  # Ignore errors if file is already gone
 
 
 if __name__ == "__main__":
-    robot = RobotControlURRTDEReadOnly(RobotConfiguration())
+    robot = RobotControlURRTDEReadOnly(RobotConfiguration(ip_addr="172.28.60.23"))
+    print(f"Connecting to robot on {robot.robot_configuration.ip_addr}...")
     robot.connect()
+    print("Connection successful! Reading poses...")
     previous_pose = TransformationMatrix()
     for _ in range(100):
         robot_target = robot.get_pose()
