@@ -406,7 +406,7 @@ def _adjust_acquisition_settings_2d(
         Updated tuning index
 
     """
-    if fnum_limits[1] != fnum_limits[0]:
+    if (fnum_limits[1] == fnum_limits[0]) and (tuning_index == 1):
         tuning_index = 2
 
     if tuning_index == 1:
