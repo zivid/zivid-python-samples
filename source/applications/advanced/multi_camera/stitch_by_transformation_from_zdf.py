@@ -30,7 +30,11 @@ def _user_arguments() -> argparse.Namespace:
         type=Path,
     )
     parser.add_argument(
-        "-o", "--output-file", type=Path, help="Save the stitched point cloud to a file with this name (.ply)."
+        "-o",
+        "--output-file",
+        required=False,
+        type=Path,
+        help="Save the stitched point cloud to a file with this name (.ply).",
     )
     return parser.parse_args()
 
@@ -95,7 +99,7 @@ def main() -> None:
     print(f"Visualizing the stitched point cloud ({final_point_cloud.size}) data points)")
     display_point_cloud(final_point_cloud)
 
-    if args.output_file:
+    if args.output_file is not None:
         print(f"Saving {final_point_cloud.size} data points to {args.output_file}")
         export_unorganized_point_cloud(
             final_point_cloud,

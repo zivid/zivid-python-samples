@@ -143,7 +143,7 @@ point cloud. While doing so, all NaN values are removed, and the point
 cloud is flattened to a 1D array.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation.py#L109))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation.py#L166))
 
 ``` sourceCode python
 unorganized_point_cloud = frame.point_cloud().to_unorganized_point_cloud()
@@ -155,7 +155,7 @@ The unorganized point cloud can be extended with additional unorganized
 point clouds.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation_from_zdf.py#L76))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation_from_zdf.py#L80))
 
 ``` sourceCode python
 stitched_point_cloud.extend(current_point_cloud.transform(transformation_matrix))
@@ -227,7 +227,7 @@ that in this sample is is not necessary to create a new instance, as the
 untransformed point cloud is not used after the transformation.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation.py#L111))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation.py#L168))
 
 ``` sourceCode python
 transformed_unorganized_point_cloud = unorganized_point_cloud.transformed(transformation_matrix)
@@ -237,7 +237,7 @@ Even the in-place API returns the transformed point cloud, so you can
 use it directly, as in the example below.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation_from_zdf.py#L76))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation_from_zdf.py#L80))
 
 ``` sourceCode python
 stitched_point_cloud.extend(current_point_cloud.transform(transformation_matrix))
@@ -327,7 +327,7 @@ minPointsPerVoxel can be used to only fill voxels that both captures
 "agree" on.
 
 ([go to
-source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation.py#L115))
+source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/multi_camera/stitch_by_transformation.py#L172))
 
 ``` sourceCode python
 final_point_cloud = stitched_point_cloud.voxel_downsampled(0.5, 1)

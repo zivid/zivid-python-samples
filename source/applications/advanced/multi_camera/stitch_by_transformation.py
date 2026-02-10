@@ -25,19 +25,74 @@ def _user_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Stitch point clouds from multiple Zivid cameras using transformation matrices."
     )
+
     parser.add_argument(
         "yaml_files",
         type=Path,
         nargs="+",
         help="YAML files containing the corresponding transformation matrices (one per camera).",
     )
+
     parser.add_argument(
-        "-o", "--output-file", type=Path, help="Save the stitched point cloud to a file with this name (.ply)"
+        "-o",
+        "--output-file",
+        required=False,
+        type=Path,
+        help="Save the stitched point cloud to a file with this name (.ply)",
     )
+
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        type=Path,
+        help="Path to the camera settings YML file",
+    )
+
     return parser.parse_args()
 
 
+def sanitized_model_name(camera: zivid.Camera) -> str:
+    """Get a string that represents the camera model name.
+
+    Args:
+        camera: Zivid camera
+
+    Raises:
+        RuntimeError: If unsupported camera model for this code sample
+
+    Returns:
+        A string representing the camera model name
+
+    """
+    model = camera.info.model
+
+    model_map = {
+        zivid.CameraInfo.Model.zividTwo: "Zivid_Two_M70",
+        zivid.CameraInfo.Model.zividTwoL100: "Zivid_Two_L100",
+        zivid.CameraInfo.Model.zivid2PlusM130: "Zivid_Two_Plus_M130",
+        zivid.CameraInfo.Model.zivid2PlusM60: "Zivid_Two_Plus_M60",
+        zivid.CameraInfo.Model.zivid2PlusL110: "Zivid_Two_Plus_L110",
+        zivid.CameraInfo.Model.zivid2PlusMR130: "Zivid_Two_Plus_MR130",
+        zivid.CameraInfo.Model.zivid2PlusMR60: "Zivid_Two_Plus_MR60",
+        zivid.CameraInfo.Model.zivid2PlusLR110: "Zivid_Two_Plus_LR110",
+        zivid.CameraInfo.Model.zivid3XL250: "Zivid_Three_XL250",
+    }
+    if model not in model_map:
+        raise RuntimeError(f"Unhandled camera model: {camera.info().model().to_string()}")
+
+    return model_map[model]
+
+
 def connect_to_all_available_cameras(cameras: List[zivid.Camera]) -> List[zivid.Camera]:
+    """get a list of available cameras and connect to them.
+
+    Args:
+        cameras: List of Zivid cameras
+
+    Returns:
+        List of connected Zivid cameras
+
+    """
     connected_cameras = []
     for camera in cameras:
         if camera.state.status == zivid.CameraState.Status.available:
@@ -60,10 +115,11 @@ def get_transformation_matrices_from_yaml(
         cameras: List of connected Zivid cameras
 
     Returns:
-        A dictionary mapping camera serial numbers to their corresponding transformation matrices
+        transforms_mapped_to_cameras: A dictionary mapping camera serial numbers to their corresponding transformation matrices
 
     Raises:
         RuntimeError: If a YAML file for a camera is missing
+
     """
     transforms_mapped_to_cameras = {}
     for camera in cameras:
@@ -100,11 +156,12 @@ def main() -> None:
 
     #  DOCTAG-START-CAPTURE-AND-STITCH-POINT-CLOUDS-PART1
     for camera in connected_cameras:
-        settings_path = (
-            get_sample_data_path()
-            / "Settings"
-            / f"{camera.info.model_name.replace('2+', 'Two_Plus').replace('2', 'Two').replace('3', 'Three').replace(' ', '_')}_ManufacturingSpecular.yml"
-        )
+        if args.settings_path is not None:
+            settings_path = args.settings_path
+        else:
+            settings_path = (
+                get_sample_data_path() / "Settings" / f"{sanitized_model_name(camera)}_ManufacturingSpecular.yml"
+            )
         print(f"Imaging from camera: {camera.info.serial_number}")
         frame = camera.capture(zivid.Settings.load(settings_path))
         unorganized_point_cloud = frame.point_cloud().to_unorganized_point_cloud()
@@ -115,13 +172,13 @@ def main() -> None:
     print("Voxel-downsampling the stitched point cloud")
     final_point_cloud = stitched_point_cloud.voxel_downsampled(0.5, 1)
 
-    print(f"Visualizing the stitched point cloud ({len(final_point_cloud.size())} data points)")
+    print(f"Visualizing the stitched point cloud ({final_point_cloud.size} data points)")
     display_pointcloud(final_point_cloud)
 
-    if args.output_file:
-        print(f"Saving {len(final_point_cloud.size())} data points to {args.output_file}")
+    if args.output_file is not None:
+        print(f"Saving {final_point_cloud.size} data points to {args.output_file}")
         export_unorganized_point_cloud(
-            final_point_cloud, PLY(args.output_file, layout=PLY.Layout.unordered, color_space=ColorSpace.srgb)
+            final_point_cloud, PLY(str(args.output_file), layout=PLY.Layout.unordered, color_space=ColorSpace.srgb)
         )
 
 
