@@ -16,17 +16,36 @@ def _args() -> argparse.Namespace:
 
     Returns:
         Arguments from the user
+
     """
     parser = argparse.ArgumentParser(description="Multi-camera calibration using Zivid cameras.")
+
     parser.add_argument(
         "transformation_matrices_save_path",
-        help="Path where the transformation matrices YAML files will be saved",
         type=Path,
+        help="Path where the transformation matrices YAML files will be saved",
     )
+
+    parser.add_argument(
+        "--settings-path",
+        required=False,
+        type=Path,
+        help="Path to the camera settings YML file",
+    )
+
     return parser.parse_args()
 
 
 def connect_to_all_available_cameras(cameras: List[zivid.Camera]) -> List[zivid.Camera]:
+    """get a list of available cameras and connect to them.
+
+    Args:
+        cameras: List of Zivid cameras
+
+    Returns:
+        List of connected Zivid cameras
+
+    """
     connected_cameras = []
     for camera in cameras:
         if camera.state.status == zivid.CameraState.Status.available:
@@ -44,12 +63,16 @@ class Detection:
     detection_result: zivid.calibration.DetectionResult
 
 
-def get_detections(connected_cameras: List[zivid.Camera]) -> List[Detection]:
+def get_detections(connected_cameras: List[zivid.Camera], settings_path: Path) -> List[Detection]:
     detections_list = []
     for camera in connected_cameras:
         serial = camera.info.serial_number
         print(f"Capturing frame with camera: {serial}")
-        frame = zivid.calibration.capture_calibration_board(camera)
+        if settings_path is None:
+            frame = zivid.calibration.capture_calibration_board(camera)
+        else:
+            settings = zivid.Settings.load(settings_path)
+            frame = camera.capture_2d_3d(settings)
         print("Detecting checkerboard in point cloud")
         detection_result = zivid.calibration.detect_calibration_board(frame)
         if detection_result:
@@ -93,7 +116,7 @@ def main() -> None:
         raise RuntimeError("At least two cameras need to be connected")
     print(f"Number of connected cameras: {len(connected_cameras)}")
 
-    detections = get_detections(connected_cameras)
+    detections = get_detections(connected_cameras, args.settings_path)
     run_multi_camera_calibration(detections, args.transformation_matrices_save_path)
 
 
