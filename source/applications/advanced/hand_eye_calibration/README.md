@@ -1,92 +1,234 @@
 # Hand-Eye Calibration
 
-To fully understand Hand-Eye Calibration, please see the [tutorial][Tutorial-url] in our Knowledge Base.
+This page provides an overview of how to **perform**, **verify**, and **use Hand–Eye Calibration** with Zivid cameras.
 
------------------
-The following applications create a **Hand-Eye Transformation Matrix** from data provided by a user:
+If you are new to Hand–Eye Calibration, start with the [Hand–Eye Calibration – Concept & Theory][HandEyeTutorial-url], explaining:
 
-[**HandEyeCalibration**][HandEyeCalibration-url]
+- What Hand–Eye Calibration is
+- The difference between **eye-in-hand** and **eye-to-hand**
+- Best practices for dataset (point clouds and robot poses) acquisition
 
-* An application that walks through the collection of calibration poses:
-   1. The user provides a robot pose in the form of a 4x4 transformation matrix (manual entry)
-   2. The application captures a point cloud of the calibration object
-   3. The user moves the robot to a new capture pose and enters the command to add a new pose
-   4. Steps i.-iii. are repeated until 10-20 pose pairs are collected
-   5. The user enter the command to perform calibration and the application returns a **Hand-Eye Transformation Matrix**
+If you already know what you’re doing and just want to run calibration or check out our Hand-Eye calibration code, continue reading.
 
-[**ZividHandEyeCalibration**][ZividHandEyeCalibration-url]
+<!-- Use "Markdown All in One plugin in VS code to automatically generate and update TOC". -->
 
-* [CLI application][CLI application-url], which takes a collection of robot pose and point cloud pairs (e.g. output of the steps i.-iii. in [HandEyeCalibration][HandEyeCalibration-url]) and returns a **Hand-Eye Transformation Matrix**. This application comes with the Windows installer and is part of the tools deb for Ubuntu.
+- [Quick Start: Just Calibrate](#quick-start-just-calibrate)
+- [Programmatic Hand–Eye Calibration](#programmatic-handeye-calibration)
+- [Dataset Acquisition Samples](#dataset-acquisition-samples)
+- [After Hand–Eye Calibration](#after-handeye-calibration)
+- [Verifying Calibration Accuracy](#verifying-calibration-accuracy)
+- [Summary: Which Tool Should I Use?](#summary-which-tool-should-i-use)
 
------------------
+---
 
-There are two samples that show how to perform the acquisition of the hand-eye calibration dataset.
-Both samples go through the process of acquiring the robot pose and point cloud pairs and then process them to return the resulting **Hand-Eye Transform Matrix**.
+## Quick Start: Just Calibrate
 
-[**UniversalRobotsPerformHandEyeCalibration**][URhandeyecalibration-url]
+If your goal is **only to compute the Hand–Eye Transformation Matrix**, use one of the tools below and follow Zivid’s [best-practice guide for capture poses][ZividHandEyeCalibration-url].
 
-* This sample is created to work specifically with the UR5e robot.
-* To follow the tutorial for this sample go to [**UR5e + Python Hand Eye Tutorial**][URHandEyeTutorial-url].
+### Hand–Eye Calibration GUI (Recommended)
 
-[**RoboDKHandEyeCalibration**][RobodkHandEyeCalibration-url]
+- Tutorial: [Hand–Eye GUI Tutorial][HandEyeCalibrationGUITutorial-url]
+- Application: [HandEyeCalibration GUI][HandEyeCalibrationGUI-url]
 
-The second sample uses RoboDK for robot control and can be used with any robot that the software supports.
-The list of the robots that they support can be found [**here**][robodk-robot-library-url].
-Poses must be added by the user to their rdk file.
-To find the best capture pose practice follow the instructions provided on the Zivid knowledge base for the [hand-eye calibration process][ZividHandEyeCalibration-url].
+Best choice if you:
 
------------------
-The following applications assume that a **Hand-Eye Transformation Matrix** has been found.
+- Want a guided, no-code workflow
 
-[**UtilizeHandEyeCalibration**][UtilizeHandEyeCalibration-url]:
+---
 
-* Shows how to transform position and rotation (pose) from the camera coordinate system to the robot coordinate system.
-* Example use case - "Bin Picking":
-   1. Acquire a point cloud of an object to pick with a Zivid camera.
-   2. Find an optimal picking pose for the object and **transform it into the robot coordinate system**
-   3. Use the transformed pose to calculate the robot path and execute the pick
+## Programmatic Hand–Eye Calibration
 
-[**PoseConversions**][PoseConversions-url]:
+The following applications produce a Hand–Eye Transformation Matrix from robot poses and calibration captures.
 
-* Zivid primarily operates with a (4x4) **Transformation Matrix** (Rotation Matrix + Translation Vector). This example shows how to convert to and from:
-  * AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion
+### Minimal Hand-Eye Calibration Code Example
 
-[**VerifyHandEyeWithVisualization**][VerifyHandEyeWithVisualization-url]:
+- Sample: [HandEyeCalibration][HandEyeCalibration-url]
+- Tutorial: [Integrating Zivid Hand-Eye Calibration][hand-eye-procedure-url]
 
-Visually demonstrates the hand-eye calibration accuracy by overlapping transformed points clouds.
+Workflow:
 
-* The application asks the user for the hand-eye calibration type (manual entry).
-* After loading the hand-eye dataset (point clouds and robot poses) and the hand-eye output (**transformation matrix**), the application repeats the following process for all dataset pairs:
-   1. Transforms the point cloud
-   2. Finds cartesian coordinates of the checkerboard centroid
-   3. Creates a region of interest around the checkerboard and filters out points outside the region of interest
-   4. Saves the point cloud to a PLY file
-   5. Appends the point cloud to a list (overlapped point clouds)
+1. User inputs robot pose in the form of a 4x4 transformation matrix (manual entry)
+2. Camera captures the calibration object
+3. User moves the robot to a new capture pose and enters the command to add a new pose
+4. First three steps are repeated (typically 10–20 pose pairs)
+5. User enters the command to perform calibration and the application returns a Hand-Eye Transformation Matrix
 
-This application ends by displaying all point clouds from the list.
+Use this if you:
 
-[**RobodkHandEyeVerification**][RobodkHandEyeVerification-url]
+- Want the simplest integration example
+- Are building your own calibration pipeline
 
-Serves to verify the hand-eye calibration accuracy via a touch test.
+---
 
-* After loading the hand-eye configuration, the required transformation matrices, and the type of the calibration object, the application runs in the following steps:
-   1. The robot moves to the Capture Pose previously defined.
-   2. The user is asked to put the Zivid Calibration Object in the FOV and press Enter.
-   3. The camera captures the Zivid Calibration Object and the pose of the touching point is computed and displayed to the user.
-   4. When the user presses the Enter key, the robot touches the Zivid Calibration Object at a distinct point.
-   5. Upon pressing the Enter key, the robot pulls back and returns to the Capture Pose.
-   6. At this point, the Zivid Calibration Object can be moved to perform the Touch Test at a different location.
-   7. The user is asked to input “y” on “n” to repeat or abort the touch test.
+### Hand Eye Calibration CLI Tool
+
+- Tutorial: [Zivid CLI Tool for Hand–Eye Calibration][CLI application-url]
+- Installed with:
+  - Windows Zivid installer
+  - `tools` deb package on Ubuntu
+
+Use this if you:
+
+- Already have a dataset (robot poses + point clouds)
+- Want a command-line, batch-style workflow
+
+---
+
+## Dataset Acquisition Samples
+
+The samples below show how to acquire robot poses and point clouds, then compute the Hand–Eye Transformation Matrix.
+
+### RoboDK-Based (Robot-Agnostic)
+
+- Sample: [RoboDKHandEyeCalibration][RobodkHandEyeCalibration-url]
+- Tutorial: [Any Robot + RoboDK + Python Hand–Eye Tutorial][RoboDKHandEyeTutorial-url]
+- Supported robots: [RoboDK robot library][robodk-robot-library-url]
+
+Features:
+
+- Works with any RoboDK-supported robot
+- Capture poses are manually defined in the `.rdk` file
+- Fully automated robot control
+
+---
+
+### Universal Robots (e.g. UR5e)
+
+- Sample: [UniversalRobotsPerformHandEyeCalibration][URhandeyecalibration-url]
+- Tutorial: [UR5e + Python Hand–Eye Tutorial][URHandEyeTutorial-url]
+
+Features:
+
+- Designed specifically for UR robots
+- Fully automated robot control
+
+---
+
+## After Hand–Eye Calibration
+
+The following applications assume that a **Hand–Eye Transformation Matrix already exists**.
+
+### Utilize Hand-Eye Calibration
+
+- Sample: [UtilizeHandEyeCalibration][UtilizeHandEyeCalibration-url]
+- Tutorial: [How To Use The Result Of Hand-Eye Calibration][UtilizeHandEyeCalibrationTutorial-url]
+
+Demonstrates how to:
+
+- Transform poses from camera coordinates to robot coordinates
+- Use the transform in real applications (e.g., bin picking)
+
+Example workflow:
+
+1. Capture a point cloud with a Zivid camera
+2. Find an object pick pose in camera coordinate system
+3. Transform the pose into robot coordinate system
+4. Plan and execute the robot motion
+
+---
+
+### Pose Conversions
+
+- Sample: [PoseConversions][PoseConversions-url]
+- Application: [PoseConversions GUI][PoseConversionsGUI-url]
+- Theory: [Conversions Between Common Orientation Representations][PoseConversionsTheory-url]
+
+Zivid primarily operates with a (4x4) Transformation Matrix (Rotation Matrix + Translation Vector). This example shows how to convert to and from:
+
+- Axis–Angle
+- Rotation Vector
+- Roll–Pitch–Yaw
+- Quaternion
+
+Useful for integrating with robot controllers.
+
+---
+
+## Verifying Calibration Accuracy
+
+### Verify Hand-Eye With Visualization
+
+- Sample: [VerifyHandEyeWithVisualization][VerifyHandEyeWithVisualization-url]
+
+Application validation approach:
+
+- Loads the hand-eye dataset and output (transformation matrix)
+- For each dataset pair:
+  - Transforms the point cloud to common coordinate system
+  - Finds the checkerboard centroid cartesian coordinates
+  - Removes the points outside the the checkerboard ROI
+- Overlaps transformed point clouds
+- Visualizes alignment accuracy
+
+Best for:
+
+- Visual verification
+- Detecting systematic rotation/translation errors
+
+---
+
+### RoboDK Touch Test Verification
+
+- Script: [RobodkHandEyeVerification][RobodkHandEyeVerification-url]
+- Tutorial: [Verify Hand-Eye Calibration Result Via Touch Test][RobodkHandEyeVerificationTutorial-url]
+
+Verification steps:
+
+1. Robot moves to a predefined capture pose
+2. User places the calibration object in the FOV
+3. Camera estimates a touch point
+4. Robot physically touches the calibration object
+5. User repeats the test at multiple locations
+
+Best for:
+
+- Physical validation
+- High-accuracy requirement applications
+
+---
+
+## Summary: Which Tool Should I Use?
+
+| Goal | Recommended Tool |
+|------|------------------|
+| Conceptual understanding | [Knowledge Base article][HandEyeTutorial-url] |
+| Guided calibration | [Hand–Eye GUI][HandEyeCalibrationGUITutorial-url] |
+| Minimal integration example | [HandEyeCalibration][HandEyeCalibration-url] |
+| Existing dataset | [Hand–Eye GUI][HandEyeCalibrationGUITutorial-url]|
+| UR robots | [Hand–Eye GUI][HandEyeCalibrationGUITutorial-url] or [UR Hand–Eye sample][URHandEyeTutorial-url] |
+| Any robot | [Hand–Eye GUI][HandEyeCalibrationGUITutorial-url] or [RoboDK Hand–Eye sample][RoboDKHandEyeTutorial-url] |
+| Use calibration result | [UtilizeHandEyeCalibration][UtilizeHandEyeCalibrationTutorial-url] |
+| Verify visually | [Hand–Eye GUI][HandEyeCalibrationGUITutorial-url] or [VerifyHandEyeWithVisualization][VerifyHandEyeWithVisualization-url] |
+| Verify physically | [Hand–Eye GUI][HandEyeCalibrationGUITutorial-url] or [RoboDK Touch Test][RobodkHandEyeVerification-url] |
+
+
+[HandEyeTutorial-url]: https://support.zivid.com/latest/academy/applications/hand-eye.html
 
 [HandEyeCalibration-url]: hand_eye_calibration.py
+
+[HandEyeCalibrationGUI-url]: hand_eye_gui.py
+[HandEyeCalibrationGUITutorial-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/hand-eye-gui.html
+
 [UtilizeHandEyeCalibration-url]: utilize_hand_eye_calibration.py
+[UtilizeHandEyeCalibrationTutorial-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/how-to-use-the-result-of-hand-eye-calibration.html
+
 [VerifyHandEyeWithVisualization-url]: verify_hand_eye_with_visualization.py
 [ZividHandEyeCalibration-url]: https://support.zivid.com/latest/academy/applications/hand-eye/hand-eye-calibration-process.html
-[Tutorial-url]: https://support.zivid.com/latest/academy/applications/hand-eye.html
+[hand-eye-procedure-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/hand-eye-calibration-process.html#custom-integration
+
 [PoseConversions-url]: pose_conversions.py
+[PoseConversionsGUI-url]: pose_conversion_gui.py
+[PoseConversionsTheory-url]: https://support.zivid.com/en/latest/reference-articles/pose-conversions.html
+
 [CLI application-url]: https://support.zivid.com/latest/academy/applications/hand-eye/zivid_CLI_tool_for_hand_eye_calibration.html
+
 [URhandeyecalibration-url]: ur_hand_eye_calibration/universal_robots_perform_hand_eye_calibration.py
-[URHandEyeTutorial-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/ur5-robot-+-python-generate-dataset-and-perform-hand-eye-calibration.html
+[URHandEyeTutorial-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/ur5-robot-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
+
 [RobodkHandEyeCalibration-url]: robodk_hand_eye_calibration/robodk_hand_eye_calibration.py
+[RoboDKHandEyeTutorial-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/robodk-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
+
 [RobodkHandEyeVerification-url]: robodk_hand_eye_calibration/robodk_verify_hand_eye_calibration.py
+[RobodkHandEyeVerificationTutorial-url]: https://support.zivid.com/en/latest/academy/applications/hand-eye/hand-eye-calibration-verification-via-touch-test.html
+
 [robodk-robot-library-url]: https://robodk.com/supported-robots
