@@ -31,6 +31,7 @@ from zividsamples.gui.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.gui.show_yaml_dialog import show_yaml_dialog
 from zividsamples.gui.tab_with_robot_support import TabWidgetWithRobotSupport
 from zividsamples.save_load_transformation_matrix import load_transformation_matrix, save_transformation_matrix
+from zividsamples.save_residuals import save_residuals
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -325,6 +326,10 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
                 hand_eye_transformation_matrix = TransformationMatrix.from_matrix(calibration_result.transform())
                 hand_eye_transform_path = self.data_directory / "hand_eye_transform.yaml"
                 save_transformation_matrix(hand_eye_transformation_matrix, hand_eye_transform_path)
+
+                hand_eye_residuals_path = self.data_directory / "hand_eye_residuals.yaml"
+                save_residuals(calibration_result.residuals(), hand_eye_residuals_path)
+
                 self.pose_pair_selection_widget.set_residuals(calibration_result.residuals())
                 show_yaml_dialog(hand_eye_transform_path, "Hand Eye Calibration Transform")
                 self.update_instructions(
