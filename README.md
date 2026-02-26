@@ -186,7 +186,7 @@ from the camera can be used.
           - [save\_load\_transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_load_transformation_matrix.py) -
             assert\_affine\_matrix\_and\_save(transformation\_matrix.as\_matrix(),
             yaml\_path)
-          - [settings\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/settings_utils.py) - categories = zivid.presets.categories2d(camera.info.model)
+          - [save\_residuals](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_residuals.py) - per\_pose\_residuals = \[ - [settings\_utils](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/settings_utils.py) - categories = zivid.presets.categories2d(camera.info.model)
           - [transformation\_matrix](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/transformation_matrix.py) - Convenience functions and a class for 4x4 transformation
             matrices.
           - [white\_balance\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/white_balance_calibration.py) - Balance color for 2D capture using white surface as
