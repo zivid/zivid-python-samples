@@ -9,9 +9,9 @@ Convert between different rotation formats with a GUI:
 """
 
 from PyQt5.QtWidgets import QAction, QHBoxLayout, QMainWindow, QVBoxLayout, QWidget
-from zividsamples.gui.pose_widget import PoseWidget, PoseWidgetDisplayMode
 from zividsamples.gui.qt_application import ZividQtApplication
-from zividsamples.gui.rotation_format_configuration import RotationInformation
+from zividsamples.gui.widgets.pose_widget import PoseWidget, PoseWidgetDisplayMode
+from zividsamples.gui.wizard.rotation_format_configuration import RotationInformation
 from zividsamples.paths import get_image_file_path
 
 
