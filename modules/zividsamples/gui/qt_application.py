@@ -2,6 +2,7 @@ import ctypes
 import os
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Tuple
 
 from PyQt5.QtGui import QColor, QFont, QIcon
@@ -10,6 +11,35 @@ from zividsamples.paths import get_image_file_path
 
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
 os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
+
+_LINUX_APP_ID = "zivid-hand-eye-gui"
+
+
+def _ensure_linux_desktop_entry(icon_source: Path) -> None:
+    local_share = Path.home() / ".local" / "share"
+
+    icon_dir = local_share / "icons" / "hicolor" / "256x256" / "apps"
+    icon_dir.mkdir(parents=True, exist_ok=True)
+    icon_dest = icon_dir / f"{_LINUX_APP_ID}.png"
+    if not icon_dest.exists() or icon_dest.read_bytes() != icon_source.read_bytes():
+        import shutil  # pylint: disable=import-outside-toplevel
+
+        shutil.copy2(icon_source, icon_dest)
+
+    desktop_dir = local_share / "applications"
+    desktop_dir.mkdir(parents=True, exist_ok=True)
+    desktop_file = desktop_dir / f"{_LINUX_APP_ID}.desktop"
+    content = (
+        "[Desktop Entry]\n"
+        "Type=Application\n"
+        "Name=Zivid Hand Eye GUI\n"
+        f"Exec={sys.executable}\n"
+        f"Icon={_LINUX_APP_ID}\n"
+        f"StartupWMClass={_LINUX_APP_ID}\n"
+        "Terminal=false\n"
+    )
+    if not desktop_file.exists() or desktop_file.read_text(encoding="utf-8") != content:
+        desktop_file.write_text(content, encoding="utf-8")
 
 
 def _color_text(color: Tuple[int, int, int], opacity: float) -> str:
@@ -244,6 +274,8 @@ class ZividQtApplication(QApplication):
             raise RuntimeError(
                 "When using a ZividQtApplication you cannot directly load/import cv2. It has conflicting versions of Qt on some platforms. Instead, add functionality to zividsamples.cv2_handler"
             )
+        if sys.platform != "win32":
+            sys.argv[0] = _LINUX_APP_ID
         super().__init__(sys.argv)
         self.setStyleSheet(
             MAIN_STYLE
@@ -266,6 +298,10 @@ class ZividQtApplication(QApplication):
     def run(self, win, title: str = "Zivid Qt Application"):
         icon_path = get_image_file_path("LogoZBlue.ico")
         self.setWindowIcon(QIcon(icon_path.absolute().as_posix()))
+        if sys.platform == "win32":
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("zivid.app.qt_application")
+        else:
+            _ensure_linux_desktop_entry(get_image_file_path("LogoZBlue.png"))
         win.setWindowTitle(title)
         win.show()
         screen_geometry = QDesktopWidget().availableGeometry()
@@ -276,8 +312,6 @@ class ZividQtApplication(QApplication):
         win.setGeometry(50, 50, window_width, window_height)
         win.resize(window_width, window_height)
         win.move((screen_width - window_width) // 2, (screen_height - window_height) // 2)
-        if sys.platform == "win32":
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("zivid.app.qt_application")
 
         return self.exec_()
 
