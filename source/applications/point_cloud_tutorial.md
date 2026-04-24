@@ -2,7 +2,7 @@
 
 Note\! This tutorial has been generated for use on Github. For original
 tutorial see:
-[point\_cloud\_tutorial](https://support.zivid.com/latest/academy/applications/point-cloud-tutorial.html)
+[point\_cloud\_tutorial](https://support.zivid.com/en/latest/camera/academy/applications/point-cloud-tutorial.html)
 
 
 
@@ -26,7 +26,7 @@ tutorial see:
 ## Introduction
 
 This tutorial describes how to use Zivid SDK to work with [Point
-Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html)
+Cloud](https://support.zivid.com/en/latest//camera/reference-articles/point-cloud-structure-and-output-formats.html)
 data.
 
 -----
@@ -41,7 +41,7 @@ Tip:
 **Prerequisites**
 
   - Install [Zivid
-    Software](https://support.zivid.com/latest//getting-started/software-installation.html).
+    Software](https://support.zivid.com/en/latest//camera/getting-started/software-installation.html).
   - For Python: install
     [zivid-python](https://github.com/zivid/zivid-python#installation)
 
@@ -114,7 +114,7 @@ point_cloud = frame.point_cloud()
 Point cloud contains XYZ, RGB, and SNR, laid out on a 2D grid.
 
 For more info check out [Point Cloud
-Structure](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html).
+Structure](https://support.zivid.com/en/latest//camera/reference-articles/point-cloud-structure-and-output-formats.html).
 
 The function `zivid.frame.point_cloud()` does not perform any copying
 from GPU memory.
@@ -132,7 +132,7 @@ functions (section below) will block and wait for processing to finish
 before proceeding with the requested copy operation.
 
 For detailed explanation, see [Point Cloud Capture
-Process](https://support.zivid.com/latest/academy/camera/point-cloud-capture-process.html).
+Process](https://support.zivid.com/en/latest/camera/academy/camera/point-cloud-capture-process.html).
 
 -----
 
@@ -199,10 +199,10 @@ In terms of memory allocation, there are two ways to copy data:
 -----
 
 You may want to
-[transform](https://support.zivid.com/latest//academy/applications/transform.html)
+[transform](https://support.zivid.com/en/latest//camera/academy/applications/transform.html)
 the point cloud to change its origin from the camera to the robot base
 frame or, e.g., [scale the point cloud by transforming it from mm to
-m](https://support.zivid.com/latest//academy/applications/transform/transform-millimeters-to-meters.html).
+m](https://support.zivid.com/en/latest//camera/academy/applications/transform/transform-millimeters-to-meters.html).
 
 ([go to
 source](https://github.com/zivid/zivid-python-samples/tree/master//source/applications/advanced/hand_eye_calibration/utilize_hand_eye_calibration.py#L120))
@@ -248,7 +248,7 @@ stitched_point_cloud.extend(current_point_cloud.transform(transformation_matrix)
 Sometimes you might not need a point cloud with as `high spatial
 resolution (High spatial resolution means more detail and less distance
 between points)` as given from the camera. You may then
-[downsample](https://support.zivid.com/latest//academy/applications/downsampling.html)
+[downsample](https://support.zivid.com/en/latest//camera/academy/applications/downsampling.html)
 the point cloud.
 
 -----
@@ -256,7 +256,7 @@ the point cloud.
 Note:
 
 > [Sampling
-> (3D)](https://support.zivid.com/latest/reference-articles/settings/sampling.html)
+> (3D)](https://support.zivid.com/en/latest/camera/reference-articles/settings/sampling.html)
 > describes a hardware-based sub-/downsample method that reduces the
 > resolution of the point cloud during capture while also reducing the
 > acquisition and capture time.
@@ -336,7 +336,7 @@ final_point_cloud = stitched_point_cloud.voxel_downsampled(0.5, 1)
 ## Normals
 
 Some applications require computing
-[normals](https://support.zivid.com/latest//academy/applications/normals.html)
+[normals](https://support.zivid.com/en/latest//camera/academy/applications/normals.html)
 from the point cloud.
 
 ([go to
@@ -361,7 +361,7 @@ cloud from the point cloud object as well.
 
 No source available for {language\_name}For more information, check out
 [Visualization
-Tutorial](https://support.zivid.com/latest/academy/applications/visualization-tutorial.html),
+Tutorial](https://support.zivid.com/en/latest/camera/academy/applications/visualization-tutorial.html),
 where we cover point cloud, color image, depth map, and normals
 visualization, with implementations using third party libraries.
 
@@ -372,8 +372,8 @@ manipulate it, transform it, and visualize it.
 
 ## Version History
 
-| SDK    | Changes                                                                                                                                                           |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.16.0 | Added support for `Zivid::UnorganizedPointCloud`. `transformed` is added as a function to `Zivid::PointCloud` (also available in `Zivid::UnorganizedPointCloud`). |
-| 2.11.0 | Added support for SRGB color space.                                                                                                                               |
-| 2.10.0 | [:orphan:](https://support.zivid.com/latest/academy/camera/monochrome-capture.html) introduces a faster alternative to `downsample_point_cloud_tutorial`.         |
+| SDK    | Changes                                                                                                                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.16.0 | Added support for `Zivid::UnorganizedPointCloud`. `transformed` is added as a function to `Zivid::PointCloud` (also available in `Zivid::UnorganizedPointCloud`).   |
+| 2.11.0 | Added support for SRGB color space.                                                                                                                                 |
+| 2.10.0 | [:orphan:](https://support.zivid.com/en/latest/camera/academy/camera/monochrome-capture.html) introduces a faster alternative to `downsample_point_cloud_tutorial`. |

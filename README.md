@@ -112,8 +112,6 @@ from the camera can be used.
           - [get\_checkerboard\_pose\_from\_zdf](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/get_checkerboard_pose_from_zdf.py) - Read point cloud data of a Zivid calibration board from a
             ZDF file, estimate the
           - [hand\_eye\_calibration](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/hand_eye_calibration.py) - Perform Hand-Eye calibration.
-          - [mask\_point\_cloud](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/mask_point_cloud.py) - Read point cloud data from a ZDF file, apply a binary
-            mask, and visualize it.
           - [project\_and\_find\_marker](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/project_and_find_marker.py) - Show a marker using the projector, capture a set of 2D
             images to find the marker coordinates (2D and 3D).
           - [read\_project\_and\_capture\_image](https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/read_project_and_capture_image.py) - Read a 2D image from file and project it using the camera
@@ -205,10 +203,10 @@ Note that Open3D is not available for Python 3.13 and later.
 -----
 
 1.  [Install Zivid
-    Software](https://support.zivid.com/latest//getting-started/software-installation.html).
+    Software](https://support.zivid.com/en/latest//camera/getting-started/software-installation.html).
 
 2.  [Download Zivid Sample
-    Data](https://support.zivid.com/latest//api-reference/samples/sample-data.html).
+    Data](https://support.zivid.com/en/latest//camera/api-reference/samples/sample-data.html).
 
 3.  Check out the Zivid Python samples repository:
     
@@ -252,9 +250,9 @@ Note that Open3D is not available for Python 3.13 and later.
 ## Support
 
 For more information about the Zivid cameras, please visit our
-[Knowledge Base](https://support.zivid.com/latest). If you run into any
-issues please check out
-[Troubleshooting](https://support.zivid.com/latest/support/troubleshooting.html).
+[Knowledge Base](https://support.zivid.com/en/latest). If you run into
+any issues please check out
+[Troubleshooting](https://support.zivid.com/en/latest/camera/support/troubleshooting.html).
 
 ## License
 

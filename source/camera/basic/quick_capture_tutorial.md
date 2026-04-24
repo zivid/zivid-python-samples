@@ -2,7 +2,7 @@
 
 Note\! This tutorial has been generated for use on Github. For original
 tutorial see:
-[quick\_capture\_tutorial](https://support.zivid.com/latest/getting-started/quick-capture-tutorial.html)
+[quick\_capture\_tutorial](https://support.zivid.com/en/latest/camera/getting-started/quick-capture-tutorial.html)
 
 
 
@@ -29,7 +29,7 @@ capture point clouds.
 **Prerequisites**
 
   - Install [Zivid
-    Software](https://support.zivid.com/latest//getting-started/software-installation.html).
+    Software](https://support.zivid.com/en/latest//camera/getting-started/software-installation.html).
   - For Python: install
     [zivid-python](https://github.com/zivid/zivid-python#installation)
 
@@ -92,7 +92,7 @@ frame.save(data_file_ply)
 ```
 
 For other exporting options, see [Point
-Cloud](https://support.zivid.com/latest//reference-articles/point-cloud-structure-and-output-formats.html)
+Cloud](https://support.zivid.com/en/latest//camera/reference-articles/point-cloud-structure-and-output-formats.html)
 for a list of supported formats
 
 ## Utilize
@@ -111,10 +111,10 @@ rgba = point_cloud.copy_data("rgba_srgb")
 Tip:
 
 1.  You can export Preset settings to YML from [Zivid
-    Studio](https://support.zivid.com/latest//getting-started/studio-guide.html)
+    Studio](https://support.zivid.com/en/latest//camera/getting-started/studio-guide.html)
 
 \#. You can open and view `Frame.zdf` file in [Zivid
-Studio](https://support.zivid.com/latest//getting-started/studio-guide.html).
+Studio](https://support.zivid.com/en/latest//camera/getting-started/studio-guide.html).
 .. rubric:: Conclusion
 
 This tutorial shows the most basic way to use the Zivid SDK to connect

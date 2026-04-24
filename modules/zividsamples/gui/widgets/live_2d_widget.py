@@ -61,7 +61,7 @@ class Live2DWidget(QWidget):
         rgba_with_projector = self.capture_function(settings_2d).image_srgb().copy_data()
         grayscale_with_projector = self.rgb_to_grayscale(rgba_with_projector)
         for acquisition in settings_2d.acquisitions:
-            acquisition.brightness = 0.0
+            acquisition.brightness = 0.1
         rgba_without_projector = self.capture_function(settings_2d).image_srgb().copy_data()
         grayscale_without_projector = self.rgb_to_grayscale(rgba_without_projector)
         grayscale_without_projector[grayscale_without_projector == 0] = np.nan
@@ -82,7 +82,7 @@ class Live2DWidget(QWidget):
                 else relative_brightness / (exposure_increase / current_exposure_time)
             )
             acquisition.gain = max(1.0, min(acquisition.gain * remaining_relative_brightness, 16.0))
-            acquisition.brightness = 0.0
+            acquisition.brightness = 0.1
         return settings_2d
 
     def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str):
