@@ -56,6 +56,7 @@ def _options() -> argparse.Namespace:
     parser.add_argument(
         "--full-resolution",
         action="store_true",
+        default=False,
         help="Use full resolution for stitching. If not set, downsampling is applied.",
     )
 
@@ -77,8 +78,8 @@ def _stitch_point_clouds(directory: Path, full_resolution: bool) -> zivid.Unorga
         ValueError: If the number of ZDF files and robot pose files do not match.
 
     """
-    zdf_files = list(directory.rglob("capture_*.zdf"))
-    pose_files = list(directory.rglob("robot_pose_*.yaml"))
+    zdf_files = sorted(list(directory.rglob("capture_*.zdf")))
+    pose_files = sorted(list(directory.rglob("robot_pose_*.yaml")))
 
     if not zdf_files or not pose_files or not (directory / "hand_eye_transform.yaml").exists():
         raise FileNotFoundError("Required files are missing in the directory.")

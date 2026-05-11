@@ -175,13 +175,6 @@ class PosePairWidget(QWidget):
         return f"{translation[0]:>8.1f}, {translation[1]:>8.1f}, {translation[2]:.1f}"
 
 
-def directory_has_pose_pair_data(directory: Path) -> bool:
-    return (
-        len(list(directory.glob("robot_pose_*.yaml"))) > 0
-        and len(list(directory.glob("calibration_object_pose_*.zdf"))) > 0
-    )
-
-
 class _PosePairLoadWorker(QObject):
     """Loads pose pair data from disk in a background thread."""
 

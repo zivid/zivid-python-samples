@@ -236,7 +236,7 @@ class RobotControlRoboDK(RobotControl):
 
                 solution = self._find_joint_target(target_pose)
 
-                if solution is not None:
+                if solution:
                     # Move to the best collision-free solution
                     self.robot_moving = True
                     if moveL:

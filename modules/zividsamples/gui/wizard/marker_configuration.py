@@ -2,7 +2,7 @@ import re
 from typing import Dict, List, Optional
 
 import numpy as np
-from nptyping import Float32, NDArray, Shape, UInt8
+from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import QRegExp, QSettings
 from PyQt5.QtGui import QImage, QPixmap, QValidator
 from PyQt5.QtWidgets import (
@@ -16,7 +16,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from scipy.spatial.transform import Rotation
 from zivid.calibration import MarkerDictionary, MarkerShape
 from zivid.experimental import PixelMapping
 from zividsamples.gui.qt_application import ZividQtApplication
@@ -33,12 +32,6 @@ def generate_marker_dictionary(markers: List[MarkerShape]) -> Dict[str, MarkerSh
             key = f"{key}({keys_with_same_id})"
         marker_dict[key] = marker
     return marker_dict
-
-
-def marker_angle(rotation_matrix: NDArray[Shape["3, 3"], Float32]) -> float:  # type: ignore
-    rotation = Rotation.from_matrix(rotation_matrix)
-    rotvec = rotation.as_rotvec()
-    return np.degrees(np.linalg.norm(rotvec))
 
 
 class TouchMarkerWidget(QWidget):
