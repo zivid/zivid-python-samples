@@ -37,6 +37,7 @@ class RobotControlWidget(QWidget):
     target_pose_updated = pyqtSignal(RobotTarget)
     actual_pose_updated = pyqtSignal(RobotTarget)
     robot_move_thread_done = pyqtSignal()
+    robot_move_error = pyqtSignal(str)
 
     def __init__(
         self,
@@ -149,6 +150,7 @@ class RobotControlWidget(QWidget):
         self.btn_auto_run.clicked.connect(self.on_auto_run_toggled)
         self.btn_move_to_touch_target.clicked.connect(self.on_move_to_touch_target)
         self.robot_move_thread_done.connect(self.on_robot_done_moving)
+        self.robot_move_error.connect(self.on_robot_move_error)
         if self.robot_control and self.robot_configuration.can_control():
             self.robot_control.target_pose_updated.connect(self.target_pose_updated.emit)
 
@@ -298,8 +300,8 @@ class RobotControlWidget(QWidget):
         assert self.result_queue is not None
         assert self.robot_control is not None
         if self.current_robot_target is None:
-            QMessageBox.warning(None, "Robot Control", "No target set")
             self.result_queue.put(False)
+            self.robot_move_error.emit("No target set")
             return
         try:
             print(f"{emit_signal_when_done=}")
@@ -310,12 +312,18 @@ class RobotControlWidget(QWidget):
             self.result_queue.put(True)
         except Exception as ex:
             print(f"Warning: {ex}")
-            QMessageBox.warning(None, "Robot Control", str(ex))
             self.result_queue.put(False)
+            self.robot_move_error.emit(str(ex))
         if emit_signal_when_done:
             self.robot_move_thread_done.emit()
         elif self.activeButton is not None:
             print(f"Robot finished a blocking move, button: {self.activeButton.objectName()}")
+
+    def on_robot_move_error(self, error_message: str):
+        if self.activeButton is not None:
+            self.activeButton.setChecked(False)
+            self.activeButton.setStyleSheet("")
+        QMessageBox.warning(self, "Robot Control", error_message)
 
     def move_to_current_target(self, blocking: bool = True, moveL: bool = False) -> bool:
         if self.activeButton is None:

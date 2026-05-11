@@ -292,16 +292,24 @@ class WarmupData:
         return self.df["average_rate_of_change"].to_numpy()
 
     def temperature_is_stable(self) -> bool:
+        if not self.has_enough_data_to_analyze():
+            return False
+
+        # Ensure minimum warmup time of 1 minute has passed
         now = self.df["timestamp"].iloc[-1]
+        warmup_start_time = self.df["timestamp"].iloc[0]
+        elapsed_time = now - warmup_start_time
+        if elapsed_time < timedelta(minutes=1):
+            return False
+
         one_minute_ago = now - timedelta(minutes=1)
         last_minute_of_data = self.df[self.df["timestamp"] >= one_minute_ago]
-        max_rate_of_change_in_the_last_minute = last_minute_of_data["average_rate_of_change"].max()
-        if self.has_enough_data_to_analyze():
-            return (
-                self.df["average_rate_of_change"].iloc[-1] is not None
-                and max_rate_of_change_in_the_last_minute <= self.temperature_change_threshold_degrees_per_minute
-            )
-        return False
+        max_rate_of_change_in_the_last_minute = float(last_minute_of_data["average_rate_of_change"].max())
+
+        return (
+            self.df["average_rate_of_change"].iloc[-1] is not None
+            and max_rate_of_change_in_the_last_minute <= self.temperature_change_threshold_degrees_per_minute
+        )
 
     def temperature_is_changing_fast(self) -> bool:
         return self.df["average_rate_of_change"].iloc[-1] > 2 * self.temperature_change_threshold_degrees_per_minute

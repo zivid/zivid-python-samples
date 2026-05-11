@@ -21,21 +21,6 @@ from zividsamples.paths import get_image_file_path
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
-def wrap_path(path: Path, wrap_length: int) -> str:
-    parts = path.parts  # Get parts of the Path
-    wrapped_lines = []
-    current_line = parts[0]
-    divider = "/" if current_line.endswith(":") else "\\"
-    for part in parts[1:]:
-        if len(f"{current_line}{divider}{part}") > wrap_length:
-            wrapped_lines.append(f"{current_line}{divider}")
-            current_line = part
-        else:
-            current_line = f"{current_line}{divider}{part}"
-    wrapped_lines.append(current_line)
-    return "\n".join(wrapped_lines)
-
-
 class PoseWidgetDisplayMode(Enum):
     OnlyPose = 0
     Basic = 1

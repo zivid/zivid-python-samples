@@ -1,17 +1,6 @@
-from PyQt5.QtCore import QRectF, QSize, Qt, pyqtSlot
+from PyQt5.QtCore import QRectF, Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 from PyQt5.QtWidgets import QDialog, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView, QVBoxLayout
-from zividsamples.gui.qt_application import ZividColors, color_as_qcolor
-
-
-def error_message_pixmap(error_message: str, size: QSize) -> QPixmap:
-    error_pixmap = QPixmap(size)
-    error_pixmap.fill(color_as_qcolor(ZividColors.ITEM_BACKGROUND, 0.5))
-    painter = QPainter(error_pixmap)
-    painter.setPen(color_as_qcolor(ZividColors.PINK, 1))
-    painter.drawText(error_pixmap.rect(), Qt.AlignCenter | Qt.TextWordWrap, error_message)
-    painter.end()
-    return error_pixmap
 
 
 class ImageViewer(QGraphicsView):
