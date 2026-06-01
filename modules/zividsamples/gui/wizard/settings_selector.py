@@ -226,7 +226,10 @@ def _settings_for_hand_eye(
     filters.cluster.removal.enabled = True
     filters.cluster.removal.max_neighbor_distance = 3
     filters.cluster.removal.min_area = 100
-    filters.experimental.contrast_distortion.correction.enabled = False
+    stripe_engine_requires_contrast_distortion_correction = engine == zivid.Settings.Engine.stripe and (
+        camera.info.model in [zivid.CameraInfo.Model.zividTwo, zivid.CameraInfo.Model.zividTwoL100]
+    )
+    filters.experimental.contrast_distortion.correction.enabled = stripe_engine_requires_contrast_distortion_correction
     filters.experimental.contrast_distortion.removal.enabled = False
     filters.experimental.contrast_distortion.removal.threshold = 0.5
     filters.hole.repair.enabled = True

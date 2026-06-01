@@ -308,6 +308,7 @@ class HandEyeAppBase(QMainWindow):
                 self.robot_control_widget.on_move_to_next_target(blocking=False)
         except RuntimeError as ex:
             if self.camera.state.connected:
+                QMessageBox.critical(self, "Capture failed", str(ex))
                 if self.robot_configuration.can_control() and self.auto_run_state != AutoRunState.INACTIVE:
                     self.finish_auto_run()
             else:
