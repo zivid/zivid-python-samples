@@ -175,7 +175,8 @@ def _get_frame_and_transform_matrix(
     frame = camera.capture_2d_3d(settings)
     robot_pose = np.array(con.receive().actual_TCP_pose)
 
-    translation = robot_pose[:3] * 1000
+    meters_to_millimeters = 1000
+    translation = robot_pose[:3] * meters_to_millimeters
     rotation_vector = robot_pose[3:]
     rotation = Rotation.from_rotvec(rotation_vector)
     transform = np.eye(4)

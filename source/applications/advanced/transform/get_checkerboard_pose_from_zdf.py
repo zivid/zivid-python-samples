@@ -23,7 +23,7 @@ except ImportError:
         f"however it might not be available for your Python version: {sys.version_info.major}.{sys.version_info.minor}. "
         "See https://pypi.org/project/open3d/ for supported versions."
     )
-    sys.exit(1)
+    raise
 
 
 def _create_open3d_point_cloud(point_cloud: zivid.PointCloud) -> o3d.geometry.PointCloud:
