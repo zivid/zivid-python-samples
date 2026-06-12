@@ -8,7 +8,6 @@ The ZDF files for this sample can be found under the main instructions for Zivid
 import cv2
 import numpy as np
 import zivid
-from zividsamples.display import display_bgr
 from zividsamples.paths import get_sample_data_path
 
 
@@ -50,19 +49,6 @@ def _point_cloud_to_cv_bgr(point_cloud: zivid.PointCloud) -> np.ndarray:
     return bgra[:, :, :3]
 
 
-def _visualize_and_save_image(image: np.ndarray, image_file: str, title: str) -> None:
-    """Visualize and save image to file.
-
-    Args:
-        image: BGR image (HxWx3 ndarray)
-        image_file: File name
-        title: OpenCV Window name
-
-    """
-    display_bgr(image, title)
-    cv2.imwrite(image_file, image)
-
-
 def _main() -> None:
     # Application class must be initialized before using other Zivid classes.
     app = zivid.Application()  # noqa: F841  # pylint: disable=unused-variable
@@ -78,14 +64,20 @@ def _main() -> None:
 
     bgr_image_file = "ImageRGB.png"
     print(f"Visualizing and saving BGR image to file: {bgr_image_file}")
-    _visualize_and_save_image(bgr, bgr_image_file, "BGR image")
+    cv2.imshow("BGR image", bgr)
+    print("Press any key to continue")
+    cv2.waitKey(0)
+    cv2.imwrite(bgr_image_file, bgr)
 
     print("Converting to Depth map in OpenCV format")
     z_color_map = _point_cloud_to_cv_z(point_cloud)
 
     depth_map_file = "DepthMap.png"
     print(f"Visualizing and saving Depth map to file: {depth_map_file}")
-    _visualize_and_save_image(z_color_map, depth_map_file, "Depth map")
+    cv2.imshow("Depth map", z_color_map)
+    print("Press any key to continue")
+    cv2.waitKey(0)
+    cv2.imwrite(depth_map_file, z_color_map)
 
 
 if __name__ == "__main__":

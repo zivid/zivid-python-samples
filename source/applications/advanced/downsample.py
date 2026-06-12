@@ -9,7 +9,6 @@ import argparse
 from pathlib import Path
 
 import zivid
-from zividsamples.display import display_pointcloud
 from zividsamples.paths import get_sample_data_path
 
 
@@ -33,6 +32,22 @@ def _options() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def visualize_point_cloud(point_cloud: zivid.PointCloud) -> None:
+    """Display point cloud provided either as PointCloud.
+
+    Args:
+        point_cloud: zivid.PointCloud
+
+    """
+    with zivid.visualization.Visualizer() as visualizer:
+        visualizer.set_window_title("Zivid Point Cloud Visualizer")
+        visualizer.colors_enabled = True
+        visualizer.axis_indicator_enabled = True
+        visualizer.show(point_cloud)
+        visualizer.reset_to_fit()
+        visualizer.run()
+
+
 def _main() -> None:
     user_options = _options()
     data_file = user_options.zdf_path
@@ -45,7 +60,7 @@ def _main() -> None:
 
         print(f"Before downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-        display_pointcloud(point_cloud)
+        visualize_point_cloud(point_cloud)
 
         print("Downsampling point cloud")
         print("This does not modify the current point cloud but returns")
@@ -60,7 +75,7 @@ def _main() -> None:
 
         print(f"After downsampling: {point_cloud.width * point_cloud.height} point cloud")
 
-        display_pointcloud(point_cloud)
+        visualize_point_cloud(point_cloud)
 
 
 if __name__ == "__main__":

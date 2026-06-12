@@ -1,6 +1,9 @@
 """
 Save and load Zivid 4x4 transformation matrices from and to YAML files.
 
+The translation part of the matrix must use the same unit as the point cloud it is applied to.
+Zivid point clouds are in millimeters by default, so robot poses and transforms are also expected in millimeters.
+
 """
 
 from pathlib import Path

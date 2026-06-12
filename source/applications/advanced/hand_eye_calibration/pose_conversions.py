@@ -4,6 +4,9 @@ Convert to/from Transformation Matrix (Rotation Matrix + Translation Vector).
 Zivid primarily operate with a (4x4) transformation matrix. This example shows how to use Eigen to convert to and from:
 AxisAngle, Rotation Vector, Roll-Pitch-Yaw, Quaternion.
 
+Note: the translation part of the transformation matrix is in millimeters (mm), since Zivid point clouds are in
+millimeters. If your robot reports translation in meters, multiply it by 1000 before saving the pose.
+
 The convenience functions from this example can be reused in applicable applications. The YAML files for this sample
 can be found under the main instructions for Zivid samples.
 

@@ -5,7 +5,6 @@ Capture point clouds, with color, from the Zivid camera, and visualize it.
 
 import zivid
 import zivid.settings2d
-from zividsamples.display import display_pointcloud
 
 
 def _main() -> None:
@@ -24,10 +23,14 @@ def _main() -> None:
     print("Capturing frame")
     frame = camera.capture_2d_3d(settings)
 
-    point_cloud = frame.point_cloud()
-
     print("Visualizing point cloud")
-    display_pointcloud(point_cloud)
+    with zivid.visualization.Visualizer() as visualizer:
+        visualizer.set_window_title("Zivid Point Cloud Visualizer")
+        visualizer.colors_enabled = True
+        visualizer.axis_indicator_enabled = True
+        visualizer.show(frame)
+        visualizer.reset_to_fit()
+        visualizer.run()
 
 
 if __name__ == "__main__":
