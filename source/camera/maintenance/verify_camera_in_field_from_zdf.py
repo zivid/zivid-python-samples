@@ -16,6 +16,9 @@ used in production. In addition, you can send these ZDF files to Zivid Customer 
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
+For more information about in-field verification, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/infield-correction.html
+
 """
 
 import zivid

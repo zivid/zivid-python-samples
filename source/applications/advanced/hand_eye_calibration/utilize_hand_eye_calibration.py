@@ -25,6 +25,9 @@ For verification, check that the Zivid gem centroid 3D coordinates are the same 
 
 The YAML files for this sample can be found under the main instructions for Zivid samples.
 
+For more information on how to utilize Hand-Eye calibration results, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/hand-eye/how-to-use-the-result-of-hand-eye-calibration.html
+
 """
 
 import numpy as np

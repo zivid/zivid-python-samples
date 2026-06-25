@@ -6,6 +6,9 @@ Convert between different rotation formats with a GUI:
 - Roll-Pitch-Yaw (Euler angles)
 - Quaternion
 
+For more information on pose conversions, check out this article:
+https://support.zivid.com/en/latest/camera/reference-articles/pose-conversions.html
+
 """
 
 from PyQt5.QtWidgets import QAction, QHBoxLayout, QMainWindow, QVBoxLayout, QWidget

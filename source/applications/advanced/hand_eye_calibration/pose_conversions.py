@@ -10,6 +10,9 @@ millimeters. If your robot reports translation in meters, multiply it by 1000 be
 The convenience functions from this example can be reused in applicable applications. The YAML files for this sample
 can be found under the main instructions for Zivid samples.
 
+For more information on pose conversions, check out this article:
+https://support.zivid.com/en/latest/camera/reference-articles/pose-conversions.html
+
 """
 
 import enum

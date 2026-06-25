@@ -5,6 +5,9 @@ Choose whether to get the image in the linear RGB or the sRGB color space.
 
 The YML files for this sample can be found under the main Zivid sample instructions.
 
+For more information about camera settings, check out this article:
+https://support.zivid.com/en/latest/camera/reference-articles/camera-settings.html
+
 """
 
 import argparse

@@ -8,6 +8,9 @@ of the camera.
 If you want to use your own white reference (white wall, piece of paper, etc.) instead of using the calibration board,
 you can provide your own mask in _main().
 
+For more information on color balance, check out this article:
+https://support.zivid.com/en/latest/reference-articles/settings/2d-settings/color-balance.html
+
 """
 
 import argparse

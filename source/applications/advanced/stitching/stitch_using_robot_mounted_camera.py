@@ -27,6 +27,9 @@ Each of these folders must contain ZDF captures, robot poses, and a hand-eye tra
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
+For more information on stitching and point cloud registration, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/stitching.html
+
 """
 
 import argparse

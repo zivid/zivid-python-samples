@@ -1,6 +1,9 @@
 """
 Capture 2D image with gamma correction.
 
+For more information about gamma correction, check out this article:
+https://support.zivid.com/en/latest/camera/reference-articles/settings/2d-settings/gamma.html
+
 """
 
 import argparse

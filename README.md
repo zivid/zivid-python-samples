@@ -199,10 +199,11 @@ from the camera can be used.
     - **multi_camera**
       - [multi_camera_calibration] - Use captures of a calibration
         object to generate transformation matrices to a single
-        coordinate frame, from connected cameras.
+        coordinate frame, from multiple connected cameras.
       - [multi_camera_calibration_from_zdf] - Use captures of a
         calibration object to generate transformation matrices to a
-        single coordinate frame, from ZDF files.
+        single coordinate frame, from ZDF files captured with multiple
+        cameras.
       - [stitch_by_transformation] - Use transformation matrices from
         Multi-Camera calibration to transform point clouds into a single
         coordinate frame, from connected cameras.

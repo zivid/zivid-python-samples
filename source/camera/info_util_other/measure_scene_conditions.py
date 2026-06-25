@@ -1,5 +1,9 @@
 """
 Measure ambient light conditions in the scene and output the measured flickering frequency of the ambient light if flickering is detected.
+
+For more information on measuring scene conditions, check out this article:
+https://support.zivid.com/en/latest/reference-articles/settings/2d-settings/2d-acquisition-settings/exposure-time.html#measuring-ambient-light-flicker-frequency
+
 """
 
 import zivid

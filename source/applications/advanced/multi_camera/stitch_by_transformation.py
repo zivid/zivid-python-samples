@@ -2,6 +2,10 @@
 Use transformation matrices from Multi-Camera calibration to transform point clouds into a single coordinate frame, from connected cameras.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
+
+For more information on multi-camera calibration, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/multi-camera-calibration.html
+
 """
 
 import argparse

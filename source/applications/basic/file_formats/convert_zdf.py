@@ -8,6 +8,9 @@ Available formats:
     PLY, PCD, XYZ, CSV, TXT - 3D point cloud
     PNG, JPG, BMP - 2D RGB image
 
+For more information on supported formats and options, check out this article:
+https://support.zivid.com/en/latest/camera/reference-articles/point-cloud-structure-and-output-formats.html
+
 """
 
 import argparse

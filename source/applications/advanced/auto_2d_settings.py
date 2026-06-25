@@ -16,6 +16,9 @@ Change the steps in _adjust_acquisition_settings_2d() if you want to re-prioriti
 first. If you want to use your own white reference (white wall, piece of paper, etc.) instead of using the calibration
 board, you can provide your own mask in _main(). Then you will have to specify the lower limit for f-number yourself.
 
+For more information about camera settings, check out this article:
+https://support.zivid.com/en/latest/camera/reference-articles/camera-settings.html
+
 """
 
 import argparse

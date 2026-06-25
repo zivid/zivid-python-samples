@@ -6,6 +6,9 @@ How to stop the image projection is demonstrated in three different ways:
 - projected image handle going out of scope
 - triggering a 3D capture
 
+For more information on using the projector to project 2D images, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/2d-image-projection.html
+
 """
 
 from typing import Tuple

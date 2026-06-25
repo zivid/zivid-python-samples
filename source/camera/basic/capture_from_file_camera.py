@@ -7,6 +7,9 @@ See the instructions in README.md to download the Zivid Sample Data.
 There are five available file cameras to choose from, one for each camera model.
 The default file camera used in this sample is the Zivid 2+ MR60 file camera.
 
+For more information about file cameras, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/file-camera.html
+
 """
 
 import argparse

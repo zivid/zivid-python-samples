@@ -14,6 +14,9 @@ The folder must contain two ZDF files used for this sample.
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
+For more information on stitching and point cloud registration, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/stitching.html
+
 """
 
 import zivid
