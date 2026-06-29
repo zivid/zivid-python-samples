@@ -11,6 +11,9 @@ This sample is divided into two parts:
 
 The image for this sample can be found under the main instructions for Zivid samples.
 
+For more information on using the projector to project 2D images, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/2d-image-projection.html
+
 """
 
 from datetime import timedelta

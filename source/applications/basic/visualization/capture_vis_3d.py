@@ -1,6 +1,9 @@
 """
 Capture point clouds, with color, from the Zivid camera, and visualize it.
 
+For more information on visualization, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/visualization-tutorial.html
+
 """
 
 import zivid

@@ -5,6 +5,9 @@ The ZDF file for this sample can be found under the main instructions for Zivid 
 
 Note: This example uses experimental SDK features, which may be modified, moved, or deleted in the future without notice.
 
+For more information on transforming point clouds, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/transformations.html
+
 """
 
 from pathlib import Path
@@ -20,15 +23,15 @@ from zividsamples.save_load_matrix import assert_affine_matrix_and_save
 
 
 def _coordinate_system_line(
-    bgra_image: np.ndarray,
+    bgr_image: np.ndarray,
     first_point: Tuple[int, int],
     second_point: Tuple[int, int],
     line_color: Tuple[int, int, int],
 ) -> None:
-    """Draw a line on a BGRA image.
+    """Draw a line on a BGR image.
 
     Args:
-        bgra_image: BGRA image.
+        bgr_image: BGR image.
         first_point: Pixel coordinates of the first end point.
         second_point: Pixel coordinates of the second end point.
         line_color: Line color.
@@ -36,7 +39,7 @@ def _coordinate_system_line(
 
     line_thickness = 4
     line_type = cv2.LINE_8
-    cv2.line(bgra_image, first_point, second_point, line_color, line_thickness, line_type)
+    cv2.line(bgr_image, first_point, second_point, line_color, line_thickness, line_type)
 
 
 def _zivid_camera_matrix_to_opencv_camera_matrix(camera_matrix: zivid.CameraIntrinsics.CameraMatrix) -> np.ndarray:
@@ -127,13 +130,13 @@ def _get_coordinate_system_points(
     }
 
 
-def _draw_coordinate_system(frame: zivid.Frame, checkerboard_pose: np.ndarray, bgra_image: np.ndarray) -> None:
-    """Draw a coordinate system on a BGRA image.
+def _draw_coordinate_system(frame: zivid.Frame, checkerboard_pose: np.ndarray, bgr_image: np.ndarray) -> None:
+    """Draw a coordinate system on a BGR image.
 
     Args:
         frame: Zivid frame containing point cloud.
         checkerboard_pose: Transformation matrix (checkerboard in camera frame).
-        bgra_image: BGRA image.
+        bgr_image: BGR image.
     """
 
     size_of_axis = 30.0  # each axis has 30 mm of length
@@ -147,13 +150,13 @@ def _draw_coordinate_system(frame: zivid.Frame, checkerboard_pose: np.ndarray, b
     x = frame_points["x_axis_point"]
 
     print("Drawing Z axis")
-    _coordinate_system_line(bgra_image, origin_point, z, (255, 0, 0))
+    _coordinate_system_line(bgr_image, origin_point, z, (255, 0, 0))
 
     print("Drawing Y axis")
-    _coordinate_system_line(bgra_image, origin_point, y, (0, 255, 0))
+    _coordinate_system_line(bgr_image, origin_point, y, (0, 255, 0))
 
     print("Drawing X axis")
-    _coordinate_system_line(bgra_image, origin_point, x, (0, 0, 255))
+    _coordinate_system_line(bgr_image, origin_point, x, (0, 0, 255))
 
 
 def _main() -> None:
@@ -189,8 +192,13 @@ def _main() -> None:
     bgra_image = point_cloud.copy_data("bgra_srgb")
 
     print("Visualizing checkerboard with coordinate system")
-    _draw_coordinate_system(frame, camera_to_checkerboard_transform, bgra_image)
-    display_bgr(bgra_image, "Checkerboard transformation frame")
+    bgr_coordinate_system = bgra_image[:, :, 0:3].copy()
+    _draw_coordinate_system(frame, camera_to_checkerboard_transform, bgr_coordinate_system)
+    display_bgr(bgr_coordinate_system, "Checkerboard transformation frame")
+
+    bgr_image_file = "CheckerboardCoordinateSystem.png"
+    print(f"Saving 2D color image with coordinate system to file: {bgr_image_file}")
+    cv2.imwrite(bgr_image_file, bgr_coordinate_system)
 
     checkerboard_transformed_file = "CalibrationBoardInCheckerboardOrigin.zdf"
     print(f"Saving transformed point cloud to file: {checkerboard_transformed_file}")

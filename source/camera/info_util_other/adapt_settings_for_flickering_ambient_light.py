@@ -6,6 +6,9 @@ sample will adapt these settings to accommodate either 50 or 60 Hz
 flickering frequencies based on user input. The output is new .yml
 files with the adapted settings.
 
+For more information on ambient light flickering, check out this article:
+https://support.zivid.com/en/latest/reference-articles/settings/2d-settings/2d-acquisition-settings/exposure-time.html#measuring-ambient-light-flicker-frequency
+
 """
 
 import argparse

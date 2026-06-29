@@ -1,6 +1,9 @@
 """
 Update firmware on the Zivid camera.
 
+For more information on firmware update, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/firmware-update.html
+
 """
 
 import zivid

@@ -19,6 +19,9 @@ Note: This script requires the `zividsamples` package to be installed.
 The `zividsamples` package is available in the /modules folder in the
 `zivid-python-samples` repository. `pip install /path/to/zivid-python-samples/modules`
 
+For more information on Hand-Eye GUI, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/hand-eye/hand-eye-gui.html
+
 """
 
 import sys

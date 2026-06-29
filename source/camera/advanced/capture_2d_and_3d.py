@@ -4,6 +4,9 @@ Capture 2D and 3D with the Zivid camera.
 Capture separate 2D and 3D with different sampling modes based on camera model.
 Then use color from 2D when visualizing the 3D point cloud.
 
+For more information about capture strategy, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/2d3d-capture-strategy.html
+
 """
 
 import zivid

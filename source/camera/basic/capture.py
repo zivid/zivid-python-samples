@@ -1,6 +1,9 @@
 """
 Capture colored point cloud, save 2D image, save 3D ZDF, and export PLY, using the Zivid camera.
 
+For more information about capturing, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/capture-tutorial.html
+
 """
 
 import zivid

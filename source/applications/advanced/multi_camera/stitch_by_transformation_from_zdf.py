@@ -1,5 +1,9 @@
 """
 Use transformation matrices from Multi-Camera calibration to transform point clouds into single coordinate frame, from a ZDF files.
+
+For more information on multi-camera calibration, check out the Multi-Camera Calibration tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/multi-camera-calibration.html
+
 """
 
 import argparse

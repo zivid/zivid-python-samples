@@ -5,6 +5,9 @@ Enabling diagnostics allows collecting additional data to be saved in the ZDF fi
 Send ZDF files with diagnostics enabled to the Zivid support team to allow more thorough troubleshooting.
 Have in mind that enabling diagnostics increases the capture time and the RAM usage.
 
+For more information on diagnostics, check out this article:
+https://support.zivid.com/en/latest/reference-articles/settings/diagnostics.html
+
 """
 
 import zivid

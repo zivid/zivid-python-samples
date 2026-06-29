@@ -3,6 +3,9 @@ Transform point cloud data from millimeters to meters.
 
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
 
+For more information on transforming point clouds, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/transformations.html
+
 """
 
 import numpy as np

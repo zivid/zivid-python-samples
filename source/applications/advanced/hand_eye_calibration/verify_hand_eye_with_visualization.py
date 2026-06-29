@@ -17,6 +17,9 @@ Tip: This sample saves the point clouds in PLY format in the same
 directory where this sample is stored. You can open the PLY point clouds
 in MeshLab for visual inspection.
 
+For more information on verifying Hand-Eye calibration, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/hand-eye/hand-eye-calibration-verification.html
+
 """
 
 import argparse

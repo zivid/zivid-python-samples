@@ -3,9 +3,6 @@ Generate a dataset and perform hand-eye calibration using the Robodk interface.
 
 You must modify each robot pose to your scene using the RoboDK GUI interface.
 
-More information about RoboDK:
-https://robodk.com/doc/en/Getting-Started.html
-
 The sample comes with a .rdk sample environment file using a Universal Robots UR5e robot.
 
 To use the sample with your robot an rdk file needs to be created using a model of your robot.
@@ -13,6 +10,11 @@ Each pose will need to be created or modified to fit your scene using the RoboDK
 For finding the best poses for hand-eye check out:
 https://support.zivid.com/latest/academy/applications/hand-eye/hand-eye-calibration-process.html
 Make sure to launch your RDK file and connect to robot through Robodk before running this script.
+
+You can find the complete tutorial with a detailed explanation at:
+https://support.zivid.com/en/latest/camera/academy/applications/hand-eye/robodk-%2B-python-generate-dataset-and-perform-hand-eye-calibration.html
+
+More information about RoboDK is available at: https://robodk.com/doc/en/Getting-Started.html
 
 """
 

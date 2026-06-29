@@ -5,6 +5,9 @@ This example shows how a marker can be projected onto a surface using the built-
 zero brightness is then used to capture an image with the marker. Finally position of the marker is detected,
 allowing us to find the 3D coordinates relative to the camera.
 
+For more information on using the projector to project 2D images, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/camera/2d-image-projection.html
+
 """
 
 from datetime import timedelta
@@ -401,7 +404,7 @@ def _main() -> None:
             if not camera_supports_projection_brightness_boost(camera)
             else settings_2d_projection
         )
-        projected_marker_frame_2d.image_rgba().save("ProjectedMarker.png")
+        projected_marker_frame_2d.image_rgba_srgb().save("ProjectedMarker.png")
 
         print("Capturing a 2D frame of the scene illuminated with the projector")
         illuminated_scene_frame_2d = camera.capture_2d(settings_2d_max_brightness)

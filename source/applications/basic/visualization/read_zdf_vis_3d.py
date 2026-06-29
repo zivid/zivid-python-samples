@@ -3,6 +3,9 @@ Read point cloud data from a ZDF file and visualize it.
 
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
 
+For more information on visualization, check out this tutorial:
+https://support.zivid.com/en/latest/camera/academy/applications/visualization-tutorial.html
+
 """
 
 import zivid
