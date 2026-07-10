@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QApplication, QCheckBox, QGroupBox, QHBoxLayout, QPushButton, QWidget
@@ -8,7 +8,7 @@ class HandEyeCalibrationButtonsWidget(QWidget):
     calibrate_button_clicked = pyqtSignal()
     use_fixed_objects_toggled = pyqtSignal(bool)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         # Define buttons
@@ -34,19 +34,19 @@ class HandEyeCalibrationButtonsWidget(QWidget):
 
         self.setLayout(buttons_layout)
 
-    def on_calibrate_button_clicked(self):
+    def on_calibrate_button_clicked(self) -> None:
         self.calibrate_button.setStyleSheet("background-color: yellow;")
         QApplication.processEvents()
         self.calibrate_button_clicked.emit()
         self.calibrate_button.setStyleSheet("")
 
-    def on_use_fixed_objects_toggled(self, checked: bool):
+    def on_use_fixed_objects_toggled(self, checked: bool) -> None:
         self.use_fixed_objects_toggled.emit(checked)
 
-    def disable_buttons(self):
+    def disable_buttons(self) -> None:
         self.calibrate_button.setEnabled(False)
 
-    def enable_buttons(self):
+    def enable_buttons(self) -> None:
         self.calibrate_button.setEnabled(True)
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:

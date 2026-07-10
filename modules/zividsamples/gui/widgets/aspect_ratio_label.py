@@ -1,37 +1,47 @@
+from typing import Optional
+
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout
+from PyQt5.QtGui import QMouseEvent, QPixmap, QResizeEvent
+from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QVBoxLayout, QWidget
 
 
 class AspectRatioLabel(QLabel):
 
-    def __init__(self, title: str, pixmap, parent=None):
+    def __init__(self, title: str, pixmap: QPixmap, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setMinimumHeight(200)
         self.original_pixmap = pixmap
         self.title = title
         self.setPixmap()
 
-    def set_original_pixmap(self, pixmap):
+    def set_original_pixmap(self, pixmap: QPixmap) -> None:
         self.original_pixmap = pixmap
         self.setPixmap()
 
-    def setPixmap(self):
+    def setPixmap(self) -> None:
         super().setPixmap(self.scaledPixmap())
 
-    def resizeEvent(self, _):
+    def resizeEvent(self, _: QResizeEvent) -> None:
         if self.original_pixmap:
             self.setPixmap()
 
-    def scaledPixmap(self):
+    def scaledPixmap(self) -> QPixmap:
         size = self.size()
         return self.original_pixmap.scaledToHeight(size.height(), Qt.SmoothTransformation)
 
-    def setFixedHeight(self, height):
+    def setFixedHeight(self, height: int) -> None:
         constrained_height = min(max(self.minimumHeight(), height), self.maximumHeight())
         super().setFixedHeight(constrained_height)
 
     # pylint: disable=too-many-positional-arguments
-    def setHeightFromGrid(self, grid_layout, row_start, row_span, col_start, col_span):
+    def setHeightFromGrid(
+        self,
+        grid_layout: QGridLayout,
+        row_start: int,
+        row_span: int,
+        col_start: int,
+        col_span: int,
+    ) -> None:
         max_height = 0 if row_start > 0 else grid_layout.verticalSpacing()
         for row in range(row_start, row_start + row_span):
             max_height += grid_layout.verticalSpacing()
@@ -48,11 +58,11 @@ class AspectRatioLabel(QLabel):
 
         self.setFixedHeight(max_height)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.LeftButton:
             self.show_original_pixmap()
 
-    def show_original_pixmap(self):
+    def show_original_pixmap(self) -> None:
         dialog = QDialog(self)
         dialog.setWindowTitle(self.title)
         dialog.setModal(True)

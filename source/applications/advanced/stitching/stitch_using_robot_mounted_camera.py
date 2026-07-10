@@ -11,6 +11,11 @@ point cloud of the object, seen from different angles, i.e, from the front, back
 The big object does not fit within the camera's field of view, so the stitching is done to extend the
 field of view of the camera, and see the object in full.
 
+Before stitching, each point cloud is transformed to the robot base frame and cropped using a
+region-of-interest (ROI) box defined in that frame. Because the ROI is applied as a post-capture
+re-processing step, a single workspace volume relative to the robot base filters out background
+from every viewpoint.
+
 The resulting stitched point cloud is voxel downsampled if the `--full-resolution` flag is not set.
 
 Dataset: https://support.zivid.com/en/latest/api-reference/samples/sample-data.html
@@ -66,12 +71,15 @@ def _options() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _stitch_point_clouds(directory: Path, full_resolution: bool) -> zivid.UnorganizedPointCloud:
+def _stitch_point_clouds(
+    directory: Path, full_resolution: bool, workspace_roi_box: zivid.Settings.RegionOfInterest.Box
+) -> zivid.UnorganizedPointCloud:
     """Stitch multiple point clouds captured at different robot poses.
 
     Args:
         directory (Path): Path to directory containing point clouds in ZDF and robot poses and a hand-eye transform in YML format.
         full_resolution (bool): If True, use full resolution (no downsampling). Otherwise, voxel downsample.
+        workspace_roi_box (zivid.Settings.RegionOfInterest.Box): A region of interest box in robot base frame
 
     Returns:
         zivid.UnorganizedPointCloud: The stitched point cloud.
@@ -104,11 +112,11 @@ def _stitch_point_clouds(directory: Path, full_resolution: bool) -> zivid.Unorga
         frame = zivid.Frame(zdf)
 
         base_to_camera_transform = np.matmul(robot_pose, hand_eye_transform)
-        unorganized_point_cloud_in_base_frame = (
-            frame.point_cloud()
-            .to_unorganized_point_cloud()
-            .voxel_downsampled(voxel_size=1.0, min_points_per_voxel=2)
-            .transformed(base_to_camera_transform)
+        point_cloud = frame.point_cloud()
+        point_cloud.transform(base_to_camera_transform)
+        point_cloud.mask_by_region_of_interest(workspace_roi_box)
+        unorganized_point_cloud_in_base_frame = point_cloud.to_unorganized_point_cloud().voxel_downsampled(
+            voxel_size=1.0, min_points_per_voxel=2
         )
 
         if index != 0:
@@ -144,9 +152,11 @@ def _stitch_point_clouds(directory: Path, full_resolution: bool) -> zivid.Unorga
     if full_resolution:
         for index, transform in enumerate(list_of_transforms):
             frame = zivid.Frame(zdf_files[index])
-            frame.point_cloud().transform(transform[0])
+            point_cloud = frame.point_cloud()
+            point_cloud.transform(transform[0])
+            point_cloud.mask_by_region_of_interest(workspace_roi_box)
             final_point_cloud.transform(np.linalg.inv(transform[1]))
-            final_point_cloud.extend(frame.point_cloud().to_unorganized_point_cloud())
+            final_point_cloud.extend(point_cloud.to_unorganized_point_cloud())
 
             if index > 0:
                 print(f"{index + 1} out of {len(list_of_transforms)} point clouds stitched.")
@@ -185,13 +195,27 @@ def _main() -> None:
         )
 
     print("Stitching small object...")
-    final_point_cloud_small = _stitch_point_clouds(small_object_dir, args.full_resolution)
+    small_workspace_roi_box = zivid.Settings.RegionOfInterest.Box(
+        enabled=True,
+        point_o=[-150, 300, 50],
+        point_a=[-150, 600, 50],
+        point_b=[150, 300, 50],
+        extents=(-75, 40),
+    )
+    final_point_cloud_small = _stitch_point_clouds(small_object_dir, args.full_resolution, small_workspace_roi_box)
     display_pointcloud(final_point_cloud_small)
     file_name_small = Path(__file__).parent / "StitchedPointCloudSmallObject.ply"
     export_unorganized_point_cloud(final_point_cloud_small, PLY(str(file_name_small), layout=PLY.Layout.unordered))
 
     print("Stitching big  object...")
-    final_point_cloud_big = _stitch_point_clouds(big_object_dir, args.full_resolution)
+    big_workspace_roi_box = zivid.Settings.RegionOfInterest.Box(
+        enabled=True,
+        point_o=[-1000, 50, 50],
+        point_a=[-1000, 450, 50],
+        point_b=[750, 350, 50],
+        extents=(-150, 20),
+    )
+    final_point_cloud_big = _stitch_point_clouds(big_object_dir, args.full_resolution, big_workspace_roi_box)
     display_pointcloud(final_point_cloud_big)
     file_name_big = Path(__file__).parent / "StitchedPointCloudBigObject.ply"
     export_unorganized_point_cloud(final_point_cloud_big, PLY(str(file_name_big), layout=PLY.Layout.unordered))

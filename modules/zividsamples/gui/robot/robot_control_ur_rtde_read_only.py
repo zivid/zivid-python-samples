@@ -30,7 +30,7 @@ class RobotControlURRTDEReadOnly(RobotControlReadOnly):
         if self.robot_handle is None:
             raise RuntimeError("RTDE interface not connected.")
         try:
-            for _ in range(5):
+            for _ in range(5):  # pylint: disable=unused-variable,redefined-outer-name
                 if self.robot_handle.has_data():
                     tcp_pose = self.robot_handle.receive().actual_TCP_pose
                     return RobotTarget(
@@ -46,7 +46,7 @@ class RobotControlURRTDEReadOnly(RobotControlReadOnly):
             raise RuntimeError(f"Error while receiving RTDE data: {e}") from e
         raise RuntimeError("No RTDE data received from robot.")
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         if self.robot_handle is not None:
             try:
                 start_time = datetime.now()
@@ -63,7 +63,7 @@ class RobotControlURRTDEReadOnly(RobotControlReadOnly):
                 print(f"Error while disconnecting RTDE: {e}")
         self.robot_handle = None
 
-    def connect(self):
+    def connect(self) -> None:
         # Use NamedTemporaryFile with delete=False and mode='w+t' for Windows compatibility
         with tempfile.NamedTemporaryFile(mode="w+t", delete=False, suffix=".xml") as temp_file:
             temp_file.write(UR_RTDE_RECIPE)

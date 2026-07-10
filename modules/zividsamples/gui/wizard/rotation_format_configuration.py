@@ -36,7 +36,7 @@ class RotationFormats:
     rotation_matrix: RotationFormat = RotationFormat("Rotation Matrix", 9)
 
     @classmethod
-    def as_list(cls) -> List[RotationFormat]:
+    def as_list(cls: type["RotationFormats"]) -> List[RotationFormat]:
         fields_default = []
         for field in fields(cls):
             assert isinstance(field.default, RotationFormat), f"Field {field} does not have {RotationFormat} type."
@@ -44,7 +44,7 @@ class RotationFormats:
         return fields_default
 
     @classmethod
-    def from_name(cls, format_name: str) -> RotationFormat:
+    def from_name(cls: type["RotationFormats"], format_name: str) -> RotationFormat:
         for rotation_format in cls.as_list():
             if rotation_format.name == format_name:
                 return rotation_format
@@ -87,7 +87,7 @@ class RotationInformation:
         self.show_dialog = settings.value("show_dialog", True, type=bool)
         settings.endGroup()
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         settings = QSettings("Zivid", "HandEyeGUI")
         settings.beginGroup("rotation_information")
         settings.setValue("rotation_format", self.rotation_format.name)
@@ -108,7 +108,7 @@ class RotationFormatSelectionWidget(QWidget):
     rotation_information: RotationInformation
     rotation_format_update = pyqtSignal(RotationInformation)
 
-    def __init__(self, initial_rotation_information: RotationInformation, parent=None):
+    def __init__(self, initial_rotation_information: RotationInformation, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.rotation_information = initial_rotation_information
@@ -119,7 +119,7 @@ class RotationFormatSelectionWidget(QWidget):
 
         self.show_euler_format_selector(self.rotation_information.rotation_format == RotationFormats.euler)
 
-    def setup_widgets(self):
+    def setup_widgets(self) -> None:
         self.format_selector_label = QLabel()
         self.format_selector_label.setText("Select Rotation Format")
         self.format_selector = QComboBox()
@@ -149,7 +149,7 @@ class RotationFormatSelectionWidget(QWidget):
         self.radians_radio_button.setChecked(not self.rotation_information.use_degrees)
         self.degrees_radio_button.setChecked(self.rotation_information.use_degrees)
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         self.grid_layout = QGridLayout()
         self.grid_layout.addWidget(self.format_selector_label, 0, 0)
         self.grid_layout.addWidget(self.format_selector, 0, 1, 1, 3)
@@ -163,19 +163,19 @@ class RotationFormatSelectionWidget(QWidget):
 
         self.setLayout(self.grid_layout)
 
-    def setup_connections(self):
+    def setup_connections(self) -> None:
         self.format_selector.currentIndexChanged.connect(self.on_transform_format_changed)
         self.euler_format_selector.currentIndexChanged.connect(self.on_transform_format_changed)
         self.extrinsic_radio_button.toggled.connect(self.on_transform_format_changed)
         self.degrees_radio_button.toggled.connect(self.on_transform_format_changed)
 
-    def show_euler_format_selector(self, show: bool):
+    def show_euler_format_selector(self, show: bool) -> None:
         self.euler_format_label.setVisible(show)
         self.euler_format_selector.setVisible(show)
         self.extrinsic_radio_button.setVisible(show)
         self.intrinsic_radio_button.setVisible(show)
 
-    def on_transform_format_changed(self):
+    def on_transform_format_changed(self) -> None:
         self.rotation_information.rotation_format = self.format_selector.currentData()
         self.rotation_information.extrinsic = self.extrinsic_radio_button.isChecked()
         text = self.euler_format_selector.currentText()
@@ -193,7 +193,7 @@ class RotationFormatSelectionWidget(QWidget):
         )
         self.rotation_format_update.emit(self.rotation_information)
 
-    def set_rotation_format(self, rotation_information: RotationInformation):
+    def set_rotation_format(self, rotation_information: RotationInformation) -> None:
         for i in range(self.format_selector.count()):
             if self.format_selector.itemData(i) == rotation_information.rotation_format:
                 self.format_selector.setCurrentIndex(i)
@@ -251,7 +251,7 @@ ListOfRobotFormats = [
 
 class RotationFormatSelectionDialog(QDialog):
 
-    def __init__(self, initial_rotation_information: RotationInformation, parent=None):
+    def __init__(self, initial_rotation_information: RotationInformation, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Select Rotation Format")
         self.rotation_format_selection_widget = RotationFormatSelectionWidget(initial_rotation_information)
@@ -306,13 +306,13 @@ class RotationFormatSelectionDialog(QDialog):
 
         table.cellClicked.connect(self.on_row_selected)
 
-    def on_row_selected(self, row: int):
+    def on_row_selected(self, row: int) -> None:
         self.rotation_format_selection_widget.set_rotation_format(ListOfRobotFormats[row].rotation_information)
 
     def rotation_information(self) -> RotationInformation:
         return self.rotation_format_selection_widget.rotation_information
 
-    def accept(self):
+    def accept(self) -> None:
         rotation_information = self.rotation_information()
         rotation_information.show_dialog = self.show_dialog_checkbox.isChecked()
         rotation_information.save_choice()

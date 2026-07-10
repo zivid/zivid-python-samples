@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from nptyping import NDArray, Shape, UInt8
@@ -38,7 +38,7 @@ class TouchMarkerWidget(QWidget):
     marker_id: int = 1
     marker_dictionary: str = MarkerDictionary.aruco4x4_50
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.marker_id_selection = QSpinBox()
@@ -64,10 +64,10 @@ class TouchMarkerWidget(QWidget):
         self.marker_id_selection.valueChanged.connect(self.on_marker_id_changed)
         self.marker_dictionary_selection.currentIndexChanged.connect(self.on_marker_dictionary_changed)
 
-    def on_marker_id_changed(self):
+    def on_marker_id_changed(self) -> None:
         self.marker_id = self.marker_id_selection.value()
 
-    def on_marker_dictionary_changed(self):
+    def on_marker_dictionary_changed(self) -> None:
         self.marker_dictionary = self.marker_dictionary_selection.currentText()
         self.marker_id = self.marker_id_selection.value()
         if self.marker_id > MarkerDictionary.marker_count(self.marker_dictionary):
@@ -81,7 +81,7 @@ class TouchMarkerWidget(QWidget):
 
 class MarkerListValidator(QValidator):
 
-    def validate(self, text_to_validate, pos):
+    def validate(self, text_to_validate: str, pos: int) -> Tuple[QValidator.State, str, int]:
         # Allow partial matches while typing, including ranges
         partial_regex = QRegExp(r"^\s*\d*(\s*-\s*\d*)?(\s*,\s*\d*(\s*-\s*\d*)?)*$")
         complete_regex = QRegExp(r"^\s*\d+\s*(\s*-\s*\d+)?(\s*,\s*\d+\s*(\s*-\s*\d+)?)*$")
@@ -92,7 +92,7 @@ class MarkerListValidator(QValidator):
             return QValidator.Intermediate, text_to_validate, pos
         return QValidator.Invalid, text_to_validate, pos
 
-    def fixup(self, text_to_fix):
+    def fixup(self, text_to_fix: str) -> str:
         # Allow digits, commas, and dashes, remove duplicates and sort
         fixed_input = "".join(c for c in text_to_fix if c.isdigit() or c in ",-")
         fixed_input = re.sub(r"([,-])(?:[,-])+", r"\1", fixed_input).strip(",").strip("-")
@@ -144,7 +144,7 @@ class MarkerConfiguration:
             self.dictionary = settings.value("marker_configuration.dictionary", MarkerDictionary.aruco4x4_50, type=str)
         self.show_dialog = settings.value("marker_configuration.show_dialog", True, type=bool)
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         settings = QSettings("Zivid", "HandEyeGUI")
         settings.setValue("marker_configuration.id_list", ",".join(map(str, self.id_list)))
         settings.setValue("marker_configuration.dictionary", self.dictionary)
@@ -159,8 +159,8 @@ class MarkersWidget(QWidget):
         self,
         initial_marker_configuration: MarkerConfiguration = MarkerConfiguration(),
         show_marker_image: bool = True,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
 
         self.marker_configuration = initial_marker_configuration
@@ -190,14 +190,14 @@ class MarkersWidget(QWidget):
             overall_layout.addWidget(self.marker_image)
         self.setLayout(overall_layout)
 
-    def on_marker_list_edited(self):
+    def on_marker_list_edited(self) -> None:
         validator = self.marker_list_line_edit.validator()
         text = self.marker_list_line_edit.text()
         fixed_text = validator.fixup(text)
         self.marker_list_line_edit.setText(fixed_text)
         self.marker_configuration.id_list = self.expand_ranges(fixed_text)
 
-    def on_marker_dictionary_changed(self):
+    def on_marker_dictionary_changed(self) -> None:
         self.marker_configuration.dictionary = self.marker_dictionary_selection.currentText()
 
     def set_pixmap(self, pixmap: QPixmap, reset_zoom: bool = False) -> None:
@@ -213,7 +213,7 @@ class MarkersWidget(QWidget):
         rgba: NDArray[Shape["N, M, 4"], UInt8],  # type: ignore
         pixel_mapping: PixelMapping,
         reset_zoom: bool = False,
-    ):
+    ) -> None:
         rgb = rgba[:, :, :3].copy().astype(np.uint8)
         rgba[:, :, :3] = self.cv2_handler.draw_detected_markers(markers, rgb, pixel_mapping)
         qimage_rgba = QImage(
@@ -224,7 +224,7 @@ class MarkersWidget(QWidget):
         )
         self.set_image(qimage_rgba, reset_zoom)
 
-    def setVisible(self, visible: bool):
+    def setVisible(self, visible: bool) -> None:
         super().setVisible(visible)
         self.marker_list_line_edit.setVisible(visible)
         self.marker_dictionary_selection.setVisible(visible)
@@ -256,8 +256,8 @@ class MarkerConfigurationSelection(QDialog):
     def __init__(
         self,
         initial_marker_configuration: MarkerConfiguration = MarkerConfiguration(),
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Select Marker Configuration")
 
@@ -278,7 +278,7 @@ class MarkerConfigurationSelection(QDialog):
         layout.addWidget(self.remember_choice_checkbox)
         self.setLayout(layout)
 
-    def accept(self):
+    def accept(self) -> None:
         self.marker_configuration = self.marker_widget.marker_configuration
         self.marker_configuration.show_dialog = self.remember_choice_checkbox.isChecked()
         self.marker_configuration.save_choice()

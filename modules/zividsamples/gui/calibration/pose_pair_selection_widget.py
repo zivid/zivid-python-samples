@@ -2,7 +2,7 @@ import threading
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import zivid
@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QMessageBox,
     QPushButton,
     QScrollArea,
@@ -81,7 +82,7 @@ def _residual_label_width(label: QLabel) -> int:
 
 
 class ButtonWithLabels(QPushButton):
-    def __init__(self, labels: List[QLabel], parent=None):
+    def __init__(self, labels: List[QLabel], parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.labels = labels
@@ -113,7 +114,14 @@ class PosePairWidget(QWidget):
     pose_pair: PosePair
 
     # pylint: disable=too-many-positional-arguments
-    def __init__(self, poseID: int, directory: Path, pose_pair: PosePair, save_to_disk: bool = True, parent=None):
+    def __init__(
+        self,
+        poseID: int,
+        directory: Path,
+        pose_pair: PosePair,
+        save_to_disk: bool = True,
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
 
         self.poseID = poseID
@@ -148,7 +156,7 @@ class PosePairWidget(QWidget):
 
         self.update_information(pose_pair, save_to_disk=save_to_disk)
 
-    def update_information(self, pose_pair: PosePair, save_to_disk: bool = True):
+    def update_information(self, pose_pair: PosePair, save_to_disk: bool = True) -> None:
         self.pose_pair = pose_pair
         if save_to_disk:
             zivid.Matrix4x4(self.pose_pair.robot_pose.as_matrix()).save(self.robot_pose_yaml_path)
@@ -182,7 +190,14 @@ class _PosePairLoadWorker(QObject):
     finished = pyqtSignal(int)
 
     # pylint: disable=too-many-positional-arguments
-    def __init__(self, generation, directory, pose_ids, calibration_object, marker_configuration):
+    def __init__(
+        self,
+        generation: int,
+        directory: Path,
+        pose_ids: List[int],
+        calibration_object: CalibrationObject,
+        marker_configuration: MarkerConfiguration,
+    ) -> None:
         super().__init__()
         self._generation = generation
         self._directory = directory
@@ -192,10 +207,10 @@ class _PosePairLoadWorker(QObject):
         self._cancel_event = threading.Event()
         self._cv2_handler = CV2Handler()
 
-    def cancel(self):
+    def cancel(self) -> None:
         self._cancel_event.set()
 
-    def run(self):
+    def run(self) -> None:
         for poseID in self._pose_ids:
             if self._cancel_event.is_set():
                 break
@@ -260,7 +275,13 @@ class _PosePairReprocessWorker(QObject):
     pose_pair_reprocessed = pyqtSignal(int, int, object)
     finished = pyqtSignal(int)
 
-    def __init__(self, generation, frames, calibration_object, marker_configuration):
+    def __init__(
+        self,
+        generation: int,
+        frames: List[Tuple[int, zivid.Frame]],
+        calibration_object: CalibrationObject,
+        marker_configuration: MarkerConfiguration,
+    ) -> None:
         super().__init__()
         self._generation = generation
         self._frames = frames
@@ -269,10 +290,10 @@ class _PosePairReprocessWorker(QObject):
         self._cancel_event = threading.Event()
         self._cv2_handler = CV2Handler()
 
-    def cancel(self):
+    def cancel(self) -> None:
         self._cancel_event.set()
 
-    def run(self):
+    def run(self) -> None:
         for poseID, camera_frame in self._frames:
             if self._cancel_event.is_set():
                 break
@@ -310,7 +331,7 @@ class PosePairSelectionWidget(QWidget):
     pose_pairs_updated = pyqtSignal(int)
     loading_finished = pyqtSignal()
 
-    def __init__(self, directory: Path, parent=None):
+    def __init__(self, directory: Path, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.cv2_handler = CV2Handler()
@@ -330,7 +351,7 @@ class PosePairSelectionWidget(QWidget):
 
         self.set_directory(directory)
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         self.pose_pair_container = QWidget()
 
         self.pose_pairs_group_box = QGroupBox("Pose Pairs")
@@ -342,7 +363,7 @@ class PosePairSelectionWidget(QWidget):
 
         self.clear_pose_pairs_button = QPushButton("Clear")
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         self.pose_pairs_group_box_layout = QVBoxLayout()
         self.pose_pairs_group_box_layout.setAlignment(Qt.AlignTop)
         self.pose_pairs_group_box.setLayout(self.pose_pairs_group_box_layout)
@@ -361,13 +382,13 @@ class PosePairSelectionWidget(QWidget):
         layout.addWidget(self.pose_pairs_group_box)
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.clear_pose_pairs_button.clicked.connect(self.on_clear_button_clicked)
 
-    def set_directory(self, directory: Path):
+    def set_directory(self, directory: Path) -> None:
         self.directory = directory
 
-    def load_pose_pairs(self, calibration_object: CalibrationObject, marker_configuration: MarkerConfiguration):
+    def load_pose_pairs(self, calibration_object: CalibrationObject, marker_configuration: MarkerConfiguration) -> None:
         if len(self.pose_pair_widgets) > 0:
             message_box = QMessageBox()
             message_box.setText(
@@ -424,7 +445,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self._loader_worker = worker
         thread.start()
 
-    def cancel_loading(self):
+    def cancel_loading(self) -> None:
         if self._loader_worker is not None:
             self._loader_worker.cancel()
         if self._loader_thread is not None and self._loader_thread.isRunning():
@@ -434,7 +455,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self._loader_thread = None
         self._cancel_reprocessing()
 
-    def _cancel_reprocessing(self):
+    def _cancel_reprocessing(self) -> None:
         if self._reprocess_worker is not None:
             self._reprocess_worker.cancel()
         if self._reprocess_thread is not None and self._reprocess_thread.isRunning():
@@ -443,7 +464,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self._reprocess_worker = None
         self._reprocess_thread = None
 
-    def _on_pose_pair_loaded(self, generation: int, poseID: int, pose_pair: PosePair):
+    def _on_pose_pair_loaded(self, generation: int, poseID: int, pose_pair: PosePair) -> None:
         if generation != self._load_generation:
             return
         if poseID in self.pose_pair_widgets:
@@ -457,7 +478,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self.pose_pairs_updated.emit(len(self.pose_pair_widgets))
         self.pose_pair_clicked.emit(pose_pair_widget.pose_pair)
 
-    def _on_loading_finished(self, generation: int):
+    def _on_loading_finished(self, generation: int) -> None:
         if generation != self._load_generation:
             return
         self.pose_pairs_group_box.setStyleSheet("")
@@ -517,14 +538,14 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self.pose_pairs_group_box.setTitle("Pose Pairs")
         self.loading_finished.emit()
 
-    def on_pose_pair_widget_clicked(self, pose_pair_widget: PosePairWidget):
+    def on_pose_pair_widget_clicked(self, pose_pair_widget: PosePairWidget) -> None:
         for clickable_area in [p.clickable_labels for p in self.pose_pair_widgets.values()]:
             if clickable_area is not pose_pair_widget.clickable_labels:
                 clickable_area.setChecked(False)
                 QApplication.processEvents()
         self.pose_pair_clicked.emit(pose_pair_widget.pose_pair)
 
-    def on_clear_button_clicked(self):
+    def on_clear_button_clicked(self) -> None:
         self.clear()
 
     def create_title_row(self) -> QHBoxLayout:
@@ -554,7 +575,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self._loaded_from_disk = value
         self.clear_pose_pairs_button.setVisible(not value)
 
-    def add_pose_pair(self, pose_pair) -> Optional[PosePairWidget]:
+    def add_pose_pair(self, pose_pair: PosePair) -> Optional[PosePairWidget]:
         if self.is_loading():
             return None
         poseID = self.get_current_poseID()
@@ -603,7 +624,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
             if pose_pair_widget.selected_checkbox.isChecked()
         ]
 
-    def set_residuals(self, residuals: List[Any]):
+    def set_residuals(self, residuals: List[Any]) -> None:
         checked_pose_pairs = [
             pose_pair_widget
             for pose_pair_widget in self.pose_pair_widgets.values()
@@ -621,7 +642,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         for pose_pair_widget in unchecked_pose_pairs:
             pose_pair_widget.clickable_labels.labels[2].setText("NA")
 
-    def _clear_layout(self, layout):
+    def _clear_layout(self, layout: QLayout) -> None:
         while layout.count():
             item = layout.takeAt(0)
             widget = item.widget()
@@ -631,7 +652,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
             if sublayout:
                 self._clear_layout(sublayout)
 
-    def clear(self):
+    def clear(self) -> None:
         self.cancel_loading()
         self._set_loaded_from_disk(False)
         self._clear_layout(self.pose_pairs_layout)

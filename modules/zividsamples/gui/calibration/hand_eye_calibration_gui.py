@@ -66,8 +66,8 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         marker_configuration: MarkerConfiguration,
         cv2_handler: CV2Handler,
         initial_rotation_information: RotationInformation,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(data_directory, parent)
 
         self.description = [
@@ -96,7 +96,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             calibrated=False,
         )
 
-    def create_widgets(self, initial_rotation_information: RotationInformation):
+    def create_widgets(self, initial_rotation_information: RotationInformation) -> None:
         self.robot_pose_widget = PoseWidget.Robot(
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
@@ -116,7 +116,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         self.hand_eye_calibration_buttons.calibrate_button.setEnabled(False)
         self.hand_eye_calibration_buttons.setObjectName("HE-Calibration-hand_eye_calibration_buttons")
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout()
         left_panel = QVBoxLayout()
         right_panel = QVBoxLayout()
@@ -139,7 +139,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         layout.addLayout(bottom_layout)
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.hand_eye_calibration_buttons.calibrate_button_clicked.connect(self.on_calibrate_button_clicked)
         self.hand_eye_calibration_buttons.use_fixed_objects_toggled.connect(self.on_use_fixed_objects_toggled)
         self.confirm_robot_pose_button.clicked.connect(self.on_confirm_robot_pose_button_clicked)
@@ -154,7 +154,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             save_to_disk = self.pose_pair_selection_widget.last_operation_was_reprocess
             self._calibrate(save_to_disk=save_to_disk)
 
-    def update_instructions(self, has_detection_result: bool, robot_pose_confirmed: bool, calibrated: bool):
+    def update_instructions(self, has_detection_result: bool, robot_pose_confirmed: bool, calibrated: bool) -> None:
         self.has_confirmed_robot_pose = robot_pose_confirmed
         self.has_detection_result = has_detection_result and self.has_confirmed_robot_pose
         minimum_captures_to_go = (
@@ -185,7 +185,16 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         calibration_object: CalibrationObject,
         marker_configuration: MarkerConfiguration,
     ) -> Tuple[CalibrationObject, MarkerConfiguration]:
-        """If saved config differs from current, ask user and return (calibration_object, marker_configuration)."""
+        """If saved config differs from current, ask user and return (calibration_object, marker_configuration).
+
+        Args:
+            saved_config: Calibration configuration loaded from the saved session.
+            calibration_object: Calibration object from the current configuration.
+            marker_configuration: Marker configuration from the current configuration.
+
+        Returns:
+            Tuple of the calibration object and marker configuration to use.
+        """
         mismatches = []
         if saved_config.calibration_object != calibration_object:
             mismatches.append(
@@ -215,7 +224,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             )
         return (saved_config.calibration_object, new_marker_config)
 
-    def on_pending_changes(self):
+    def on_pending_changes(self) -> None:
         self.pose_pair_selection_widget.clear()
         self.pose_pair_selection_widget.set_directory(self.data_directory)
         if not self.data_directory_has_data():
@@ -242,10 +251,10 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
     def is_loading(self) -> bool:
         return self.pose_pair_selection_widget.is_loading()
 
-    def on_tab_visibility_changed(self, is_current: bool):
+    def on_tab_visibility_changed(self, is_current: bool) -> None:
         pass
 
-    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
+    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.detection_visualization_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
         self.robot_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
@@ -255,7 +264,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         self.fixed_objects.update_hand_eye_configuration(self.hand_eye_configuration)
         self._prompt_reprocess_if_needed()
 
-    def marker_configuration_update(self, marker_configuration: MarkerConfiguration):
+    def marker_configuration_update(self, marker_configuration: MarkerConfiguration) -> None:
         self.marker_configuration = marker_configuration
         self.fixed_objects.update_marker_configuration(self.marker_configuration)
         self._prompt_reprocess_if_needed()
@@ -283,10 +292,10 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
                     self.marker_configuration,
                 )
 
-    def rotation_format_update(self, rotation_information: RotationInformation):
+    def rotation_format_update(self, rotation_information: RotationInformation) -> None:
         self.robot_pose_widget.set_rotation_format(rotation_information)
 
-    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration) -> None:
         self.robot_configuration = robot_configuration
         self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.update_instructions(
@@ -295,12 +304,12 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             calibrated=False,
         )
 
-    def on_select_fixed_objects_action_triggered(self):
+    def on_select_fixed_objects_action_triggered(self) -> None:
         updated_fixed_objects = set_fixed_objects(self.fixed_objects, self.robot_pose_widget.rotation_information)
         if updated_fixed_objects is not None:
             self.fixed_objects = updated_fixed_objects
 
-    def toggle_advanced_view(self, checked):
+    def toggle_advanced_view(self, checked: bool) -> None:
         self.robot_pose_widget.toggle_advanced_section(checked)
 
     def on_start_auto_run(self) -> bool:
@@ -317,18 +326,18 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             return True
         return False
 
-    def on_pose_pair_clicked(self, pose_pair: PosePair):
+    def on_pose_pair_clicked(self, pose_pair: PosePair) -> None:
         self.pose_pair = pose_pair
         self.robot_pose_widget.set_transformation_matrix(self.pose_pair.robot_pose)
         self.detection_visualization_widget.set_image(self.pose_pair.qimage_rgba)
 
-    def on_pose_pairs_update(self, number_of_pose_pairs: int):
+    def on_pose_pairs_update(self, number_of_pose_pairs: int) -> None:
         self.hand_eye_calibration_buttons.calibrate_button.setEnabled(
             number_of_pose_pairs >= self.minimum_pose_pairs_for_calibration
         )
         self.pose_pair_selection_widget.setVisible(number_of_pose_pairs > 0)
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         try:
             detection_result = (
                 zivid.calibration.detect_calibration_board(frame)
@@ -378,7 +387,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             self.detection_visualization_widget.set_error_message(str(ex))
             raise ex
 
-    def use_data(self):
+    def use_data(self) -> None:
         self.pose_pair_selection_widget.add_pose_pair(self.pose_pair)
         if self.session_info is not None:
             save_calibration_config(
@@ -393,7 +402,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             calibrated=False,
         )
 
-    def on_use_fixed_objects_toggled(self, checked: bool):
+    def on_use_fixed_objects_toggled(self, checked: bool) -> None:
         if checked:
             updated_fixed_objects = set_fixed_objects(self.fixed_objects, self.robot_pose_widget.rotation_information)
             if updated_fixed_objects is None:
@@ -402,7 +411,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
                 self.hand_eye_calibration_buttons.use_fixed_objects_checkbox.setChecked(self.fixed_objects.has_data())
                 self.fixed_objects = updated_fixed_objects
 
-    def on_calibrate_button_clicked(self):
+    def on_calibrate_button_clicked(self) -> None:
         self._calibrate(save_to_disk=True)
 
     def _calibrate(self, save_to_disk: bool = True) -> None:
@@ -449,26 +458,26 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             QMessageBox.critical(self, "Hand-Eye Calibration Error", str(ex))
             self.calibration_finished.emit(TransformationMatrix())
 
-    def confirm_robot_pose(self, confirmed: bool = True):
+    def confirm_robot_pose(self, confirmed: bool = True) -> None:
         self.update_instructions(
             has_detection_result=False,
             robot_pose_confirmed=confirmed,
             calibrated=False,
         )
 
-    def on_confirm_robot_pose_button_clicked(self, checked: bool):
+    def on_confirm_robot_pose_button_clicked(self, checked: bool) -> None:
         self.confirm_robot_pose(checked)
 
-    def on_robot_pose_manually_updated(self):
+    def on_robot_pose_manually_updated(self) -> None:
         self.confirm_robot_pose(False)
 
-    def on_actual_pose_updated(self, robot_target: RobotTarget):
+    def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         self.has_detection_result = False
         self.confirm_robot_pose(True)
         with QSignalBlocker(self.robot_pose_widget):
             self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
 
-    def on_target_pose_updated(self, robot_target: RobotTarget):
+    def on_target_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:

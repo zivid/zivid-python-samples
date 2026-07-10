@@ -22,7 +22,7 @@ def show_yaml_dialog(yaml_path: Path, title: str) -> None:
 
     dialog.setLayout(layout)
 
-    def adjust_dialog_size():
+    def adjust_dialog_size() -> None:
         text_edit.document().adjustSize()
         document_size = text_edit.document().size().toSize()
 

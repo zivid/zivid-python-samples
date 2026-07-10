@@ -17,6 +17,8 @@ def get_matching_2d_preset_settings(
 
     Args:
         camera: Zivid camera
+        sampling_color: Sampling color to match
+        sampling_pixel: Sampling pixel to match
 
     Raises:
         RuntimeError: If no matched preset is found

@@ -8,13 +8,13 @@ from zividsamples.gui.qt_application import create_vertical_line
 
 class InfieldCorrectionResultWidget(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.create_widgets()
         self.setup_layout()
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         self.infield_result_container = QWidget()
 
         self.infield_result_group_box = QGroupBox("Expected Infield Correction Results")
@@ -24,7 +24,7 @@ class InfieldCorrectionResultWidget(QWidget):
         self.z_max_label = QLabel("NA")
         self.current_correction_label = QLabel("")
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         infield_correction_result_form = QFormLayout()
         infield_input_group_box_layout = QHBoxLayout()
         infield_input_group_box_layout.addLayout(infield_correction_result_form)
@@ -41,7 +41,7 @@ class InfieldCorrectionResultWidget(QWidget):
         layout.addWidget(self.infield_result_group_box)
         self.setLayout(layout)
 
-    def update_result(self, correction: Optional[CameraCorrection] = None):
+    def update_result(self, correction: Optional[CameraCorrection] = None) -> None:
         if correction:
             accuracy_estimate = correction.accuracy_estimate()
             self.expected_trueness_label.setText(f"{accuracy_estimate.dimension_accuracy() * 100:.3f}%")
@@ -52,7 +52,7 @@ class InfieldCorrectionResultWidget(QWidget):
             self.z_min_label.setText("NA")
             self.z_max_label.setText("NA")
 
-    def set_current_correction(self, timestamp: Optional[datetime] = None):
+    def set_current_correction(self, timestamp: Optional[datetime] = None) -> None:
         if timestamp is None:
             self.current_correction_label.setText("No correction applied.")
         else:

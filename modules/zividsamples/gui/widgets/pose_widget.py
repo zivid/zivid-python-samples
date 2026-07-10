@@ -2,7 +2,7 @@ import re
 from abc import abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import zivid
@@ -44,7 +44,7 @@ class BasePoseWidget(QWidget):
         initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
         descriptive_image_paths: Optional[Tuple[Path, Path]] = None,
         read_only: bool = False,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
         self.title = title
@@ -75,7 +75,7 @@ class BasePoseWidget(QWidget):
         self.setup_base_layout()
         self.setup_base_connections()
 
-    def setup_base_widgets(self, title, descriptive_image_paths: Optional[Tuple[Path, Path]]):
+    def setup_base_widgets(self, title: str, descriptive_image_paths: Optional[Tuple[Path, Path]]) -> None:
         if self.display_mode != PoseWidgetDisplayMode.OnlyPose:
             self.rotation_format_selection_widget = RotationFormatSelectionWidget(self.rotation_information)
 
@@ -87,38 +87,38 @@ class BasePoseWidget(QWidget):
         else:
             self.descriptive_image_label = None
 
-    def setup_base_layout(self):
+    def setup_base_layout(self) -> None:
         if self.display_mode == PoseWidgetDisplayMode.OnlyPose:
             self.grid_layout = QGridLayout()
         else:
             self.grid_layout = self.rotation_format_selection_widget.grid_layout
 
-    def setup_base_connections(self):
+    def setup_base_connections(self) -> None:
         if self.display_mode != PoseWidgetDisplayMode.OnlyPose:
             self.rotation_format_selection_widget.rotation_format_update.connect(self.on_rotation_format_update)
 
     def get_rotation_format(self) -> RotationInformation:
         return self.rotation_information
 
-    def set_rotation_format(self, rotation_format: RotationInformation):
+    def set_rotation_format(self, rotation_format: RotationInformation) -> None:
         self.rotation_information = rotation_format
         if self.display_mode != PoseWidgetDisplayMode.OnlyPose:
             self.rotation_format_selection_widget.set_rotation_format(rotation_format)
         self.update_from_transformation_matrix()
 
-    def on_eye_in_hand_toggled(self, eye_in_hand: bool):
+    def on_eye_in_hand_toggled(self, eye_in_hand: bool) -> None:
         descriptive_image = self.descriptive_image_eye_in_hand if eye_in_hand else self.descriptive_image_eye_to_hand
         if descriptive_image is not None and self.descriptive_image_label is not None:
             self.descriptive_image_label.set_original_pixmap(descriptive_image)
 
-    def get_transformation_matrix(self):
+    def get_transformation_matrix(self) -> TransformationMatrix:
         return self.transformation_matrix
 
-    def set_transformation_matrix(self, transformation_matrix: TransformationMatrix):
+    def set_transformation_matrix(self, transformation_matrix: TransformationMatrix) -> None:
         self.transformation_matrix = transformation_matrix
         self.update_from_transformation_matrix()
 
-    def on_rotation_format_update(self, rotation_information: RotationInformation):
+    def on_rotation_format_update(self, rotation_information: RotationInformation) -> None:
         self.rotation_information = rotation_information
         self.update_from_transformation_matrix()
 
@@ -126,7 +126,7 @@ class BasePoseWidget(QWidget):
     def update_from_transformation_matrix(self) -> None:
         raise RuntimeError("Method not implemented")
 
-    def rotation_from_parameters(self, rotation_parameters) -> Rotation:
+    def rotation_from_parameters(self, rotation_parameters: Sequence[float]) -> Rotation:
         rotation = None
         if self.rotation_information.rotation_format.name == "Angle-Axis":
             rotvec = np.asarray(rotation_parameters[1:]) * rotation_parameters[0]
@@ -175,10 +175,10 @@ class BasePoseWidget(QWidget):
             )
         return parameters
 
-    def zivid_transformation_matrix(self):
+    def zivid_transformation_matrix(self) -> zivid.Matrix4x4:
         return zivid.Matrix4x4(self.transformation_matrix.as_matrix())
 
-    def _rotation_label_text(self):
+    def _rotation_label_text(self) -> str:
         degrees = (
             " (°)"
             if self.rotation_information.use_degrees
@@ -211,7 +211,7 @@ class PoseWidget(BasePoseWidget):
         initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
         descriptive_image_paths: Optional[Tuple[Path, Path]] = None,
         read_only: bool = False,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(
             title,
@@ -232,7 +232,7 @@ class PoseWidget(BasePoseWidget):
         self.update_from_transformation_matrix()
         self.toggle_advanced_section(display_mode == PoseWidgetDisplayMode.Advanced)
 
-    def setup_widgets(self):
+    def setup_widgets(self) -> None:
         self.translation_parameters_label = QLabel()
         self.translation_parameters_label.setText("Translation")
         self.translation_parameter_editors: List[QLineEdit] = [QLineEdit() for _ in range(3)]
@@ -254,7 +254,7 @@ class PoseWidget(BasePoseWidget):
         self.pose_text = QLineEdit()
         self.pose_text.setReadOnly(self.read_only)
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
 
         self.group_box = QGroupBox(self.title)
 
@@ -319,14 +319,14 @@ class PoseWidget(BasePoseWidget):
         main_layout.addWidget(self.group_box)
         self.setLayout(main_layout)
 
-    def setup_connections(self):
+    def setup_connections(self) -> None:
         for parameter_editor in self.translation_parameter_editors:
             parameter_editor.editingFinished.connect(self.on_translation_parameter_changed)
         for parameter_editor in self.rotation_parameter_editors:
             parameter_editor.editingFinished.connect(self.on_rotation_parameter_changed)
         self.pose_text.editingFinished.connect(self.on_pose_text_changed)
 
-    def toggle_advanced_section(self, checked: bool):
+    def toggle_advanced_section(self, checked: bool) -> None:
         for widget in self.advanced_widgets:
             widget.setVisible(checked)
         if self.descriptive_image_label is not None:
@@ -375,7 +375,7 @@ class PoseWidget(BasePoseWidget):
         self.reset_parameter_editor_styles()
         self.pose_updated.emit()
 
-    def on_rotation_parameter_changed(self):
+    def on_rotation_parameter_changed(self) -> None:
         modified_index = int(self.sender().objectName().split("_")[-1])
         try:
             update_parameter = parameter_text_to_float(self.sender().text())
@@ -410,7 +410,7 @@ class PoseWidget(BasePoseWidget):
             self.transformation_matrix.rotation = updated_rotation
             self.update_from_transformation_matrix()
 
-    def on_translation_parameter_changed(self):
+    def on_translation_parameter_changed(self) -> None:
         modified_index = int(self.sender().objectName().split("_")[-1])
         try:
             update_parameter = parameter_text_to_float(self.sender().text())
@@ -425,7 +425,7 @@ class PoseWidget(BasePoseWidget):
             self.transformation_matrix.translation[i] = parameter_text_to_float(parameter_editor.text())
         self.update_from_transformation_matrix()
 
-    def on_pose_text_changed(self):
+    def on_pose_text_changed(self) -> None:
         parameter_list = re.split(r"[,\s]+", self.pose_text.text().strip())
         if len(parameter_list) < (3 + len(self.rotation_parameters)):
             # Wait for user to finish entering data
@@ -439,7 +439,7 @@ class PoseWidget(BasePoseWidget):
         self.transformation_matrix.rotation = updated_rotation
         self.update_from_transformation_matrix()
 
-    def reset_parameter_editor_styles(self):
+    def reset_parameter_editor_styles(self) -> None:
         for parameter_editor in self.rotation_parameter_editors:
             parameter_editor.setStyleSheet("")
 
@@ -457,12 +457,12 @@ class PoseWidget(BasePoseWidget):
 
     @classmethod
     def HandEye(
-        cls,
+        cls: type["PoseWidget"],
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
         initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
-    ):
+    ) -> "PoseWidget":
         ee_camera_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-ee-camera-pose-low-res.png"
         )
@@ -480,12 +480,12 @@ class PoseWidget(BasePoseWidget):
 
     @classmethod
     def Robot(
-        cls,
+        cls: type["PoseWidget"],
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
         initial_transformation_matrix: TransformationMatrix = TransformationMatrix(),
-    ):
+    ) -> "PoseWidget":
         robot_ee_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-ee-pose-low-res.png"
         )
@@ -501,12 +501,12 @@ class PoseWidget(BasePoseWidget):
 
     @classmethod
     def CalibrationBoardInCameraFrame(
-        cls,
+        cls: type["PoseWidget"],
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
         calibration_object_in_camera_frame_pose: TransformationMatrix = TransformationMatrix(),
-    ):
+    ) -> "PoseWidget":
         eih_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-camera-object-pose-low-res.png"
         )
@@ -525,12 +525,12 @@ class PoseWidget(BasePoseWidget):
 
     @classmethod
     def CalibrationBoardInRobotFrame(
-        cls,
+        cls: type["PoseWidget"],
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
         calibration_object_in_robot_base_frame_pose: TransformationMatrix = TransformationMatrix(),
-    ):
+    ) -> "PoseWidget":
         eih_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose-low-res.png"
         )
@@ -564,7 +564,7 @@ class MarkerPosesWidget(BasePoseWidget):
         display_mode: PoseWidgetDisplayMode,
         descriptive_image_paths: Optional[Tuple[Path, Path]] = None,
         read_only: bool = False,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(
             title=title,
@@ -579,14 +579,14 @@ class MarkerPosesWidget(BasePoseWidget):
         self.setup_widgets()
         self.setup_layout()
 
-    def setup_widgets(self):
+    def setup_widgets(self) -> None:
         self.ids_title_label = QLabel("IDs")
         self.translation_title_label = QLabel("Translation")
         self.rotation_title_label = QLabel(self._rotation_label_text())
         self.translation_parameter_labels = {}
         self.rotation_parameter_labels = {}
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         self.group_box = QGroupBox(self.title)
 
         self.grid_layout = QGridLayout()
@@ -627,7 +627,7 @@ class MarkerPosesWidget(BasePoseWidget):
 
         self.update_layout()
 
-    def update_layout(self):
+    def update_layout(self) -> None:
         row_start = row_offset = 1 if self.display_mode == PoseWidgetDisplayMode.OnlyPose else 4
 
         for row in range(row_offset, self.grid_layout.rowCount()):
@@ -686,10 +686,10 @@ class MarkerPosesWidget(BasePoseWidget):
         else:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-    def set_title(self, title: str):
+    def set_title(self, title: str) -> None:
         self.group_box.setTitle(title)
 
-    def update_markers(self):
+    def update_markers(self) -> None:
         self.translation_parameters = {}
         self.rotation_parameters = {}
         for key, transformation_matrix in self.markers.items():
@@ -697,11 +697,11 @@ class MarkerPosesWidget(BasePoseWidget):
             self.rotation_parameters[key] = self.parameters_from_rotation(transformation_matrix.rotation)
         self.update_layout()
 
-    def set_markers(self, markers: Dict[str, TransformationMatrix]):
+    def set_markers(self, markers: Dict[str, TransformationMatrix]) -> None:
         self.markers = markers
         self.update_markers()
 
-    def on_transform_format_changed(self):
+    def on_transform_format_changed(self) -> None:
         self.rotation_title_label.setText(self._rotation_label_text())
         self.update_markers()
 
@@ -711,11 +711,11 @@ class MarkerPosesWidget(BasePoseWidget):
 
     @classmethod
     def MarkersInCameraFrame(
-        cls,
+        cls: type["MarkerPosesWidget"],
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
-    ):
+    ) -> "MarkerPosesWidget":
         eih_camera_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-camera-object-pose-low-res.png"
         )
@@ -733,11 +733,11 @@ class MarkerPosesWidget(BasePoseWidget):
 
     @classmethod
     def MarkersInRobotFrame(
-        cls,
+        cls: type["MarkerPosesWidget"],
         eye_in_hand: bool,
         display_mode: PoseWidgetDisplayMode = PoseWidgetDisplayMode.Basic,
         initial_rotation_information: RotationInformation = RotationInformation(),
-    ):
+    ) -> "MarkerPosesWidget":
         eih_robot_object_pose_img_path = get_image_file_path(
             "hand-eye-robot-and-calibration-board-camera-on-robot-robot-object-pose-low-res.png"
         )

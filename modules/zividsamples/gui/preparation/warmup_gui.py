@@ -14,8 +14,9 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 import zivid
-from nptyping import Float32, NDArray, Shape
+from nptyping import Float32, NDArray, Shape, UInt8
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -37,22 +38,23 @@ from zividsamples.camera_verification import (
 )
 from zividsamples.gui.widgets.tab_content_widget import TabContentWidget
 from zividsamples.gui.wizard.robot_configuration import RobotConfiguration
+from zividsamples.gui.wizard.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.paths import get_data_file_path
 
 
 class TimeAxisItem(pg.AxisItem):
     """Custom axis that formats time in HH:mm:ss."""
 
-    def tickStrings(self, values, _, __):
+    def tickStrings(self, values: List[float], _: float, __: float) -> List[str]:
         return [str(timedelta(seconds=int(v))) for v in values]
 
 
 class StepSnappingSlider(QSlider):
 
-    def _round_to_step(self, val):
+    def _round_to_step(self, val: int) -> int:
         return round(val / self.singleStep()) * self.singleStep()
 
-    def keyPressEvent(self, ev):
+    def keyPressEvent(self, ev: Optional[QKeyEvent]) -> None:
         if ev:
             if ev.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_PageUp, Qt.Key_PageDown):
                 value = self.value()
@@ -96,7 +98,7 @@ class QRangeSlider(QWidget):
         self.setup_layout()
         self.connect_signals()
 
-    def setup_widgets(self, initial_min_val: int, initial_max_val: int):
+    def setup_widgets(self, initial_min_val: int, initial_max_val: int) -> None:
         self.min_slider = StepSnappingSlider(Qt.Horizontal)
         self.min_val_input = QLineEdit()
         self.max_slider = StepSnappingSlider(Qt.Horizontal)
@@ -111,7 +113,7 @@ class QRangeSlider(QWidget):
 
         self.update_text()
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         top_layout = QHBoxLayout()
         bottom_layout = QHBoxLayout()
         layout = QVBoxLayout()
@@ -125,17 +127,17 @@ class QRangeSlider(QWidget):
         layout.addLayout(bottom_layout)
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.min_slider.valueChanged.connect(self.slider_min_val_changed)
         self.max_slider.valueChanged.connect(self.slider_max_val_changed)
         self.min_val_input.editingFinished.connect(self.min_val_input_changed)
         self.max_val_input.editingFinished.connect(self.max_val_input_changed)
 
-    def update_text(self):
+    def update_text(self) -> None:
         self.min_val_input.setText(f"{self.min_slider.value():6.0f} ms")
         self.max_val_input.setText(f"{self.max_slider.value():6.0f} ms")
 
-    def slider_min_val_changed(self):
+    def slider_min_val_changed(self) -> None:
         min_val = self.min_slider.value()
 
         if min_val > self.max_slider.value():
@@ -145,7 +147,7 @@ class QRangeSlider(QWidget):
 
         self.rangeChanged.emit(self.min_slider.value(), self.max_slider.value())
 
-    def slider_max_val_changed(self):
+    def slider_max_val_changed(self) -> None:
         max_val = self.max_slider.value()
 
         if max_val < self.min_slider.value():
@@ -155,7 +157,7 @@ class QRangeSlider(QWidget):
 
         self.rangeChanged.emit(self.min_slider.value(), self.max_slider.value())
 
-    def min_val_input_changed(self):
+    def min_val_input_changed(self) -> None:
         try:
             min_val = int(self.min_val_input.text().strip("ms"))
             if min_val < self.range_min:
@@ -166,7 +168,7 @@ class QRangeSlider(QWidget):
         except ValueError:
             self.update_text()
 
-    def max_val_input_changed(self):
+    def max_val_input_changed(self) -> None:
         try:
             max_val = int(self.max_val_input.text().strip("ms"))
             if max_val < self.range_min:
@@ -213,7 +215,7 @@ class WarmupData:
         temperature: float,
         local_trueness: Optional[float],
         distance: Optional[float],
-    ):
+    ) -> None:
         if self.serial_number is None:
             self.serial_number = serial_number
         elif self.serial_number != serial_number:
@@ -236,7 +238,7 @@ class WarmupData:
             self.df = pd.concat([self.df, new_entry_df], ignore_index=True)
         self._update_rate_of_change()
 
-    def _update_rate_of_change(self):
+    def _update_rate_of_change(self) -> None:
         # Ensure enough data and window size is odd
         if len(self.df) < self.window_size or self.window_size % 2 == 0:
             return
@@ -326,11 +328,11 @@ class WarmupData:
     def has_enough_data_to_analyze(self) -> bool:
         return len(self.df) > self.window_size
 
-    def clear(self):
+    def clear(self) -> None:
         self.df = self._empty_df_template.copy()
         self.serial_number = None
 
-    def write_to_csv(self):
+    def write_to_csv(self) -> None:
         self.df.to_csv(
             f"camera_{self.serial_number}_warmup_{datetime.now().isoformat('_', 'seconds').replace(':','-')}.csv",
             index=False,
@@ -347,7 +349,7 @@ class WarmUpGUI(TabContentWidget):
     instruction_steps: Dict[str, bool]
 
     # pylint: disable=too-many-positional-arguments
-    def __init__(self, data_directory: Path, parent=None):
+    def __init__(self, data_directory: Path, parent: Optional[QWidget] = None) -> None:
         super().__init__(data_directory, parent)
 
         temperature_change_threshold_degrees_per_minute = 2.0
@@ -382,7 +384,7 @@ class WarmUpGUI(TabContentWidget):
             ready=self.ready_to_start, started=self.started, equilibrium_reached=self.equilibrium_reached
         )
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         self.warmup_button = QPushButton("Start Warmup")
         self.warmup_button.setObjectName("Warmup-start_warmup_button")
         self.capture_interval_slider = QRangeSlider(
@@ -430,7 +432,7 @@ class WarmUpGUI(TabContentWidget):
             )
         )
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout()
         top_panel = QVBoxLayout()
         middle_panel = QHBoxLayout()
@@ -445,13 +447,13 @@ class WarmUpGUI(TabContentWidget):
         layout.addLayout(bottom_layout)
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.warmup_button.clicked.connect(self.on_warmup_button_clicked)
         self.capture_interval_slider.rangeChanged.connect(self.update_capture_interval)
         self.update_graph_signal.connect(self.update_graph)
         self.information_updated.connect(self.update_information_text)
 
-    def update_instructions(self, ready: bool, started: bool, equilibrium_reached: bool):
+    def update_instructions(self, ready: bool, started: bool, equilibrium_reached: bool) -> None:
         self.ready_to_start = ready
         self.started = started
         self.equilibrium_reached = equilibrium_reached
@@ -461,17 +463,17 @@ class WarmUpGUI(TabContentWidget):
         self.instruction_steps["Warmup Completed"] = self.equilibrium_reached
         self.instructions_updated.emit()
 
-    def on_pending_changes(self):
+    def on_pending_changes(self) -> None:
         pass
 
-    def on_tab_visibility_changed(self, is_current: bool):
+    def on_tab_visibility_changed(self, is_current: bool) -> None:
         if not is_current:
             self.stop_warmup()
 
-    def robot_configuration_update(self, _: RobotConfiguration):
+    def robot_configuration_update(self, _: RobotConfiguration) -> None:
         return
 
-    def update_information_text(self):
+    def update_information_text(self) -> None:
         if self.last_local_trueness_measurement is not None:
             self.information_area.clear()
             text = "<table cellpadding='5' style='border-collapse: collapse; width: 100%;; margin-top: 10px;'>"
@@ -491,12 +493,12 @@ class WarmUpGUI(TabContentWidget):
             self.information_area.updateGeometry()
             self.information_area.repaint()
 
-    def update_capture_interval(self, min_val, max_val):
+    def update_capture_interval(self, min_val: int, max_val: int) -> None:
         self.random_capture_cycle.min_capture_interval = timedelta(seconds=min_val / 1000)
         self.random_capture_cycle.max_capture_interval = timedelta(seconds=max_val / 1000)
         self.information_updated.emit()
 
-    def on_warmup_button_clicked(self):
+    def on_warmup_button_clicked(self) -> None:
         if self.started:
             self.stop_warmup()
         else:
@@ -515,13 +517,13 @@ class WarmUpGUI(TabContentWidget):
             info=camera.info,
         )
 
-    def stop_warmup(self):
+    def stop_warmup(self) -> None:
         if self.started:
             self.stop_requested = True
             while self.stop_requested:
                 time.sleep(0.1)
 
-    def start_warmup(self, camera: zivid.Camera, production_settings: zivid.Settings):
+    def start_warmup(self, camera: zivid.Camera, production_settings: zivid.Settings) -> None:
         try:
             self.warmup_button.setText("Stop Warmup")
             self.warmup_button.setStyleSheet("background-color: yellow; color: black;")
@@ -553,7 +555,7 @@ class WarmUpGUI(TabContentWidget):
             self.warmup_button.setStyleSheet("")
             self.end_warmup(equilibrium_reached=False)
 
-    def warmup_cycle(self, camera: zivid.Camera, production_settings: zivid.Settings):
+    def warmup_cycle(self, camera: zivid.Camera, production_settings: zivid.Settings) -> None:
         self.update_instructions(ready=self.ready_to_start, started=True, equilibrium_reached=self.equilibrium_reached)
         trueness_measurement_interval = timedelta(
             seconds=max(20, self.random_capture_cycle.max_capture_interval.total_seconds())
@@ -614,7 +616,7 @@ class WarmUpGUI(TabContentWidget):
                 time.sleep(2)
         self.end_warmup(self.equilibrium_reached)
 
-    def end_warmup(self, equilibrium_reached: bool):
+    def end_warmup(self, equilibrium_reached: bool) -> None:
         self.started = False
         self.stop_requested = False
         self.equilibrium_reached = equilibrium_reached
@@ -630,7 +632,7 @@ class WarmUpGUI(TabContentWidget):
                 self.full_history_of_results.write_to_csv()
             self.full_history_of_results.clear()
 
-    def approximate_value_at_distance(self, camera: zivid.Camera, distance: float):
+    def approximate_value_at_distance(self, camera: zivid.Camera, distance: float) -> float:
         approx_value = 0
         values_a = self.camera_parameters.loc[camera.info.model_name]["key_c"]
         for i, val_a in enumerate(values_a):
@@ -651,16 +653,16 @@ Local trueness is {self.last_local_trueness_measurement * 100:.2f} %. The 70-per
 We recommend that you perform Infield Correction."""
         return ""
 
-    def clear_plots(self):
+    def clear_plots(self) -> None:
         self.plot_data_item_temperature.clear()
         self.plot_data_item_temperature_rate_of_change.clear()
 
-    def update_graph(self):
+    def update_graph(self) -> None:
 
-        def round_down_to_nearest_5(x):
+        def round_down_to_nearest_5(x: float) -> float:
             return 5 * np.floor(x / 5)
 
-        def round_up_to_nearest_5(x):
+        def round_up_to_nearest_5(x: float) -> float:
             return 5 * np.ceil(x / 5)
 
         if self.full_history_of_results.has_enough_data_to_plot():
@@ -680,7 +682,7 @@ We recommend that you perform Infield Correction."""
             )
             self.rate_of_change_plot.setYRange(0.01, np.nanmax(rate_of_change_data) * 1.1)
 
-    def process_capture(self, frame: zivid.Frame, _, __):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, _: NDArray[Shape["N, M, 4"], UInt8], __: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         if not self.started:
             try:
                 test_result = capture_and_measure_from_frame(frame)

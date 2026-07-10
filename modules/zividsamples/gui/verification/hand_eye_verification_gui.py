@@ -7,7 +7,7 @@ Note: This script requires the Zivid Python API and PyQt5 to be installed.
 """
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import zivid
@@ -69,8 +69,8 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         marker_configuration: MarkerConfiguration,
         cv2_handler: CV2Handler,
         initial_rotation_information: RotationInformation,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(data_directory, parent)
 
         self.description = [
@@ -94,7 +94,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         self.connect_signals()
         self.update_instructions(has_set_object_poses_in_robot_frame=False, robot_pose_confirmed=False)
 
-    def create_widgets(self, initial_rotation_information: RotationInformation):
+    def create_widgets(self, initial_rotation_information: RotationInformation) -> None:
         self.robot_pose_widget = PoseWidget.Robot(
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
@@ -139,7 +139,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         self.detection_visualization_widget = DetectionVisualizationWidget(self.hand_eye_configuration)
         self.detection_visualization_widget.descriptive_image_label.hide()
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout()
         self.calibration_object_poses_layout = QVBoxLayout()
 
@@ -160,11 +160,11 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
 
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.confirm_robot_pose_button.clicked.connect(self.on_confirm_robot_pose_button_clicked)
         self.robot_pose_widget.pose_updated.connect(self.on_robot_pose_manually_updated)
 
-    def update_instructions(self, has_set_object_poses_in_robot_frame: bool, robot_pose_confirmed: bool):
+    def update_instructions(self, has_set_object_poses_in_robot_frame: bool, robot_pose_confirmed: bool) -> None:
         self.has_confirmed_robot_pose = robot_pose_confirmed
         self.has_set_object_poses_in_robot_frame = has_set_object_poses_in_robot_frame and (
             self.has_confirmed_robot_pose or not self.robot_configuration.has_no_robot()
@@ -191,7 +191,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             "background-color: green;" if self.has_confirmed_robot_pose else ""
         )
 
-    def on_pending_changes(self):
+    def on_pending_changes(self) -> None:
         if self.data_directory_has_data():
             self.calibration_board_in_camera_frame_pose_widget.set_transformation_matrix(
                 load_transformation_matrix(self.data_directory / "calibration_object_in_camera_frame_pose.yaml")
@@ -209,17 +209,17 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
                 self.data_directory / "calibration_object_in_robot_base_frame_pose.yaml",
             )
 
-    def on_tab_visibility_changed(self, is_current: bool):
+    def on_tab_visibility_changed(self, is_current: bool) -> None:
         pass
 
-    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
+    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.on_hand_eye_configuration_updated()
 
-    def marker_configuration_update(self, marker_configuration: MarkerConfiguration):
+    def marker_configuration_update(self, marker_configuration: MarkerConfiguration) -> None:
         self.marker_configuration = marker_configuration
 
-    def rotation_format_update(self, rotation_information: RotationInformation):
+    def rotation_format_update(self, rotation_information: RotationInformation) -> None:
         self.hand_eye_pose_widget.set_rotation_format(rotation_information)
         self.robot_pose_widget.set_rotation_format(rotation_information)
         self.calibration_board_in_camera_frame_pose_widget.set_rotation_format(rotation_information)
@@ -227,7 +227,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         self.markers_in_camera_frame_pose_widget.set_rotation_format(rotation_information)
         self.markers_in_robot_base_frame_pose_widget.set_rotation_format(rotation_information)
 
-    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration) -> None:
         self.robot_configuration = robot_configuration
         self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.update_instructions(
@@ -235,7 +235,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             robot_pose_confirmed=self.has_confirmed_robot_pose,
         )
 
-    def toggle_advanced_view(self, checked):
+    def toggle_advanced_view(self, checked: bool) -> None:
         if checked != self.advanced_view:
             self.top_grid_layout.removeWidget(self.robot_pose_widget)
             self.top_grid_layout.removeWidget(self.confirm_robot_pose_button)
@@ -270,7 +270,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         self.calibration_board_in_camera_frame_pose_widget.setVisible(show_calibration_board_pose)
         self.calibration_board_in_robot_base_frame_pose_widget.setVisible(show_calibration_board_pose)
 
-    def on_hand_eye_configuration_updated(self):
+    def on_hand_eye_configuration_updated(self) -> None:
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:
             self.calibration_object_poses_layout.removeWidget(self.markers_in_camera_frame_pose_widget)
             self.calibration_object_poses_layout.removeWidget(self.markers_in_robot_base_frame_pose_widget)
@@ -299,7 +299,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         )
         self.detection_visualization_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
 
-    def confirm_robot_pose(self):
+    def confirm_robot_pose(self) -> None:
         self.update_instructions(
             has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame, robot_pose_confirmed=True
         )
@@ -307,10 +307,10 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.calculate_calibration_object_in_camera_frame_pose()
             self.update_projection.emit(True)
 
-    def on_confirm_robot_pose_button_clicked(self):
+    def on_confirm_robot_pose_button_clicked(self) -> None:
         self.confirm_robot_pose()
 
-    def on_robot_pose_manually_updated(self):
+    def on_robot_pose_manually_updated(self) -> None:
         self.update_instructions(
             has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame,
             robot_pose_confirmed=self.has_confirmed_robot_pose,
@@ -319,13 +319,13 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.calculate_calibration_object_in_camera_frame_pose()
             self.update_projection.emit(True)
 
-    def on_actual_pose_updated(self, robot_target: RobotTarget):
+    def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
         self.confirm_robot_pose()
         self.calculate_calibration_object_in_camera_frame_pose()
         self.update_projection.emit(True)
 
-    def on_target_pose_updated(self, robot_target: RobotTarget):
+    def on_target_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
         self.has_confirmed_robot_pose = False
         self.calculate_calibration_object_in_camera_frame_pose()
@@ -336,7 +336,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.has_confirmed_robot_pose or self.robot_configuration.can_control()
         ) and self.has_set_object_poses_in_robot_frame
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         self.detected_markers = {}
         detection_result = (
             zivid.calibration.detect_calibration_board(frame)
@@ -378,7 +378,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.calculate_calibration_object_in_robot_frame_pose()
             self.update_projection.emit(True)
 
-    def generate_projector_image(self, camera: zivid.Camera):
+    def generate_projector_image(self, camera: zivid.Camera) -> NDArray[Shape["N, M, 4"], UInt8]:  # type: ignore
         projector_pixels = np.asarray(
             zivid.projection.pixels_from_3d_points(camera, self.detected_feature_points_in_camera_frame)
         )
@@ -412,7 +412,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             )
         return projector_image
 
-    def calculate_calibration_object_in_camera_frame_pose(self):
+    def calculate_calibration_object_in_camera_frame_pose(self) -> None:
         hand_eye_transform = self.hand_eye_pose_widget.transformation_matrix
         robot_transform = self.robot_pose_widget.transformation_matrix
         camera_frame_transform = (
@@ -433,7 +433,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             }
             self.markers_in_camera_frame_pose_widget.set_markers(self.detected_marker_poses_in_camera_frame)
 
-    def calculate_calibration_object_in_robot_frame_pose(self):
+    def calculate_calibration_object_in_robot_frame_pose(self) -> None:
         hand_eye_transform = self.hand_eye_pose_widget.transformation_matrix
         robot_transform = self.robot_pose_widget.transformation_matrix
         robot_frame_transform = (
@@ -457,7 +457,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             }
             self.markers_in_robot_base_frame_pose_widget.set_markers(self.detected_marker_poses_in_robot_frame)
 
-    def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix):
+    def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix) -> None:
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
         self.calculate_calibration_object_in_camera_frame_pose()
         self.update_projection.emit(True)

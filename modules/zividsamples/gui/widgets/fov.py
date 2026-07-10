@@ -25,7 +25,7 @@ class CameraFOV:
     height: float
 
     @classmethod
-    def from_model_and_distance(cls, camera_info: zivid.CameraInfo, distance: float) -> "CameraFOV":
+    def from_model_and_distance(cls: type["CameraFOV"], camera_info: zivid.CameraInfo, distance: float) -> "CameraFOV":
         fov_constants = CameraFOVConstants(camera_info)
         z = distance
 
@@ -52,7 +52,9 @@ class CameraFOVConstants:
         self.width_at_distances: List[Dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["width_at_distances"]  # type: ignore
         self.height_at_distances: List[Dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["height_at_distances"]  # type: ignore
 
-    def _find_value_range(self, distance, value_at_distances):
+    def _find_value_range(
+        self, distance: float, value_at_distances: List[Dict[str, float]]
+    ) -> Dict[str, Dict[str, float]]:
         if distance < value_at_distances[0]["distance"]:
             raise RuntimeError(f"No data available to interpolate at this distance {distance}")
         for value_at_distance_min, value_at_distance_max in zip(
@@ -80,19 +82,19 @@ class CameraFOVConstants:
             },
         }
 
-    def _find_width_range(self, distance):
+    def _find_width_range(self, distance: float) -> Dict[str, Dict[str, float]]:
         return self._find_value_range(
             distance,
             self.width_at_distances,
         )
 
-    def _find_height_range(self, distance):
+    def _find_height_range(self, distance: float) -> Dict[str, Dict[str, float]]:
         return self._find_value_range(
             distance,
             self.height_at_distances,
         )
 
-    def _value_at_distance(self, distance, value_range):
+    def _value_at_distance(self, distance: float, value_range: Dict[str, Dict[str, float]]) -> float:
         return (
             (value_range["value"]["max"] - value_range["value"]["min"])
             / (value_range["distance"]["max"] - value_range["distance"]["min"])
@@ -217,13 +219,13 @@ class PositionInFOV:
 
     @classmethod
     def from_points_of_interest_and_camera(
-        cls, camera_info: zivid.CameraInfo, point_xyz: NDArray[Shape["3"], Float32], points_of_interest: PointsOfInterest  # type: ignore
+        cls: type["PositionInFOV"], camera_info: zivid.CameraInfo, point_xyz: NDArray[Shape["3"], Float32], points_of_interest: PointsOfInterest  # type: ignore
     ) -> "PositionInFOV":
 
-        def to_2d(points3d):
+        def to_2d(points3d: np.ndarray) -> np.ndarray:
             return points3d[:, :2]
 
-        def regions(points_of_interest: PointsOfInterest):
+        def regions(points_of_interest: PointsOfInterest) -> Dict[LocationInFOV, np.ndarray]:
             return {
                 # Recall, for each line, the first point is the one on the center rectangle
                 LocationInFOV.Center: to_2d(points_of_interest.center_corners),
@@ -338,7 +340,7 @@ class PositionInFOV:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "PositionInFOV":
+    def from_dict(cls: type["PositionInFOV"], data: dict) -> "PositionInFOV":
         return cls(
             distance=DistanceInFOV[data["distance"]],
             location=LocationInFOV[data["location"]],

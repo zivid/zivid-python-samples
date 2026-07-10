@@ -9,11 +9,11 @@ class VisualizerWidget:
     visualizer_thread: threading.Thread
     visualizer: zivid.visualization.Visualizer
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.visualizer_thread = threading.Thread(target=self.run, daemon=True)
         self.visualizer_thread.start()
 
-    def run(self):
+    def run(self) -> None:
         self.visualizer = zivid.visualization.Visualizer()
         self.visualizer.set_window_title("Zivid Point Cloud Visualizer")
         self.visualizer.colors_enabled = True
@@ -22,14 +22,14 @@ class VisualizerWidget:
         self.visualizer.run()
         self.visualizer.release()
 
-    def set_point_cloud(self, data: Union[zivid.Frame, zivid.PointCloud, zivid.UnorganizedPointCloud]):
+    def set_point_cloud(self, data: Union[zivid.Frame, zivid.PointCloud, zivid.UnorganizedPointCloud]) -> None:
         if not self.visualizer_thread.is_alive():
             self.visualizer_thread = threading.Thread(target=self.run, daemon=True)
             self.visualizer_thread.start()
             sleep(0.2)  # Give some time for the thread to start
         self.visualizer.show(data)
 
-    def hide(self):
+    def hide(self) -> None:
         if self.visualizer_thread.is_alive():
             self.visualizer.hide()
 

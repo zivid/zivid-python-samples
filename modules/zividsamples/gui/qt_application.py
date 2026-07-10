@@ -3,10 +3,11 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Tuple
+from types import TracebackType
+from typing import Optional, Tuple, Type
 
 from PyQt5.QtGui import QColor, QFont, QIcon
-from PyQt5.QtWidgets import QApplication, QDesktopWidget, QFrame
+from PyQt5.QtWidgets import QApplication, QDesktopWidget, QFrame, QWidget
 from zividsamples.paths import get_image_file_path
 
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
@@ -295,7 +296,7 @@ class ZividQtApplication(QApplication):
 
             self.zivid_app = zivid.Application()
 
-    def run(self, win, title: str = "Zivid Qt Application"):
+    def run(self, win: QWidget, title: str = "Zivid Qt Application") -> int:
         icon_path = get_image_file_path("LogoZBlue.ico")
         self.setWindowIcon(QIcon(icon_path.absolute().as_posix()))
         if sys.platform == "win32":
@@ -318,5 +319,10 @@ class ZividQtApplication(QApplication):
     def __enter__(self):
         return self
 
-    def __exit__(self, exception_type, exception_value, traceback):
+    def __exit__(
+        self,
+        exception_type: Optional[Type[BaseException]],
+        exception_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         pass

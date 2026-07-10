@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.17.2. For
+This repository contains python code samples for Zivid SDK v2.18.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying releases].
 
@@ -27,12 +27,13 @@ tested compatibility with earlier SDK versions, please check out
   - **Capture**
     - [Quick Capture Tutorial]
     - [Capture Tutorial]
+    - [GPU Access Tutorial]
     - [Point Cloud Capture Process]
     - [2D Image Capture Process]
     - [2D + 3D Capture Strategy]
     - [File Camera]
     - [Projector]
-  - **Maintenance**
+  - **Maintenance and Prevention**
     - [Infield Correction]
     - [Warm-up]
     - [Firmware Update]
@@ -71,6 +72,10 @@ from the camera can be used.
     - [capture_with_settings_from_yml] - Capture images and point
       clouds, with and without color, from the Zivid camera with
       settings from YML file.
+    - [connect] - Connect to a Zivid camera using the different
+      available methods.
+    - [create_file_camera_from_zdf_with_diagnostics] - Capture a frame
+      with diagnostics enabled and create a file camera from it.
   - **advanced**
     - [capture_2d_and_3d] - Capture 2D and 3D with the Zivid camera.
     - [capture_and_print_normals] - Capture Zivid point clouds, compute
@@ -82,9 +87,11 @@ from the camera can be used.
       and Zivid SDK, then list cameras and print camera info and state
       for each connected camera.
     - [camera_user_data] - Store user data on the Zivid camera.
-    - [capture_with_diagnostics] - Capture point clouds, with color,
-      from the Zivid camera, with default settings and diagnostics
-      enabled.
+    - [capture_with_diagnostics] - Capture a 2D+3D frame and a 2D frame
+      from the Zivid camera with diagnostics enabled.
+    - [check_health] - Poll the camera health check from a separate
+      thread while capturing in the main thread, printing the statuses
+      and values every second.
     - [context_manager_with_zivid] - Sample showing how to use a context
       manager with Zivid Application and safely return processed data.
     - [firmware_updater] - Update firmware on the Zivid camera.
@@ -139,12 +146,24 @@ from the camera can be used.
       convert it to OpenCV format, then extract and visualize depth map.
     - [downsample][1] - Downsample point cloud from a ZDF file.
     - [gamma_correction] - Capture 2D image with gamma correction.
+    - [mask_point_cloud] - Read point cloud data from a ZDF file, apply
+      a binary mask, and visualize it.
     - **visualization**
       - [capture_vis_3d_in_loop] - Capture point clouds, with color,
         from the Zivid camera, and visualize them in a loop.
       - [capture_vis_3d_in_loop_with_keypress_exit] - Capture point
         clouds, with color, from the Zivid camera, and visualize them in
         a loop. Press 'q' to exit.
+    - **cuda**
+      - [capture_and_process_image_with_cupy_on_cuda] - Demonstrate GPU
+        interop with CuPy: wrap a Zivid GPU image buffer as a CuPy array
+        without copying it through CPU memory.
+      - [capture_and_render_point_cloud_with_opengl_on_cuda] -
+        Demonstrate GPU point cloud rendering with CUDA-OpenGL interop:
+        capture a Zivid point cloud, copy it device-to-device
+      - [capture_and_segment_image_with_pytorch_on_cuda] - Demonstrate
+        zero-copy GPU interop between Zivid and PyTorch/CuPy by feeding
+        a Zivid 2D image into a third-party
     - **transform**
       - [get_checkerboard_pose_from_zdf] - Read point cloud data of a
         Zivid calibration board from a ZDF file, estimate the
@@ -312,6 +331,7 @@ Zivid Samples are distributed under the [BSD license].
   [image]: https://www.zivid.com/hubfs/softwarefiles/images/zivid-generic-github-header.png
   [Quick Capture Tutorial]: https://support.zivid.com/en/latest/camera/getting-started/quick-capture-tutorial.html
   [Capture Tutorial]: https://support.zivid.com/en/latest/camera/academy/camera/capture-tutorial.html
+  [GPU Access Tutorial]: https://support.zivid.com/en/latest/camera/academy/camera/gpu-access-tutorial.html
   [Point Cloud Capture Process]: https://support.zivid.com/en/latest/camera/academy/camera/point-cloud-capture-process.html
   [2D Image Capture Process]: https://support.zivid.com/en/latest/camera/academy/camera/2d-image-capture-process.html
   [2D + 3D Capture Strategy]: https://support.zivid.com/en/latest/camera/academy/camera/2d3d-capture-strategy.html
@@ -334,12 +354,15 @@ Zivid Samples are distributed under the [BSD license].
   [capture_from_file_camera]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_from_file_camera.py
   [capture_hdr_complete_settings]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_hdr_complete_settings.py
   [capture_with_settings_from_yml]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture_with_settings_from_yml.py
+  [connect]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/connect.py
+  [create_file_camera_from_zdf_with_diagnostics]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/create_file_camera_from_zdf_with_diagnostics.py
   [capture_2d_and_3d]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_2d_and_3d.py
   [capture_and_print_normals]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/capture_and_print_normals.py
   [adapt_settings_for_flickering_ambient_light]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/adapt_settings_for_flickering_ambient_light.py
   [camera_info]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_info.py
   [camera_user_data]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/camera_user_data.py
   [capture_with_diagnostics]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/capture_with_diagnostics.py
+  [check_health]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/check_health.py
   [context_manager_with_zivid]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/context_manager_with_zivid.py
   [firmware_updater]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/firmware_updater.py
   [frame_info]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/info_util_other/frame_info.py
@@ -365,8 +388,12 @@ Zivid Samples are distributed under the [BSD license].
   [create_depth_map]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/create_depth_map.py
   [1]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/downsample.py
   [gamma_correction]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/gamma_correction.py
+  [mask_point_cloud]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/mask_point_cloud.py
   [capture_vis_3d_in_loop]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/visualization/capture_vis_3d_in_loop.py
   [capture_vis_3d_in_loop_with_keypress_exit]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/visualization/capture_vis_3d_in_loop_with_keypress_exit.py
+  [capture_and_process_image_with_cupy_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_process_image_with_cupy_on_cuda.py
+  [capture_and_render_point_cloud_with_opengl_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_render_point_cloud_with_opengl_on_cuda.py
+  [capture_and_segment_image_with_pytorch_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_segment_image_with_pytorch_on_cuda.py
   [get_checkerboard_pose_from_zdf]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform/get_checkerboard_pose_from_zdf.py
   [transform_point_cloud_from_millimeters_to_meters]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform/transform_point_cloud_from_millimeters_to_meters.py
   [transform_point_cloud_via_aruco_marker]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/transform/transform_point_cloud_via_aruco_marker.py

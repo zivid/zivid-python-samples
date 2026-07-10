@@ -53,8 +53,8 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
         hand_eye_configuration: HandEyeConfiguration,
         cv2_handler: CV2Handler,
         get_camera: Callable[[], zivid.Camera],
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(data_directory, parent)
 
         self.description = [
@@ -83,7 +83,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
         self.connect_signals()
         self.update_instructions(has_detection_result=self.has_detection_result, applied_correction=False)
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         self.apply_correction_button = QPushButton("Apply Correction")
         self.apply_correction_button.setEnabled(False)
         self.apply_correction_button.setObjectName("InfieldCorrection-apply_correction_button")
@@ -98,7 +98,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
         self.infield_input_data_selection_widget.setVisible(False)
         self.infield_correction_result_widget = InfieldCorrectionResultWidget()
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout()
         left_panel = QVBoxLayout()
         right_panel = QVBoxLayout()
@@ -117,14 +117,14 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
         layout.addLayout(bottom_layout)
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.apply_correction_button.clicked.connect(self.on_apply_infield_correction_button_clicked)
         self.project_fov_hint_button.clicked.connect(self.on_project_fov_hint_button_clicked)
         self.infield_input_data_selection_widget.infield_input_data_clicked.connect(self.on_infield_input_data_clicked)
         self.infield_input_data_selection_widget.infield_input_data_updated.connect(self.on_infield_input_data_updated)
         self.infield_input_data_selection_widget.loading_finished.connect(self.loading_finished)
 
-    def update_instructions(self, has_detection_result: bool, applied_correction: bool):
+    def update_instructions(self, has_detection_result: bool, applied_correction: bool) -> None:
         self.has_detection_result = has_detection_result
         self.applied_correction = applied_correction
         self.instruction_steps = {}
@@ -132,31 +132,31 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
         self.instruction_steps["Apply Correction"] = self.applied_correction
         self.instructions_updated.emit()
 
-    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
+    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = copy.deepcopy(hand_eye_configuration)
         self.hand_eye_configuration.calibration_object = CalibrationObject.Checkerboard
         self.detection_visualization_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
 
-    def rotation_format_update(self, rotation_information: RotationInformation):
+    def rotation_format_update(self, rotation_information: RotationInformation) -> None:
         pass
 
-    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration) -> None:
         self.robot_configuration = robot_configuration
         self.update_instructions(
             has_detection_result=self.has_detection_result, applied_correction=self.applied_correction
         )
 
-    def on_actual_pose_updated(self, robot_target: RobotTarget):
+    def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         pass
 
     def is_loading(self) -> bool:
         return self.infield_input_data_selection_widget.is_loading()
 
-    def on_pending_changes(self):
+    def on_pending_changes(self) -> None:
         self.infield_input_data_selection_widget.clear_gui()
         self.infield_input_data_selection_widget.update_data_directory(self.data_directory)
 
-    def on_tab_visibility_changed(self, is_current: bool):
+    def on_tab_visibility_changed(self, is_current: bool) -> None:
         pass
 
     def on_start_auto_run(self) -> bool:
@@ -173,12 +173,12 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
             return True
         return False
 
-    def on_infield_input_data_clicked(self, infield_correction_input_data: InfieldCorrectionInputData):
+    def on_infield_input_data_clicked(self, infield_correction_input_data: InfieldCorrectionInputData) -> None:
         self.infield_correction_input_data = infield_correction_input_data
         self.project_fov_hint_button.setEnabled(True)
         self.detection_visualization_widget.set_rgba_image(self.infield_correction_input_data.rgba_annotated)
 
-    def on_infield_input_data_updated(self, can_calculate_correction: bool):
+    def on_infield_input_data_updated(self, can_calculate_correction: bool) -> None:
         if can_calculate_correction:
             correction_results = self.infield_input_data_selection_widget.get_correction_results()
             self.infield_correction_result_widget.update_result(
@@ -192,7 +192,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
             self.infield_correction_result_widget.update_result()
         self.apply_correction_button.setEnabled(can_calculate_correction)
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         try:
             detection_result = zivid.calibration.detect_calibration_board(frame)
             if not detection_result.valid():
@@ -224,7 +224,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
             self.on_project_fov_hint_button_clicked()
             raise ex
 
-    def on_apply_infield_correction_button_clicked(self):
+    def on_apply_infield_correction_button_clicked(self) -> None:
         if self.applied_correction:
             self.infield_input_data_selection_widget.clear_gui()
             self.project_fov_hint_button.setChecked(False)
@@ -234,13 +234,13 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
         else:
             self.apply_correction_button_clicked.emit()
 
-    def on_project_fov_hint_button_clicked(self):
+    def on_project_fov_hint_button_clicked(self) -> None:
         self.project_fov_hint_button.setStyleSheet(
             "background-color: green;" if self.project_fov_hint_button.isChecked() else ""
         )
         self.update_projection.emit(self.project_fov_hint_button.isChecked())
 
-    def apply_correction(self, camera: zivid.Camera):
+    def apply_correction(self, camera: zivid.Camera) -> None:
         try:
             correction_results = self.infield_input_data_selection_widget.get_correction_results()
             correction = zivid.calibration.compute_camera_correction(correction_results)
@@ -252,7 +252,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
             print(f"Failed to perform infield correction: {ex}")
             QMessageBox.critical(self, "Infield Correction Error", str(ex))
 
-    def check_correction(self, camera: zivid.Camera):
+    def check_correction(self, camera: zivid.Camera) -> None:
         if zivid.calibration.has_camera_correction(camera):
             self.infield_correction_result_widget.set_current_correction(
                 zivid.calibration.camera_correction_timestamp(camera)
@@ -265,7 +265,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
             self.infield_correction_input_data, InfieldCorrectionInputData
         )
 
-    def generate_projector_image(self, _: zivid.Camera):
+    def generate_projector_image(self, _: zivid.Camera) -> NDArray[Shape["N, M, 4"], UInt8]:  # type: ignore
         if not isinstance(self.infield_correction_input_data, InfieldCorrectionInputData):
             raise RuntimeError("No infield correction input data available to generate projection image.")
         return self.infield_correction_input_data.projector_image

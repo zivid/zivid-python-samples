@@ -15,8 +15,17 @@ def _main() -> None:
     print(f"Zivid SDK:    {zivid.SDKVersion.full}")
     cameras = app.cameras()
     for camera in cameras:
-        print(f"Camera Info:  {camera.info}")
-        print(f"Camera State: {camera.state}")
+        print(camera.info)
+        print(camera.state)
+
+    for camera in cameras:
+        temperature = camera.state.temperature
+        print("Temperatures:")
+        print(f"  DMD:     {temperature.dmd} °C")
+        print(f"  LED:     {temperature.led} °C")
+        print(f"  Lens:    {temperature.lens} °C")
+        print(f"  PCB:     {temperature.pcb} °C")
+        print(f"  General: {temperature.general} °C")
 
 
 if __name__ == "__main__":

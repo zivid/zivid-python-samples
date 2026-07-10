@@ -48,13 +48,13 @@ class CV2Handler:
         self.cv2 = cv2
 
     def project_points(self, points: NDArray[Shape["N, 3"], np.float32], intrinsics: zivid.CameraIntrinsics) -> NDArray[Shape["N, 2"], np.float32]:  # type: ignore
-        points_2d, _ = self.cv2.projectPoints(
+        points_2d = self.cv2.projectPoints(
             np.array(points, dtype=np.float32),
             rvec=np.zeros(3),
             tvec=np.zeros(3),
             cameraMatrix=_zivid_camera_matrix_to_opencv_camera_matrix(intrinsics.camera_matrix),
             distCoeffs=_zivid_distortion_coefficients_to_opencv_distortion_coefficients(intrinsics.distortion),
-        )
+        )[0]
         return np.array(points_2d).reshape(-1, 2)
 
     def points_of_interest_in_2d_from_3d(
@@ -90,7 +90,7 @@ class CV2Handler:
         detected_markers: List[MarkerShape],
         rgb: NDArray[Shape["N, M, 3"], UInt8],  # type: ignore
         pixel_mapping: PixelMapping,
-    ):
+    ) -> NDArray[Shape["N, M, 3"], UInt8]:  # type: ignore
         detected_corners = [
             np.array(marker.corners_in_pixel_coordinates).reshape((4, 1, 2)) for marker in detected_markers
         ]
@@ -153,16 +153,16 @@ class CV2Handler:
         rgb: NDArray[Shape["N, M, 3"], UInt8],  # type: ignore
         points: NDArray[Shape["N, 3"], np.int32],  # type: ignore
         circle_color: Tuple[int, int, int, int] = (0, 255, 0, 255),
-    ):
+    ) -> NDArray[Shape["N, M, 3"], UInt8]:  # type: ignore
         circle_size_in_pixels: int = 8
         np_points = np.array(points, dtype=np.float32)
-        projected_points, _ = self.cv2.projectPoints(
+        projected_points = self.cv2.projectPoints(
             np_points,
             rvec=np.zeros(3),
             tvec=np.zeros(3),
             cameraMatrix=_zivid_camera_matrix_to_opencv_camera_matrix(intrinsics.camera_matrix),
             distCoeffs=_zivid_distortion_coefficients_to_opencv_distortion_coefficients(intrinsics.distortion),
-        )
+        )[0]
         projected_points = projected_points.reshape(-1, 2).astype(int)
         for original_point, projected_point in zip(np_points, projected_points, strict=False):
             self.cv2.circle(
@@ -174,7 +174,7 @@ class CV2Handler:
                 lineType=self.cv2.LINE_AA,
             )
             text = f"[{original_point[0]:6.1f}, {original_point[1]:6.1f}, {original_point[2]:6.1f}]"
-            text_size, _ = self.cv2.getTextSize(text, self.cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+            text_size = self.cv2.getTextSize(text, self.cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
             text_x = projected_point[0] - text_size[0] // 2
             if projected_point[1] < rgb.shape[0] // 3:
                 text_y = projected_point[1] + circle_size_in_pixels + text_size[1] * 2
@@ -204,7 +204,7 @@ class CV2Handler:
         image: NDArray[Shape["N, M, 3"], UInt8],  # type: ignore
         points: NDArray[Shape["N, 2"], np.int32],  # type: ignore
         circle_color: Tuple[int, int, int, int] = (0, 255, 0, 255),
-    ):
+    ) -> None:
         circle_size_in_pixels = 2
         for point in points:
             self.cv2.circle(
@@ -237,10 +237,10 @@ class CV2Handler:
                 lineType=self.cv2.LINE_AA,
             )
 
-    def draw_fov_division_from_3d(self, rgb: NDArray[Shape["N, M, 3"], UInt8], points_of_interest_3d: PointsOfInterest, intrinsics: zivid.CameraIntrinsics):  # type: ignore
+    def draw_fov_division_from_3d(self, rgb: NDArray[Shape["N, M, 3"], UInt8], points_of_interest_3d: PointsOfInterest, intrinsics: zivid.CameraIntrinsics) -> None:  # type: ignore
         self.draw_fov_division(rgb, self.points_of_interest_in_2d_from_3d(points_of_interest_3d, intrinsics))
 
-    def draw_fov_division(self, rgb: NDArray[Shape["N, M, 3"], UInt8], points_of_interest_2d: PointsOfInterest2D, use_bgr: bool = False):  # type: ignore
+    def draw_fov_division(self, rgb: NDArray[Shape["N, M, 3"], UInt8], points_of_interest_2d: PointsOfInterest2D, use_bgr: bool = False) -> None:  # type: ignore
         thickness = 8
         lines_2d = points_of_interest_2d.lines_2d()
         self.draw_polygons(
@@ -268,5 +268,5 @@ class CV2Handler:
             rgb, points=points_of_interest_2d.center_corners, color=(0, 255, 0, 255), thickness=thickness
         )
 
-    def apply_colormap(self, depth_map_uint8: NDArray[Shape["N, M, 3"], UInt8]):  # type: ignore
+    def apply_colormap(self, depth_map_uint8: NDArray[Shape["N, M, 3"], UInt8]) -> NDArray[Shape["N, M, 3"], UInt8]:  # type: ignore
         return self.cv2.applyColorMap(depth_map_uint8, self.cv2.COLORMAP_VIRIDIS)

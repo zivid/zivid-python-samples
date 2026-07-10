@@ -11,13 +11,13 @@ installed.
 """
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import zivid
 from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QCloseEvent, QImage, QPixmap
 from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 from zividsamples.gui.robot.robot_control import RobotTarget
 from zividsamples.gui.widgets.cv2_handler import CV2Handler
@@ -46,8 +46,8 @@ class TouchGUI(TabWidgetWithRobotSupport):
         data_directory: Path,
         hand_eye_configuration: HandEyeConfiguration,
         initial_rotation_information: RotationInformation,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(data_directory, parent)
 
         self.cv2_handler = CV2Handler()
@@ -67,7 +67,7 @@ class TouchGUI(TabWidgetWithRobotSupport):
         self.connect_signals()
         self.update_instructions(marker_confirmed=False, marker_captured=False)
 
-    def create_widgets(self, initial_rotation_information: RotationInformation):
+    def create_widgets(self, initial_rotation_information: RotationInformation) -> None:
         self.hand_eye_pose_widget = PoseWidget.HandEye(
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
@@ -92,7 +92,7 @@ class TouchGUI(TabWidgetWithRobotSupport):
         self.confirm_marker_button.setCheckable(True)
         self.confirm_marker_button.setObjectName("Touch-confirm_marker_button")
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout()
         top_layout = QHBoxLayout()
         left_panel = QVBoxLayout()
@@ -113,10 +113,10 @@ class TouchGUI(TabWidgetWithRobotSupport):
 
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.confirm_marker_button.clicked.connect(self.on_confirm_marker_button_clicked)
 
-    def update_instructions(self, marker_confirmed: bool, marker_captured: bool):
+    def update_instructions(self, marker_confirmed: bool, marker_captured: bool) -> None:
         self.marker_confirmed = marker_confirmed
         self.instruction_steps = {}
         self.instruction_steps["Confirm marker to touch"] = self.marker_confirmed
@@ -126,31 +126,31 @@ class TouchGUI(TabWidgetWithRobotSupport):
         self.confirm_marker_button.setChecked(self.marker_confirmed)
         self.confirm_marker_button.setStyleSheet("background-color: green;" if self.marker_confirmed else "")
 
-    def on_pending_changes(self):
+    def on_pending_changes(self) -> None:
         pass
 
-    def on_tab_visibility_changed(self, is_current):
+    def on_tab_visibility_changed(self, is_current: bool) -> None:
         pass
 
-    def on_confirm_marker_button_clicked(self):
+    def on_confirm_marker_button_clicked(self) -> None:
         self.update_instructions(marker_confirmed=self.confirm_marker_button.isChecked(), marker_captured=False)
 
-    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
+    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.hand_eye_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
         self.robot_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
 
-    def rotation_format_update(self, rotation_information: RotationInformation):
+    def rotation_format_update(self, rotation_information: RotationInformation) -> None:
         self.hand_eye_pose_widget.set_rotation_format(rotation_information)
         self.robot_pose_widget.set_rotation_format(rotation_information)
 
-    def robot_configuration_update(self, _: RobotConfiguration):
+    def robot_configuration_update(self, _: RobotConfiguration) -> None:
         pass
 
-    def on_actual_pose_updated(self, robot_target: RobotTarget):
+    def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
 
-    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         touch_configuration = self.touch_configuration_widget.touch_configuration
         detection_result = zivid.calibration.detect_markers(
             frame,
@@ -197,9 +197,9 @@ class TouchGUI(TabWidgetWithRobotSupport):
         widgets.append(self.confirm_marker_button)
         return widgets
 
-    def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix):
+    def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix) -> None:
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
 
-    def closeEvent(self, a0):
+    def closeEvent(self, a0: QCloseEvent) -> None:
         self.touch_configuration_widget.closeEvent(a0)
         return super().closeEvent(a0)

@@ -3,6 +3,9 @@ Capture images and point clouds, with and without color, from the Zivid camera w
 
 Choose whether to get the image in the linear RGB or the sRGB color space.
 
+Demonstrates saving and loading a 2D frame to and from a ZDF file, and using read_frame_file_type to determine
+whether a ZDF file contains a 3D Frame or a Frame2D.
+
 The YML files for this sample can be found under the main Zivid sample instructions.
 
 For more information about camera settings, check out this article:
@@ -123,11 +126,25 @@ def _main() -> None:
     # More information about linear RGB and sRGB color spaces is available at:
     # https://support.zivid.com/en/latest/reference-articles/color-spaces-and-output-formats.html#color-spaces
 
+    data_file_2d = "Frame2D.zdf"
+    print(f"Saving 2D frame to file: {data_file_2d}")
+    frame_2d.save(data_file_2d)
+
+    frame_file_type_2d = zivid.read_frame_file_type(data_file_2d)
+    print(f"Frame file type: {frame_file_type_2d}")
+
+    print(f"Loading 2D frame from file: {data_file_2d}")
+    loaded_frame_2d = zivid.Frame2D(data_file_2d)
+    print(f"Loaded 2D frame: {loaded_frame_2d}")
+
     print("Capturing 3D frame")
     frame_3d = camera.capture_3d(settings)
     data_file = "Frame3D.zdf"
     print(f"Saving frame to file: {data_file}")
     frame_3d.save(data_file)
+
+    frame_file_type = zivid.read_frame_file_type(data_file)
+    print(f"Frame file type: {frame_file_type}")
 
     data_file_ply = "PointCloudWithoutColor.ply"
     print(f"Exporting point cloud (default pink colored points) to file: {data_file_ply}")

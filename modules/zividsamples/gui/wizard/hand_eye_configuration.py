@@ -42,7 +42,7 @@ class HandEyeConfiguration:
         self.show_dialog = settings.value("show_dialog", True, type=bool)
         settings.endGroup()
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         settings = QSettings("Zivid", "HandEyeGUI")
         settings.beginGroup("hand_eye_configuration")
         settings.setValue("eye_in_hand", self.eye_in_hand)
@@ -62,7 +62,7 @@ class HandEyeButtonsWidget(QWidget):
         initial_hand_eye_configuration: HandEyeConfiguration,
         show_calibration_object_selection: bool = True,
         show_eye_in_hand_selection: bool = True,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
         self.hand_eye_configuration = initial_hand_eye_configuration
@@ -126,13 +126,13 @@ class HandEyeButtonsWidget(QWidget):
 
         self.setLayout(layout)
 
-    def set_hand_eye_configuration(self, updated_hand_eye_configuration: HandEyeConfiguration):
+    def set_hand_eye_configuration(self, updated_hand_eye_configuration: HandEyeConfiguration) -> None:
         self.checkerboard_object_radio_button.setChecked(
             updated_hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard
         )
         self.eye_in_hand_radio_button.setChecked(updated_hand_eye_configuration.eye_in_hand)
 
-    def update_hand_eye_configuration(self):
+    def update_hand_eye_configuration(self) -> None:
         if self.calibration_object_selection_active:
             self.hand_eye_configuration.calibration_object = (
                 CalibrationObject.Checkerboard
@@ -143,10 +143,10 @@ class HandEyeButtonsWidget(QWidget):
             self.hand_eye_configuration.eye_in_hand = self.eye_in_hand_radio_button.isChecked()
         self.hand_eye_configuration_updated.emit(self.hand_eye_configuration)
 
-    def on_eye_in_hand_toggled(self, _: bool):
+    def on_eye_in_hand_toggled(self, _: bool) -> None:
         self.update_hand_eye_configuration()
 
-    def on_calibration_object_toggled(self, _: bool):
+    def on_calibration_object_toggled(self, _: bool) -> None:
         self.update_hand_eye_configuration()
 
     def eye_in_hand(self) -> bool:
@@ -161,7 +161,7 @@ class HandEyeConfigurationSelection(QDialog):
     def __init__(
         self,
         initial_hand_eye_configuration: HandEyeConfiguration = HandEyeConfiguration(),
-        parent=None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
         self.setWindowTitle("Select Hand-Eye Configuration")
@@ -181,7 +181,7 @@ class HandEyeConfigurationSelection(QDialog):
         layout.addWidget(self.remember_choice_checkbox)
         self.setLayout(layout)
 
-    def accept(self):
+    def accept(self) -> None:
         self.hand_eye_configuration = self.hand_eye_buttons.hand_eye_configuration
         self.hand_eye_configuration.show_dialog = self.remember_choice_checkbox.isChecked()
         self.hand_eye_configuration.save_choice()

@@ -1,10 +1,12 @@
-from PyQt5.QtCore import QRectF, Qt, pyqtSlot
-from PyQt5.QtGui import QImage, QPainter, QPixmap
-from PyQt5.QtWidgets import QDialog, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView, QVBoxLayout
+from typing import Optional
+
+from PyQt5.QtCore import QRectF, QSize, Qt, pyqtSlot
+from PyQt5.QtGui import QImage, QPainter, QPixmap, QWheelEvent
+from PyQt5.QtWidgets import QDialog, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget
 
 
 class ImageViewer(QGraphicsView):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.is_first = True
         self.setScene(QGraphicsScene(self))
@@ -15,7 +17,7 @@ class ImageViewer(QGraphicsView):
         self._zoom = 0
 
     @pyqtSlot(QPixmap, bool)
-    def set_pixmap(self, image: QPixmap, reset_zoom: bool = False):
+    def set_pixmap(self, image: QPixmap, reset_zoom: bool = False) -> None:
         self.scene().clear()
         pixmap_item = QGraphicsPixmapItem(image)
         self.scene().addItem(pixmap_item)
@@ -25,7 +27,7 @@ class ImageViewer(QGraphicsView):
             self._zoom = 0
             self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
 
-    def wheelEvent(self, event):
+    def wheelEvent(self, event: QWheelEvent) -> None:
         if event.angleDelta().y() > 0:
             factor = 1.25
             self._zoom += 1
@@ -40,7 +42,7 @@ class ImageViewer(QGraphicsView):
         else:
             self._zoom = 0
 
-    def resize(self, event):
+    def resize(self, event: QSize) -> None:
         super().resize(event)
         print("Resizing image_viewer")
         self._zoom = 0
@@ -48,7 +50,7 @@ class ImageViewer(QGraphicsView):
 
 
 class ImageViewerDialog(QDialog):
-    def __init__(self, qimage: QImage, title: str = "Image Viewer", parent=None):
+    def __init__(self, qimage: QImage, title: str = "Image Viewer", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.image_viewer = ImageViewer()
         self.image_viewer.set_pixmap(QPixmap.fromImage(qimage), reset_zoom=True)

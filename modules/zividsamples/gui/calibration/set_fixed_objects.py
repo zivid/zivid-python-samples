@@ -49,13 +49,13 @@ class FixedCalibrationObjectsData:
     calibration_board_pose_eye_to_hand: Optional[TransformationMatrix] = None
     use_rotation: bool = False
 
-    def update_hand_eye_configuration(self, hand_eye_configuration: HandEyeConfiguration):
+    def update_hand_eye_configuration(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Markers:
             assert self.marker_configuration is not None
             self.update_marker_configuration(self.marker_configuration)
 
-    def update_marker_configuration(self, marker_configuration: MarkerConfiguration):
+    def update_marker_configuration(self, marker_configuration: MarkerConfiguration) -> None:
         self.marker_configuration = marker_configuration
         marker_positions = (
             self.marker_positions_eye_in_hand
@@ -195,7 +195,7 @@ class DynamicMarkerList(QWidget):
                 self.add_marker(row, marker_id, [0.0, 0.0, 0.0])
         self.setLayout(layout)
 
-    def add_marker(self, row: int, marker_id: int, position: List[float]):
+    def add_marker(self, row: int, marker_id: int, position: List[float]) -> None:
         marker_with_position = MarkerWithPosition(
             marker_id=marker_id,
             position=position,
@@ -240,7 +240,7 @@ class FixedObjectsSelectionDialog(QDialog):
         else:
             self.create_marker_layout()
 
-    def create_common_widgets(self):
+    def create_common_widgets(self) -> None:
         self.descriptive_text = QLabel()
         self.fixed_object_pose_eye_to_hand_label = AspectRatioLabel(
             title="Pose of fixed objects in Eye-to-Hand configuration",
@@ -260,7 +260,7 @@ class FixedObjectsSelectionDialog(QDialog):
     def create_checkerboard_widgets(
         self,
         initial_rotation_information: RotationInformation,
-    ):
+    ) -> None:
         if self.fixed_calibration_objects_data.hand_eye_configuration.eye_in_hand:
             self.descriptive_text.setText(
                 (
@@ -298,7 +298,7 @@ class FixedObjectsSelectionDialog(QDialog):
             title="Calibration Board Pose", pixmap=QPixmap(get_image_file_path("zvd_cb01_pose.png").as_posix())
         )
 
-    def create_marker_widgets(self):
+    def create_marker_widgets(self) -> None:
         current_hand_eye_configuration = self.fixed_calibration_objects_data.hand_eye_configuration
         if current_hand_eye_configuration.eye_in_hand:
             self.descriptive_text.setText("For each marker, enter its position relative to robot base.")
@@ -309,7 +309,7 @@ class FixedObjectsSelectionDialog(QDialog):
         self.markers_widget = DynamicMarkerList(self.fixed_calibration_objects_data)
         self.markers_widget.setObjectName("SetFixedObjects-markers_widget")
 
-    def create_common_layout(self):
+    def create_common_layout(self) -> None:
         descriptive_text_box = QGroupBox("Description")
         descriptive_text_layout = QVBoxLayout()
         descriptive_text_layout.addWidget(self.descriptive_text)
@@ -325,15 +325,15 @@ class FixedObjectsSelectionDialog(QDialog):
             self.horizontal_layout.addWidget(self.fixed_object_pose_eye_to_hand_label)
         self.setLayout(self.horizontal_layout)
 
-    def create_checkerboard_layout(self):
+    def create_checkerboard_layout(self) -> None:
         self.left_vertical_layout.addWidget(self.pose_widget)
         self.left_vertical_layout.addWidget(self.use_rotation_checkbox)
         self.horizontal_layout.addWidget(self.calibration_board_pose_label)
 
-    def create_marker_layout(self):
+    def create_marker_layout(self) -> None:
         self.left_vertical_layout.addWidget(self.markers_widget)
 
-    def accept(self):
+    def accept(self) -> None:
         if (
             self.fixed_calibration_objects_data.hand_eye_configuration.calibration_object
             == CalibrationObject.Checkerboard
