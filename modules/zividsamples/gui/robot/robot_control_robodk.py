@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 import numpy as np
 from PyQt5.QtCore import pyqtSignal
@@ -11,6 +11,8 @@ from robodk.robomath import Mat
 from zividsamples.gui.robot.robot_control import RobotControl, RobotTarget
 from zividsamples.gui.wizard.robot_configuration import RobotConfiguration
 from zividsamples.transformation_matrix import Distance, TransformationMatrix
+
+T = TypeVar("T")
 
 
 class RobotControlRoboDK(RobotControl):
@@ -31,7 +33,7 @@ class RobotControlRoboDK(RobotControl):
         super().__init__(robot_configuration=robot_configuration)
         self.robot_handle = None
 
-    def _robodk_pose_to_transformation_matrix(self, pose: Any) -> TransformationMatrix:
+    def _robodk_pose_to_transformation_matrix(self, pose: Mat) -> TransformationMatrix:
         matrix = np.asarray(pose).transpose()
         return TransformationMatrix.from_matrix(matrix)
 
@@ -96,11 +98,11 @@ class RobotControlRoboDK(RobotControl):
     def is_moving(self) -> bool:
         return self.robot_moving
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         if self.rdk is not None:
             self.rdk.Disconnect()
 
-    def setup_station(self):
+    def setup_station(self) -> None:
         assert self.rdk
         active_station = self.rdk.ActiveStation()
         print(f"Currently active station: {active_station.Name()}")
@@ -127,14 +129,14 @@ class RobotControlRoboDK(RobotControl):
                 )[0]
                 self.rdk.Save(station_backup_path)
             self.rdk.CloseStation()
-        station_path, _ = QFileDialog.getOpenFileName(
+        station_path = QFileDialog.getOpenFileName(
             None, "Select Station", directory=Path.home().resolve().as_posix(), filter="RoboDK Station (*.rdk)"
-        )
+        )[0]
         self.rdk.AddFile(station_path)
         active_station = self.rdk.ActiveStation()
         print(f"Chosen station: {active_station.Name()}")
 
-    def setup_targets(self):
+    def setup_targets(self) -> None:
         assert self.rdk
         list_items = self.rdk.ItemList()
         robodk_items = {item.Name(): item for item in list_items}
@@ -168,7 +170,7 @@ class RobotControlRoboDK(RobotControl):
             )
         self.custom_target = robodk_items["CustomTarget"]
 
-    def connect(self):
+    def connect(self) -> None:
         self.rdk = Robolink(args=["/NOSPLASH", "/NOSHOW", "/HIDDEN"], quit_on_close=True)
         if self.rdk is None:
             raise RuntimeError("Robolink failed to initialize")
@@ -196,7 +198,7 @@ class RobotControlRoboDK(RobotControl):
         self.robot_handle.setAcceleration(50)
         self.robot_handle.setAccelerationJoints(50)
 
-    def retry_function_call(self, function_to_call, *args, **kwargs):
+    def retry_function_call(self, function_to_call: Callable[..., T], *args: object, **kwargs: object) -> Optional[T]:
         max_retries = 3
         delay = 0.25
         for attempt in range(max_retries):

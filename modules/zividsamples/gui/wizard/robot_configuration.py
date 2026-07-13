@@ -50,7 +50,7 @@ class RobotConfiguration:
         return self._robot_type
 
     @robot_type.setter
-    def robot_type(self, value: RobotEnum):
+    def robot_type(self, value: RobotEnum) -> None:
         assert isinstance(value, RobotEnum)
         self._robot_type = value
 
@@ -66,7 +66,7 @@ class RobotConfiguration:
     def can_control(self) -> bool:
         return self.robot_type in [RobotEnum.ROBODK]
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         qsettings = QSettings("Zivid", "HandEyeGUI")
         qsettings.beginGroup("robot_configuration")
         qsettings.setValue("robot_type", self._robot_type.value if self._robot_type else None)
@@ -117,7 +117,7 @@ class RobotConfigurationDialog(QDialog):
 
         layout.addLayout(horizontal_layout)
 
-    def accept(self):
+    def accept(self) -> None:
         self.robot_configuration.robot_type = RobotEnum(self.robot_type_combo.currentText())
         self.robot_configuration.ip_addr = self.ip_addr_edit.text()
         self.robot_configuration.show_dialog = self.show_dialog_checkbox.isChecked()

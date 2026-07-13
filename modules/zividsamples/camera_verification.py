@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Tuple
 
 import zivid
 
@@ -33,13 +33,13 @@ class VerificationAndState:
     time: datetime
     info: zivid.CameraInfo
 
-    def _position(self):
+    def _position(self) -> Tuple[Optional[float], Optional[float], Optional[float]]:
         return self.verification.position() if self.verification else (None, None, None)
 
-    def distance(self):
+    def distance(self) -> Optional[float]:
         return self._position()[2]
 
-    def local_dimension_trueness(self):
+    def local_dimension_trueness(self) -> Optional[float]:
         return self.verification.local_dimension_trueness() if self.verification else None
 
     def __str__(self) -> str:

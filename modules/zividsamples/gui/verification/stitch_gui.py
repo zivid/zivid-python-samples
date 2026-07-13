@@ -12,8 +12,9 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import zivid
+from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QImage
+from PyQt5.QtGui import QCloseEvent, QImage
 from PyQt5.QtWidgets import QCheckBox, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 from zividsamples.gui.robot.robot_control import RobotTarget
 from zividsamples.gui.verification.capture_at_pose_selection_widget import CaptureAtPose, CaptureAtPoseSelectionWidget
@@ -23,6 +24,7 @@ from zividsamples.gui.widgets.tab_with_robot_support import TabWidgetWithRobotSu
 from zividsamples.gui.wizard.hand_eye_configuration import HandEyeConfiguration
 from zividsamples.gui.wizard.robot_configuration import RobotConfiguration
 from zividsamples.gui.wizard.rotation_format_configuration import RotationInformation
+from zividsamples.gui.wizard.settings_selector import SettingsPixelMappingIntrinsics
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -45,8 +47,8 @@ class StitchGUI(TabWidgetWithRobotSupport):
         robot_configuration: RobotConfiguration,
         hand_eye_configuration: HandEyeConfiguration,
         initial_rotation_information: RotationInformation,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(data_directory, parent)
 
         self.description = [
@@ -66,7 +68,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
         self.connect_signals()
         self.update_instructions(captured=False, robot_pose_confirmed=False)
 
-    def create_widgets(self, initial_rotation_information: RotationInformation):
+    def create_widgets(self, initial_rotation_information: RotationInformation) -> None:
         self.robot_pose_widget = PoseWidget.Robot(
             eye_in_hand=self.hand_eye_configuration.eye_in_hand,
             display_mode=PoseWidgetDisplayMode.OnlyPose,
@@ -87,7 +89,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
         self.uniform_color_check_box.setChecked(True)
         self.point_cloud_widget = VisualizerWidget()
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout()
         left_panel = QVBoxLayout()
         right_panel = QVBoxLayout()
@@ -108,7 +110,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
 
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.confirm_robot_pose_button.clicked.connect(self.on_confirm_robot_pose_button_clicked)
         self.capture_at_pose_selection_widget.capture_at_pose_clicked.connect(self.on_capture_at_pose_selected)
         self.capture_at_pose_selection_widget.selected_captures_updated.connect(self.update_stitched_view)
@@ -116,7 +118,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
         self.capture_at_pose_selection_widget.loading_finished.connect(self.loading_finished)
         self.uniform_color_check_box.stateChanged.connect(self.update_stitched_view)
 
-    def update_instructions(self, captured: bool, robot_pose_confirmed: bool):
+    def update_instructions(self, captured: bool, robot_pose_confirmed: bool) -> None:
         self.has_confirmed_robot_pose = robot_pose_confirmed
         self.instruction_steps = {}
         if self.robot_configuration.can_control():
@@ -132,7 +134,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
             "background-color: green;" if self.has_confirmed_robot_pose else ""
         )
 
-    def on_pending_changes(self):
+    def on_pending_changes(self) -> None:
         if self.data_directory_has_data():
             self.capture_at_pose_selection_widget.on_clear_button_clicked()
             self.capture_at_pose_selection_widget.set_directory(self.data_directory)
@@ -146,34 +148,34 @@ class StitchGUI(TabWidgetWithRobotSupport):
     def is_loading(self) -> bool:
         return self.capture_at_pose_selection_widget.is_loading()
 
-    def on_tab_visibility_changed(self, is_current: bool):
+    def on_tab_visibility_changed(self, is_current: bool) -> None:
         if is_current:
             self.update_stitched_view()
         else:
             self.point_cloud_widget.hide()
 
-    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration):
+    def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.hand_eye_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
         self.robot_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
 
-    def rotation_format_update(self, rotation_information: RotationInformation):
+    def rotation_format_update(self, rotation_information: RotationInformation) -> None:
         self.hand_eye_pose_widget.set_rotation_format(rotation_information)
         self.robot_pose_widget.set_rotation_format(rotation_information)
 
-    def robot_configuration_update(self, robot_configuration: RobotConfiguration):
+    def robot_configuration_update(self, robot_configuration: RobotConfiguration) -> None:
         self.robot_configuration = robot_configuration
         self.confirm_robot_pose_button.setVisible(self.robot_configuration.has_no_robot())
         self.update_instructions(captured=False, robot_pose_confirmed=self.has_confirmed_robot_pose)
 
-    def on_confirm_robot_pose_button_clicked(self):
+    def on_confirm_robot_pose_button_clicked(self) -> None:
         self.update_instructions(captured=False, robot_pose_confirmed=self.confirm_robot_pose_button.isChecked())
 
-    def on_actual_pose_updated(self, robot_target: RobotTarget):
+    def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
         self.update_instructions(captured=False, robot_pose_confirmed=True)
 
-    def update_stitched_view(self):
+    def update_stitched_view(self) -> None:
         capture_at_poses = self.capture_at_pose_selection_widget.get_selected_capture_at_poses()
         unorganized_point_cloud = zivid.UnorganizedPointCloud()
         for capture_at_pose in capture_at_poses:
@@ -185,10 +187,10 @@ class StitchGUI(TabWidgetWithRobotSupport):
             unorganized_point_cloud = unorganized_point_cloud.voxel_downsampled(voxel_size=1, min_points_per_voxel=1)
             self.point_cloud_widget.set_point_cloud(unorganized_point_cloud)
 
-    def on_capture_at_pose_selected(self, capture_at_pose: CaptureAtPose):
+    def on_capture_at_pose_selected(self, capture_at_pose: CaptureAtPose) -> None:
         self.robot_pose_widget.set_transformation_matrix(capture_at_pose.robot_pose)
 
-    def process_capture(self, frame: zivid.Frame, _, __):  # type: ignore
+    def process_capture(self, frame: zivid.Frame, _: NDArray[Shape["N, M, 4"], UInt8], __: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         if self.has_confirmed_robot_pose:
             self.capture_at_pose_selection_widget.add_capture_at_pose(
                 robot_pose=self.robot_pose_widget.get_transformation_matrix(),
@@ -199,7 +201,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
             self.update_stitched_view()
             self.update_instructions(captured=True, robot_pose_confirmed=False)
 
-    def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix):
+    def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix) -> None:
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
@@ -209,6 +211,6 @@ class StitchGUI(TabWidgetWithRobotSupport):
         widgets.extend(self.hand_eye_pose_widget.get_tab_widgets_in_order())
         return widgets
 
-    def closeEvent(self, event) -> None:  # pylint: disable=C0103
+    def closeEvent(self, event: QCloseEvent) -> None:  # pylint: disable=C0103
         self.point_cloud_widget.close()
         super().closeEvent(event)

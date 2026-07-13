@@ -11,9 +11,9 @@ class CameraButtonsWidget(QWidget):
 
     def __init__(
         self,
-        capture_button_text="Capture",
-        parent=None,
-    ):
+        capture_button_text: str = "Capture",
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
 
         # Define buttons
@@ -49,7 +49,7 @@ class CameraButtonsWidget(QWidget):
 
         self.setLayout(layout)
 
-    def on_capture_button_clicked(self):
+    def on_capture_button_clicked(self) -> None:
         self.capture_button.setChecked(True)
         self.capture_button.setStyleSheet("background-color: yellow;")
         QApplication.processEvents()
@@ -57,13 +57,13 @@ class CameraButtonsWidget(QWidget):
         self.capture_button.setChecked(False)
         self.capture_button.setStyleSheet("")
 
-    def on_connect_button_clicked(self):
+    def on_connect_button_clicked(self) -> None:
         self.connect_button.setChecked(True)
         self.connect_button.setStyleSheet("background-color: yellow;")
         QApplication.processEvents()
         self.connect_button_clicked.emit()
 
-    def set_connection_status(self, camera: Optional[zivid.Camera]):
+    def set_connection_status(self, camera: Optional[zivid.Camera]) -> None:
         if camera is None:
             self.connect_button.setText("Connect")
             self.connect_button.setChecked(False)
@@ -78,19 +78,19 @@ class CameraButtonsWidget(QWidget):
             self.connect_button.setStyleSheet("background-color: green;" if camera.state.connected else "")
             self.capture_button.setEnabled(camera.state.connected)
 
-    def set_information(self, text: str):
+    def set_information(self, text: str) -> None:
         if text == "":
             self.information_label.hide()
         else:
             self.information_label.show()
         self.information_label.setText(text)
 
-    def disable_buttons(self, capture_tooltip: str = ""):
+    def disable_buttons(self, capture_tooltip: str = "") -> None:
         self.connect_button.setEnabled(False)
         self.capture_button.setEnabled(False)
         self.capture_button.setToolTip(capture_tooltip)
 
-    def enable_buttons(self):
+    def enable_buttons(self) -> None:
         self.connect_button.setEnabled(True)
         self.capture_button.setEnabled(True)
         self.capture_button.setToolTip("")

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QPushButton, QWidget
 from zividsamples.gui.wizard.hand_eye_configuration import HandEyeConfiguration
@@ -9,8 +11,8 @@ class HandEyeVerificationButtonsWidget(QWidget):
     def __init__(
         self,
         hand_eye_configuration: HandEyeConfiguration,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
 
         # Define buttons
@@ -34,12 +36,12 @@ class HandEyeVerificationButtonsWidget(QWidget):
 
         self.setLayout(buttons_layout)
 
-    def on_project_button_clicked(self):
+    def on_project_button_clicked(self) -> None:
         self.project_button_clicked.emit()
         if self.project_button.isChecked():
             self.project_button.setStyleSheet("background-color: green;")
         else:
             self.project_button.setStyleSheet("")
 
-    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration):
+    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.project_button.setText(f"Project on {hand_eye_configuration.calibration_object.name}")

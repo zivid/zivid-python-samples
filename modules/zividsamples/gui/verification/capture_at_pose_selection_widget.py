@@ -1,7 +1,7 @@
 import threading
 from collections import OrderedDict
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import zivid
@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QMessageBox,
     QPushButton,
     QSizePolicy,
@@ -108,7 +109,7 @@ class CaptureAtPose:
             QApplication.instance().style().standardIcon(QStyle.SP_DialogDiscardButton)
         )
 
-    def save_as_ply(self):
+    def save_as_ply(self) -> None:
         self.camera_frame.save(self.directory / f"capture_{self.poseID}.ply")
 
     def robot_pose_yaml_text(self) -> str:
@@ -122,7 +123,14 @@ class _CaptureAtPoseLoadWorker(QObject):
     finished = pyqtSignal(int)
 
     # pylint: disable=too-many-positional-arguments
-    def __init__(self, generation, directory, pose_ids, hand_eye_transform, eye_in_hand):
+    def __init__(
+        self,
+        generation: int,
+        directory: Path,
+        pose_ids: List[int],
+        hand_eye_transform: TransformationMatrix,
+        eye_in_hand: bool,
+    ) -> None:
         super().__init__()
         self._generation = generation
         self._directory = directory
@@ -131,10 +139,10 @@ class _CaptureAtPoseLoadWorker(QObject):
         self._eye_in_hand = eye_in_hand
         self._cancel_event = threading.Event()
 
-    def cancel(self):
+    def cancel(self) -> None:
         self._cancel_event.set()
 
-    def run(self):
+    def run(self) -> None:
         for poseID in self._pose_ids:
             if self._cancel_event.is_set():
                 break
@@ -168,7 +176,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
     selected_captures_updated = pyqtSignal()
     loading_finished = pyqtSignal()
 
-    def __init__(self, directory: Path, parent=None):
+    def __init__(self, directory: Path, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.directory = directory
@@ -199,10 +207,10 @@ class CaptureAtPoseSelectionWidget(QWidget):
 
         self.clear_button.clicked.connect(self.on_clear_button_clicked)
 
-    def set_directory(self, directory: Path):
+    def set_directory(self, directory: Path) -> None:
         self.directory = directory
 
-    def load_capture_at_poses(self, hand_eye_transform: TransformationMatrix, eye_in_hand: bool):
+    def load_capture_at_poses(self, hand_eye_transform: TransformationMatrix, eye_in_hand: bool) -> None:
         if self.number_of_active_captures() > 0:
             reply = QMessageBox.question(
                 self,
@@ -246,7 +254,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
         self._loader_worker.finished.connect(self._loader_thread.quit)
         self._loader_thread.start()
 
-    def cancel_loading(self):
+    def cancel_loading(self) -> None:
         if self._loader_worker is not None:
             self._loader_worker.cancel()
         if self._loader_thread is not None and self._loader_thread.isRunning():
@@ -257,7 +265,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
 
     def _on_capture_loaded(
         self, generation: int, poseID: int, robot_pose: TransformationMatrix, camera_frame: zivid.Frame
-    ):
+    ) -> None:
         if generation != self._load_generation:
             return
         if poseID in self.capture_at_poses:
@@ -288,27 +296,27 @@ class CaptureAtPoseSelectionWidget(QWidget):
         self.capture_at_poses[poseID] = capture_at_pose
         self.clear_button.setEnabled(True)
 
-    def _on_loading_finished(self, generation: int):
+    def _on_loading_finished(self, generation: int) -> None:
         if generation != self._load_generation:
             return
         self.captures_group_box.setTitle("Captures")
         self.loading_finished.emit()
 
-    def get_selected_capture_at_poses(self):
+    def get_selected_capture_at_poses(self) -> List[CaptureAtPose]:
         return [pose_pair for pose_pair in self.capture_at_poses.values() if pose_pair.selected_checkbox.isChecked()]
 
-    def on_capture_at_pose_clicked(self, capture_at_pose: CaptureAtPose):
+    def on_capture_at_pose_clicked(self, capture_at_pose: CaptureAtPose) -> None:
         for capture_pose_button in [p.capture_pose_button for p in self.capture_at_poses.values()]:
             if capture_pose_button is not capture_at_pose.capture_pose_button:
                 capture_pose_button.setChecked(False)
                 QApplication.processEvents()
         self.capture_at_pose_clicked.emit(capture_at_pose)
 
-    def on_clear_button_clicked(self):
+    def on_clear_button_clicked(self) -> None:
         self.clear()
         self.clear_button.setEnabled(False)
 
-    def remove_capture_at_pose(self, capture_at_pose: CaptureAtPose):
+    def remove_capture_at_pose(self, capture_at_pose: CaptureAtPose) -> None:
         del self.capture_at_poses[capture_at_pose.poseID]
         self._clear_layout(self.captures_layout.itemAt(capture_at_pose.poseID))
 
@@ -321,7 +329,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
         camera_frame: zivid.Frame,
         hand_eye_transform: TransformationMatrix,
         eye_in_hand: bool,
-    ):
+    ) -> None:
         if self.is_loading():
             return
         poseID = self.get_current_poseID()
@@ -377,7 +385,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
             [pose_pair for pose_pair in self.capture_at_poses.values() if pose_pair.selected_checkbox.isChecked()]
         )
 
-    def _clear_layout(self, layout):
+    def _clear_layout(self, layout: QLayout) -> None:
         while layout.count():
             item = layout.takeAt(0)
             widget = item.widget()
@@ -387,7 +395,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
             if sublayout:
                 self._clear_layout(sublayout)
 
-    def clear(self):
+    def clear(self) -> None:
         self.cancel_loading()
         self._clear_layout(self.captures_layout)
         self.capture_at_poses.clear()

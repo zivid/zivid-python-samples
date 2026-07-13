@@ -36,7 +36,7 @@ class SettingsPixelMappingIntrinsics:
     pixel_mapping: PixelMapping
     intrinsics: zivid.CameraIntrinsics
 
-    def save_settings(self, qsettings: QSettings):
+    def save_settings(self, qsettings: QSettings) -> None:
         qsettings.setValue("settings_2d3d", self.settings_2d3d.serialize())
         qsettings.beginGroup("pixel_mapping")
         qsettings.setValue("row_stride", self.pixel_mapping.row_stride)
@@ -47,7 +47,9 @@ class SettingsPixelMappingIntrinsics:
         qsettings.setValue("intrinsics", self.intrinsics.serialize())
 
     @classmethod
-    def load_settings(cls, qsettings: QSettings) -> "SettingsPixelMappingIntrinsics":
+    def load_settings(
+        cls: type["SettingsPixelMappingIntrinsics"], qsettings: QSettings
+    ) -> "SettingsPixelMappingIntrinsics":
         settings_2d3d = (
             zivid.Settings()
             if not qsettings.contains("settings_2d3d")
@@ -92,7 +94,7 @@ class SettingsForHandEyeGUI:
         self.show_dialog = settings.value("show_dialog", True, type=bool)
         settings.endGroup()
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         settings = QSettings("Zivid", "HandEyeGUI")
         settings.beginGroup("camera_settings")
         settings.beginGroup("production")
@@ -313,12 +315,12 @@ class EngineAndSamplingSelectionWidget(QWidget):
 
         self.setLayout(layout)
 
-    def get_settings(self):
+    def get_settings(self) -> zivid.Settings:
         engine = self.engine_selector.currentText()
         sampling_pixel = self.sampling_mode_selector.currentText()
         return _settings_for_hand_eye(self.camera, engine, sampling_pixel)
 
-    def reject(self):
+    def reject(self) -> None:
         engine = self.engine_selector.currentText()
         sampling_pixel = self.sampling_mode_selector.currentText()
         QMessageBox.critical(
@@ -354,7 +356,7 @@ class PresetSelectionWidget(QWidget):
 
         self.setLayout(layout)
 
-    def update_preset_selector(self, _: int):
+    def update_preset_selector(self, _: int) -> None:
         self.preset_selector.clear()
         presets = self.category_selector.currentData().presets
         for preset in presets:
@@ -382,9 +384,9 @@ class SettingsFromFileWidget(QWidget):
 
         self.setLayout(layout)
 
-    def open_file_dialog(self):
+    def open_file_dialog(self) -> None:
         file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Select File", filter="YAML Files (*.yml *.yaml)")
+        file_path = file_dialog.getOpenFileName(self, "Select File", filter="YAML Files (*.yml *.yaml)")[0]
         if file_path:
             if validate_settings_file(self.camera, file_path):
                 self.file_path_edit.setText(file_path)
@@ -451,7 +453,7 @@ class SettingsSelectionDialog(QDialog):
             return True
         return False
 
-    def accept(self):
+    def accept(self) -> None:
         current_widget = self.stack.currentWidget()
         assert current_widget
         if self.stack.currentIndex() < 2:
@@ -495,7 +497,7 @@ class SettingsSelectionDialog(QDialog):
         self.settings_for_hand_eye_gui.save_choice()
         super().accept()
 
-    def reject(self):
+    def reject(self) -> None:
         if self.next_page():
             return
         self.manual_widget.reject()

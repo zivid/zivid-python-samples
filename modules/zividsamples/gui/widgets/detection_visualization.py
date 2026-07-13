@@ -18,7 +18,12 @@ class DetectionVisualizationWidget(QWidget):
     calibration_object_pixmap: Dict[CalibrationObject, Optional[QPixmap]] = {}
     reset_zoom_on_next_calibration_object_image_update: bool = True
 
-    def __init__(self, hand_eye_configuration: HandEyeConfiguration, hide_descriptive_image: bool = False, parent=None):
+    def __init__(
+        self,
+        hand_eye_configuration: HandEyeConfiguration,
+        hide_descriptive_image: bool = False,
+        parent: Optional[QWidget] = None,
+    ):
         super().__init__(parent)
 
         self.calibration_object_pixmap = {
@@ -70,7 +75,7 @@ class DetectionVisualizationWidget(QWidget):
         if hide_descriptive_image:
             self.descriptive_image_label.hide()
 
-    def update_layout(self):
+    def update_layout(self) -> None:
         self.group_box.setTitle(f"{self.hand_eye_configuration.calibration_object.name} in Camera Frame")
         self.update_calibration_object_image()
         descriptive_image = (
@@ -83,7 +88,7 @@ class DetectionVisualizationWidget(QWidget):
             int(self.descriptive_image_width * descriptive_image.height() / descriptive_image.width())
         )
 
-    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration):
+    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         last_calibration_object = self.hand_eye_configuration.calibration_object
         self.hand_eye_configuration = copy.deepcopy(hand_eye_configuration)
         self.reset_zoom_on_next_calibration_object_image_update = (
@@ -91,7 +96,7 @@ class DetectionVisualizationWidget(QWidget):
         )
         self.update_layout()
 
-    def update_calibration_object_image(self, reset_zoom: bool = False):
+    def update_calibration_object_image(self, reset_zoom: bool = False) -> None:
         calibration_object_pixmap = self.calibration_object_pixmap[self.hand_eye_configuration.calibration_object]
         self.error_message_label.setVisible(calibration_object_pixmap is None)
         self.calibration_object_image_viewer.setVisible(calibration_object_pixmap is not None)
@@ -115,7 +120,7 @@ class DetectionVisualizationWidget(QWidget):
     def set_rgba_image(self, rgba: NDArray[Shape["N, M, 4"], UInt8], reset_zoom: bool = False) -> None:  # type: ignore
         self.set_image(QImage(rgba.data, rgba.shape[1], rgba.shape[0], QImage.Format_RGBA8888), reset_zoom)
 
-    def set_error_message(self, error_message: str):
+    def set_error_message(self, error_message: str) -> None:
         self.error_message_label.setText(error_message)
         self.reset_zoom_on_next_calibration_object_image_update = True
         self.error_message_label.show()

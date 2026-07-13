@@ -24,7 +24,7 @@ class Live2DWidget(QWidget):
         capture_function: Optional[Callable[[zivid.Settings2D], zivid.Frame2D]] = None,
         settings_2d: Optional[zivid.Settings2D] = None,
         camera: Optional[zivid.Camera] = None,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
 
@@ -47,11 +47,13 @@ class Live2DWidget(QWidget):
         layout.addWidget(self.group_box)
         self.setLayout(layout)
 
-    def setMinimumHeight(self, height, aspect_ratio: float = 4 / 3):
+    def setMinimumHeight(self, height: int, aspect_ratio: float = 4 / 3) -> None:
         self.live_2d_image.setMinimumHeight(height)
         self.live_2d_image.setMinimumWidth(int(height * aspect_ratio))
 
-    def rgb_to_grayscale(self, rgba_image):
+    def rgb_to_grayscale(
+        self, rgba_image: NDArray[Shape["H, W, 4"], UInt8]  # type: ignore
+    ) -> NDArray[Shape["H, W"], np.float64]:  # type: ignore
         return np.dot(rgba_image[..., :3], [0.299, 0.587, 0.114])
 
     def update_exposure_based_on_relative_brightness(self, settings_2d: zivid.Settings2D) -> zivid.Settings2D:
@@ -85,7 +87,7 @@ class Live2DWidget(QWidget):
             acquisition.brightness = 0.1
         return settings_2d
 
-    def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str):
+    def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str) -> None:
         settings_2d_copy = zivid.Settings2D.from_serialized(settings_2d.serialize())
         if camera_model in [
             zivid.CameraInfo.Model.zivid2PlusMR60,
@@ -109,7 +111,7 @@ class Live2DWidget(QWidget):
             self.settings_2d.acquisitions[0].aperture = 4
             self.settings_2d.acquisitions[0].gain = 2.0
 
-    def start_live_2d(self):
+    def start_live_2d(self) -> None:
         if self.live_thread:
             if self.live_thread.is_alive():
                 return
@@ -131,7 +133,7 @@ class Live2DWidget(QWidget):
         self.current_rgba = None
         return False
 
-    def live_2d(self):
+    def live_2d(self) -> None:
         self.live_active = True
         while self.live_active:
             if not self.capture():
@@ -141,7 +143,7 @@ class Live2DWidget(QWidget):
     def is_active(self) -> bool:
         return self.live_active
 
-    def show_error_message(self, error_message: str):
+    def show_error_message(self, error_message: str) -> None:
         error_pixmap = QPixmap(self.live_2d_image.size())
         error_pixmap.fill(Qt.gray)  # Set background color
         painter = QPainter(error_pixmap)

@@ -8,6 +8,7 @@ Note: This script requires PyQt5 to be installed.
 from typing import List, Optional
 
 from PyQt5.QtCore import QSettings
+from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout,
@@ -42,7 +43,7 @@ class TouchConfiguration:
             self.z_offset = qsettings.value("z_offset", 300, type=int)
         qsettings.endGroup()
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         qsettings = QSettings("Zivid", "HandEyeGUI")
         qsettings.beginGroup("touch_configuration")
         qsettings.setValue("marker_id", self.marker_id)
@@ -85,10 +86,10 @@ class TouchConfigurationWidget(QWidget):
         self.marker_dictionary_selection.currentIndexChanged.connect(self.on_marker_dictionary_changed)
         self.z_offset.valueChanged.connect(self.on_z_offset_changed)
 
-    def on_marker_id_changed(self):
+    def on_marker_id_changed(self) -> None:
         self.touch_configuration.marker_id = self.marker_id_selection.value()
 
-    def on_marker_dictionary_changed(self):
+    def on_marker_dictionary_changed(self) -> None:
         self.touch_configuration.marker_dictionary = self.marker_dictionary_selection.currentText()
         self.touch_configuration.marker_id = self.marker_id_selection.value()
         if self.touch_configuration.marker_id > MarkerDictionary.marker_count(
@@ -100,10 +101,10 @@ class TouchConfigurationWidget(QWidget):
             0, MarkerDictionary.marker_count(self.touch_configuration.marker_dictionary) - 1
         )
 
-    def on_z_offset_changed(self):
+    def on_z_offset_changed(self) -> None:
         self.touch_configuration.z_offset = self.z_offset.value()
 
-    def closeEvent(self, a0):
+    def closeEvent(self, a0: QCloseEvent) -> None:
         self.touch_configuration.save_choice()
         return super().closeEvent(a0)
 

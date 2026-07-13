@@ -27,33 +27,45 @@ def _main() -> None:
         LinearBarcodeFormat.ean8,
         LinearBarcodeFormat.upcA,
         LinearBarcodeFormat.upcE,
+        LinearBarcodeFormat.itf,
     }
     matrix_format_filter = {MatrixBarcodeFormat.qrcode, MatrixBarcodeFormat.dataMatrix}
 
     settings_2d = barcode_detector.suggest_settings(camera)
 
-    print("Detecting barcodes ...")
+    print("Capturing 2D frame ...")
     frame_2d = camera.capture_2d(settings_2d)
 
-    linear_barcode_results = barcode_detector.read_linear_codes(frame_2d, linear_format_filter)
-    matrix_barcode_results = barcode_detector.read_matrix_codes(frame_2d, matrix_format_filter)
+    print("Detecting linear barcode candidates ...")
+    detection_results = barcode_detector.detect_linear_codes(frame_2d)
 
-    if linear_barcode_results:
-        print(f"Detected {len(linear_barcode_results)} linear barcodes:")
-        for result in linear_barcode_results:
-            print(
-                f"-- Detected barcode {result.code()} on format {result.code_format()} at pixel {result.center_position()}"
-            )
+    decoding_results = barcode_detector.decode_linear_codes(detection_results, linear_format_filter)
+
+    if detection_results:
+        print(f"Detected {len(detection_results)} linear barcode candidates:")
+        for i, (candidate, decoded) in enumerate(zip(detection_results, decoding_results, strict=False)):
+            print(f"-- Candidate {i + 1}:")
+            print(f"   Bounding box: {candidate.bounding_box()}")
+            if decoded is not None:
+                print(f"   Code:         {decoded.code()}")
+                print(f"   Format:       {decoded.code_format()}")
+                print(f"   Bounding box: {decoded.bounding_box()}")
+            else:
+                print("   Failed to decode")
+    else:
+        print("No linear barcode candidates detected")
+
+    print("Reading matrix barcodes ...")
+    matrix_barcode_results = barcode_detector.read_matrix_codes(frame_2d, matrix_format_filter)
 
     if matrix_barcode_results:
         print(f"Detected {len(matrix_barcode_results)} matrix barcodes:")
         for result in matrix_barcode_results:
-            print(
-                f"-- Detected barcode {result.code()} on format {result.code_format()} at pixel {result.center_position()}"
-            )
-
-    if not linear_barcode_results and not matrix_barcode_results:
-        print("No barcodes detected")
+            print(f"-- Code:         {result.code()}")
+            print(f"   Format:       {result.code_format()}")
+            print(f"   Bounding box: {result.bounding_box()}")
+    else:
+        print("No matrix barcodes detected")
 
 
 if __name__ == "__main__":

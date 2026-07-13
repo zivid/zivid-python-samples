@@ -2,7 +2,7 @@ import json
 import threading
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import zivid
@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QMessageBox,
     QPushButton,
     QScrollArea,
@@ -39,7 +40,7 @@ def _label_width(label: QLabel, numbers: int) -> int:
 
 
 class ButtonWithLabels(QPushButton):
-    def __init__(self, labels: List[QLabel], parent=None):
+    def __init__(self, labels: List[QLabel], parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.labels = labels
@@ -83,7 +84,7 @@ class InfieldCorrectionInputDataCore:
     def local_trueness_as_string(self) -> str:
         return f"{self.local_trueness * 100:.3f}%"
 
-    def save_data(self, data_path) -> None:
+    def save_data(self, data_path: Path) -> None:
         with open(data_path.with_suffix(".json"), "w", encoding="utf-8") as f:
             json.dump(
                 {
@@ -101,7 +102,9 @@ class InfieldCorrectionInputDataCore:
         qimage_annotated.save(str(data_path.with_suffix(".png")).replace(".png", "_annotated.png"))
 
     @classmethod
-    def from_path(cls, data_path: Path, cv2_handler: CV2Handler) -> "InfieldCorrectionInputDataCore":
+    def from_path(
+        cls: type["InfieldCorrectionInputDataCore"], data_path: Path, cv2_handler: CV2Handler
+    ) -> "InfieldCorrectionInputDataCore":
         with open(data_path.with_suffix(".json"), "r", encoding="utf-8") as f:
             data_dict = json.load(f)
             try:
@@ -319,7 +322,7 @@ class InfieldCorrectionInputData(InfieldCorrectionInputDataCore):
         full_fov_corners_in_3d_with_margin = full_fov_corners_in_3d.copy()
         center = np.array([0, 0, self.fov.distance])
 
-        for index, _ in enumerate(full_fov_corners_in_3d_with_margin):
+        for index in range(len(full_fov_corners_in_3d_with_margin)):
             direction = np.sign(full_fov_corners_in_3d[index] - center)
             full_fov_corners_in_3d_with_margin[index] = (
                 full_fov_corners_in_3d[index] - FOVThresholds.edge_margin * direction
@@ -404,8 +407,8 @@ class InfieldCorrectionInputData(InfieldCorrectionInputDataCore):
             bottom_center_line=np.array(bottom_center_line),
         )
 
-    def valid_masks(self, points_in_2d, resolution):
-        non_nan_mask = ~np.isnan(points_in_2d).any(axis=2)
+    def valid_masks(self, points_in_2d: np.ndarray, resolution: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        non_nan_mask = np.asarray(~np.isnan(points_in_2d).any(axis=2))
         points_in_2d[np.isnan(points_in_2d)] = -1
         resolution_mask_camera = np.logical_and(
             points_in_2d[:, :, 0] >= 0,
@@ -420,11 +423,13 @@ class InfieldCorrectionInputData(InfieldCorrectionInputDataCore):
         )
         return non_nan_mask, resolution_mask_camera
 
-    def valid_mask(self, points_in_2d, resolution):
+    def valid_mask(self, points_in_2d: np.ndarray, resolution: np.ndarray) -> np.ndarray:
         non_nan_mask, resolution_mask_camera = self.valid_masks(points_in_2d, resolution)
         return np.logical_and(non_nan_mask, resolution_mask_camera)
 
-    def visualize_masks(self, points_in_2d, resolution, reference_frame="Camera"):
+    def visualize_masks(
+        self, points_in_2d: np.ndarray, resolution: np.ndarray, reference_frame: str = "Camera"
+    ) -> None:
         non_nan_mask, resolution_mask_camera = self.valid_masks(points_in_2d, resolution)
         image = np.zeros(non_nan_mask.shape, dtype=np.uint8)
         image[~non_nan_mask] = 50
@@ -461,11 +466,11 @@ class InfieldCorrectionInputData(InfieldCorrectionInputDataCore):
         full_fov_points_3d = corners[0] + np.outer(uu.ravel(), vector_x) + np.outer(vv.ravel(), vector_y)
         return full_fov_points_3d.reshape([uu.shape[0], uu.shape[1], 3])
 
-    def calculate_trapezoidal_corners(self, valid_mask):
+    def calculate_trapezoidal_corners(self, valid_mask: np.ndarray) -> np.ndarray:
         valid_mask_cv = valid_mask.astype(np.uint8)
-        contours, _ = self.cv2_handler.cv2.findContours(
+        contours = self.cv2_handler.cv2.findContours(
             valid_mask_cv, self.cv2_handler.cv2.RETR_EXTERNAL, self.cv2_handler.cv2.CHAIN_APPROX_SIMPLE
-        )
+        )[0]
         contour = max(contours, key=self.cv2_handler.cv2.contourArea)
 
         # Approximate to quadrilateral using Ramer–Douglas–Peucker algorithm
@@ -498,8 +503,8 @@ class InfieldCorrectionInputWidget(QWidget):
         poseID: int,
         directory: Path,
         infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore],
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
 
         self.poseID = poseID
@@ -533,12 +538,12 @@ class InfieldCorrectionInputWidget(QWidget):
 
     def update_information(
         self, infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore]
-    ):
+    ) -> None:
         self.infield_correction_input_data = infield_correction_input_data
         self.infield_correction_input_data.save_data(self.directory / f"infield_calibration_input_{self.poseID}")
         self.update_gui()
 
-    def update_gui(self):
+    def update_gui(self) -> None:
         self.position_in_fov_label.setText(str(self.infield_correction_input_data.position_in_fov))
         self.trueness_label.setText(self.infield_correction_input_data.local_trueness_as_string())
 
@@ -549,17 +554,17 @@ class _InfieldLoadWorker(QObject):
     item_loaded = pyqtSignal(int, object)
     finished = pyqtSignal(int)
 
-    def __init__(self, generation, files):
+    def __init__(self, generation: int, files: List[Path]) -> None:
         super().__init__()
         self._generation = generation
         self._files = files
         self._cancel_event = threading.Event()
         self._cv2_handler = CV2Handler()
 
-    def cancel(self):
+    def cancel(self) -> None:
         self._cancel_event.set()
 
-    def run(self):
+    def run(self) -> None:
         for file in self._files:
             if self._cancel_event.is_set():
                 break
@@ -577,7 +582,7 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
     infield_input_data_updated = pyqtSignal(int)
     loading_finished = pyqtSignal()
 
-    def __init__(self, directory: Path, parent=None):
+    def __init__(self, directory: Path, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.cv2_handler = CV2Handler()
@@ -591,7 +596,7 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
         self.setup_layout()
         self.connect_signals()
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         self.infield_input_container = QWidget()
 
         self.infield_input_group_box = QGroupBox("Infield Correction Input Data")
@@ -605,7 +610,7 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
         self.remove_last_infield_input_button.setEnabled(False)
         self.clear_infield_input_button = QPushButton("Clear")
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         self.infield_input_group_box_layout = QVBoxLayout()
         self.infield_input_group_box_layout.setAlignment(Qt.AlignTop)
         self.infield_input_group_box.setLayout(self.infield_input_group_box_layout)
@@ -625,11 +630,11 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
         layout.addWidget(self.infield_input_group_box)
         self.setLayout(layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.clear_infield_input_button.clicked.connect(self.on_clear_button_clicked)
         self.remove_last_infield_input_button.clicked.connect(self.on_remove_last_infield_input_button_clicked)
 
-    def update_data_directory(self, data_directory: Path):
+    def update_data_directory(self, data_directory: Path) -> None:
         existing_files = list(data_directory.glob("infield_calibration_input_*.json"))
         warning_text = (
             """\
@@ -657,7 +662,7 @@ Your current data is kept in {self.data_directory}."""
         if len(existing_files) > 0:
             self.load_existing_data(existing_files)
 
-    def load_existing_data(self, existing_files: List[Path]):
+    def load_existing_data(self, existing_files: List[Path]) -> None:
         self.cancel_loading()
 
         self._load_generation += 1
@@ -680,7 +685,7 @@ Your current data is kept in {self.data_directory}."""
         self._loader_worker.finished.connect(self._loader_thread.quit)
         self._loader_thread.start()
 
-    def cancel_loading(self):
+    def cancel_loading(self) -> None:
         if self._loader_worker is not None:
             self._loader_worker.cancel()
         if self._loader_thread is not None and self._loader_thread.isRunning():
@@ -689,37 +694,39 @@ Your current data is kept in {self.data_directory}."""
         self._loader_worker = None
         self._loader_thread = None
 
-    def _on_item_loaded(self, generation: int, data: InfieldCorrectionInputDataCore):
+    def _on_item_loaded(self, generation: int, data: InfieldCorrectionInputDataCore) -> None:
         if generation != self._load_generation:
             return
         self.add_infield_input_data(data)
 
-    def _on_loading_finished(self, generation: int):
+    def _on_loading_finished(self, generation: int) -> None:
         if generation != self._load_generation:
             return
         self.infield_input_group_box.setStyleSheet("")
         self.infield_input_group_box.setTitle("Infield Correction Input Data")
         self.loading_finished.emit()
 
-    def on_infield_input_data_widget_selection_box_clicked(self):
+    def on_infield_input_data_widget_selection_box_clicked(self) -> None:
         self.infield_input_data_updated.emit(self.can_calculate_correction())
 
-    def on_infield_input_data_widget_clicked(self, infield_correction_input_widget: InfieldCorrectionInputWidget):
+    def on_infield_input_data_widget_clicked(
+        self, infield_correction_input_widget: InfieldCorrectionInputWidget
+    ) -> None:
         for clickable_area in [p.clickable_labels for p in self.infield_input_data_widgets.values()]:
             if clickable_area is not infield_correction_input_widget.clickable_labels:
                 clickable_area.setChecked(False)
                 QApplication.processEvents()
         self.infield_input_data_clicked.emit(infield_correction_input_widget.infield_correction_input_data)
 
-    def on_remove_last_infield_input_button_clicked(self):
+    def on_remove_last_infield_input_button_clicked(self) -> None:
         if self.infield_input_data_widgets:
-            _, widget_to_remove = self.infield_input_data_widgets.popitem()
+            widget_to_remove = self.infield_input_data_widgets.popitem()[1]
             self.infield_input_layout.removeWidget(widget_to_remove)
             widget_to_remove.deleteLater()
             QApplication.processEvents()
             self.infield_input_data_updated.emit(self.can_calculate_correction())
 
-    def on_clear_button_clicked(self):
+    def on_clear_button_clicked(self) -> None:
         self.clear_all()
 
     def create_title_row(self) -> QHBoxLayout:
@@ -732,7 +739,7 @@ Your current data is kept in {self.data_directory}."""
         title_layout.addItem(remove_button_spacer)
         return title_layout
 
-    def show_as_busy(self, active: bool):
+    def show_as_busy(self, active: bool) -> None:
         self.setVisible(active or len(self.infield_input_data_widgets) > 0)
         self.infield_input_group_box.setStyleSheet(r"QGroupBox {border: 2px solid yellow;}" if active else "")
         self.infield_input_group_box.setTitle(
@@ -812,7 +819,7 @@ Your current data is kept in {self.data_directory}."""
             and infield_correction_input_widget.infield_correction_input_data.can_be_used_for_correction
         ]
 
-    def _clear_layout(self, layout):
+    def _clear_layout(self, layout: QLayout) -> None:
         while layout.count():
             item = layout.takeAt(0)
             widget = item.widget()
@@ -822,7 +829,7 @@ Your current data is kept in {self.data_directory}."""
             if sublayout:
                 self._clear_layout(sublayout)
 
-    def clear_gui(self):
+    def clear_gui(self) -> None:
         self.cancel_loading()
         self._clear_layout(self.infield_input_layout)
         self.infield_input_data_widgets.clear()
@@ -830,7 +837,7 @@ Your current data is kept in {self.data_directory}."""
         self.remove_last_infield_input_button.setEnabled(False)
         self.setVisible(False)
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         self.clear_gui()
         if self.infield_input_data_widgets:
             reply = QMessageBox.question(

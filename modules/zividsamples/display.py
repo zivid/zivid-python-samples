@@ -82,7 +82,6 @@ def display_pointcloud(data: Union[zivid.Frame, zivid.PointCloud, zivid.Unorgani
 
     Args:
         data: Union[zivid.Frame, zivid.PointCloud, zivid.UnorganizedPointCloud]
-        normals: If True, display normals as color map
 
     """
     with zivid.visualization.Visualizer() as visualizer:

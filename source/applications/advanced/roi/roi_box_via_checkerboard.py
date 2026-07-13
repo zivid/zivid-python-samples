@@ -1,7 +1,8 @@
 """
 Filter the point cloud based on a ROI box given relative to the Zivid Calibration Board.
 
-The ZFC file for this sample can be downloaded from https://support.zivid.com/en/latest/api-reference/samples/sample-data.html.
+The ZDF file for this sample can be found in Zivid Sample Data.
+See the instructions in README.md to download the Zivid Sample Data.
 
 For more information on Region-Of-Interest (ROI) and how to use it, check out this tutorial:
 https://support.zivid.com/en/latest/camera/academy/applications/roi.html
@@ -40,14 +41,13 @@ def _transform_points(points: List[np.ndarray], transform: np.ndarray) -> List[n
 def _main() -> None:
     app = zivid.Application()
 
-    file_camera = get_sample_data_path() / "BinWithCalibrationBoard.zfc"
+    file_camera = get_sample_data_path() / "BinWithCalibrationBoard.zdf"
+    loaded_frame_with_diagnostics = zivid.Frame(file_camera)
 
     print(f"Creating virtual camera using file: {file_camera}")
-    camera = app.create_file_camera(file_camera)
+    camera = app.create_file_camera(loaded_frame_with_diagnostics)
 
-    settings = zivid.Settings()
-    settings.acquisitions.append(zivid.Settings.Acquisition())
-    settings.color = zivid.Settings2D(acquisitions=[zivid.Settings2D.Acquisition()])
+    settings = loaded_frame_with_diagnostics.settings
 
     original_frame = camera.capture_2d_3d(settings)
     point_cloud = original_frame.point_cloud()
@@ -93,18 +93,27 @@ def _main() -> None:
     )
 
     print("Setting the ROI")
-    settings.region_of_interest.box.enabled = True
-    settings.region_of_interest.box.point_o = roi_points_in_camera_frame[0]
-    settings.region_of_interest.box.point_a = roi_points_in_camera_frame[1]
-    settings.region_of_interest.box.point_b = roi_points_in_camera_frame[2]
-    settings.region_of_interest.box.extents = (-10, roi_box_height)
+    roi_settings = zivid.Settings.RegionOfInterest.Box(
+        enabled=True,
+        point_o=roi_points_in_camera_frame[0],
+        point_a=roi_points_in_camera_frame[1],
+        point_b=roi_points_in_camera_frame[2],
+        extents=(-10, roi_box_height),
+    )
 
-    roi_point_cloud = camera.capture_2d_3d(settings).point_cloud()
+    roi_point_cloud = point_cloud.masked_by_region_of_interest(roi_settings)
     print("Displaying the ROI-filtered point cloud")
     display_pointcloud(roi_point_cloud)
 
     print("Displaying depth map of the ROI-filtered point cloud")
     display_depthmap(roi_point_cloud.copy_data("xyz"))
+
+    print("Adding the ROI box to the capture settings and capturing again")
+    settings.region_of_interest.box = roi_settings
+
+    roi_frame_point_cloud = camera.capture_2d_3d(settings).point_cloud()
+    print("Displaying the ROI-filtered point cloud from the new capture")
+    display_pointcloud(roi_frame_point_cloud)
 
 
 if __name__ == "__main__":

@@ -1,2 +1,2 @@
 ./modules
-open3d
+open3d; python_version < "3.13"

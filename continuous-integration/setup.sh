@@ -29,12 +29,11 @@ function install_www_deb {
     rm -r $TMP_DIR || exit
 }
 
-install_www_deb "https://downloads.zivid.com/sdk/releases/2.17.2+440b2367-1/u${VERSION_ID:0:2}/zivid_2.17.2+440b2367-1_amd64.deb" || exit
-install_www_deb "https://downloads.zivid.com/sdk/releases/2.17.2+440b2367-1/u${VERSION_ID:0:2}/zivid-genicam_2.17.2+440b2367-1_amd64.deb" || exit
+install_www_deb "https://downloads.zivid.com/sdk/releases/2.18.0+1b44dbef-1/u${VERSION_ID:0:2}/zivid-opencl_2.18.0+1b44dbef-1_amd64.deb" || exit
+install_www_deb "https://downloads.zivid.com/sdk/releases/2.18.0+1b44dbef-1/u${VERSION_ID:0:2}/zivid-genicam_2.18.0+1b44dbef-1_amd64.deb" || exit
 
-python3 -m pip install --upgrade pip || exit
 pushd "$ROOT_DIR" || exit
-python3 -m pip install --requirement "./requirements.txt" || exit
+python3 -m pip install --break-system-packages --requirement "./requirements.txt" || exit
 popd || exit
 
 echo Success! ["$(basename $0)"]

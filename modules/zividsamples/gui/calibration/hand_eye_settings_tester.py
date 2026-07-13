@@ -43,7 +43,7 @@ class CalibrationObjectWidget(QWidget):
     hand_eye_configuration: HandEyeConfiguration
     previously_showed_error_message: bool = True
 
-    def __init__(self, hand_eye_configuration: HandEyeConfiguration, parent=None):
+    def __init__(self, hand_eye_configuration: HandEyeConfiguration, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.hand_eye_configuration = hand_eye_configuration
@@ -65,7 +65,7 @@ class CalibrationObjectWidget(QWidget):
         self.setLayout(layout)
         self.update_layout()
 
-    def update_layout(self):
+    def update_layout(self) -> None:
         self.group_box.setTitle(f"{self.hand_eye_configuration.calibration_object.name} in Camera Frame")
         if self.hand_eye_configuration.calibration_object == CalibrationObject.Markers:
             self.calibration_object_image.hide()
@@ -74,7 +74,7 @@ class CalibrationObjectWidget(QWidget):
             self.markers_widget.hide()
             self.calibration_object_image.show()
 
-    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration):
+    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.update_layout()
 
@@ -83,7 +83,7 @@ class CalibrationObjectWidget(QWidget):
         markers: List[MarkerShape],
         rgba: NDArray[Shape["N, M, 4"], UInt8],  # type: ignore
         pixel_mapping: PixelMapping,
-    ):
+    ) -> None:
         self.markers_widget.set_markers(markers, rgba, pixel_mapping, reset_zoom=self.previously_showed_error_message)
         self.previously_showed_error_message = False
 
@@ -99,7 +99,7 @@ class CalibrationObjectWidget(QWidget):
         self.calibration_object_image.set_pixmap(qpixmap, reset_zoom=self.previously_showed_error_message)
         self.previously_showed_error_message = False
 
-    def set_error_message(self, error_message: str):
+    def set_error_message(self, error_message: str) -> None:
         error_pixmap = QPixmap(400, 400)
         error_pixmap.fill(Qt.gray)  # Set background color
         painter = QPainter(error_pixmap)
@@ -119,7 +119,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
     hand_eye_configuration: HandEyeConfiguration = HandEyeConfiguration()
     last_frame: zivid.Frame
 
-    def __init__(self, zivid_app: zivid.Application, parent=None):
+    def __init__(self, zivid_app: zivid.Application, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setObjectName("HandEyeSettingsTester")
 
@@ -139,12 +139,12 @@ class TestHandEyeCaptureSettings(QMainWindow):
 
         self.live2d_widget.start_live_2d()
 
-    def configure_settings(self, show_anyway: bool = False):
+    def configure_settings(self, show_anyway: bool = False) -> None:
         if self.camera:
             current_settings = self.settings if hasattr(self, "settings") else None
             self.settings = select_settings_for_hand_eye(self.camera, current_settings, show_anyway)
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.calibration_object_widget = CalibrationObjectWidget(hand_eye_configuration=self.hand_eye_configuration)
@@ -170,7 +170,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
         self.live2d_widget.setFixedHeight(self.calibration_object_widget.height())
         self.live2d_widget.setFixedWidth(self.calibration_object_widget.height())
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout(self.central_widget)
         left_panel = QVBoxLayout()
         left_panel_buttons = QHBoxLayout()
@@ -194,7 +194,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
         self.camera_buttons.buttons_layout.addWidget(self.capture_with_hand_eye_settings)
         layout.addLayout(bottom_layout)
 
-    def create_toolbar(self):
+    def create_toolbar(self) -> None:
         file_menu = self.menuBar().addMenu("File")
         self.save_frame_action = QAction("Save", self)
         self.save_frame_action.triggered.connect(self.on_save_last_frame_action_triggered)
@@ -225,7 +225,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
         else:
             super().keyPressEvent(a0)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.camera_buttons.capture_button_clicked.connect(self.on_capture_button_clicked)
         self.camera_buttons.connect_button_clicked.connect(self.on_connect_button_clicked)
         self.hand_eye_configuration_buttons.hand_eye_configuration_updated.connect(
@@ -233,7 +233,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
         )
         self.capture_with_hand_eye_settings.toggled.connect(self.on_capture_with_hand_eye_settings_toggled)
 
-    def on_capture_button_clicked(self):
+    def on_capture_button_clicked(self) -> None:
         assert self.camera is not None
         self.live2d_widget.stop_live_2d()
         try:
@@ -277,11 +277,11 @@ class TestHandEyeCaptureSettings(QMainWindow):
             self.calibration_object_widget.set_error_message(f"Failed to capture:\n{ex}")
             self.live2d_widget.start_live_2d()
 
-    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration):
+    def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.calibration_object_widget.on_hand_eye_configuration_updated(self.hand_eye_configuration)
 
-    def on_connect_button_clicked(self):
+    def on_connect_button_clicked(self) -> None:
         if self.camera is not None and self.camera.state.connected:
             self.live2d_widget.stop_live_2d()
             self.live2d_widget.hide()
@@ -300,7 +300,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
                     self.update_live2d_settings()
                     self.live2d_widget.start_live_2d()
 
-    def on_capture_with_hand_eye_settings_toggled(self):
+    def on_capture_with_hand_eye_settings_toggled(self) -> None:
         if self.camera:
             if self.capture_with_hand_eye_settings.isChecked():
                 self.settings_used_in_live_view.setText("Hand Eye Settings (optimized for Hand Eye)")
@@ -308,7 +308,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
                 self.settings_used_in_live_view.setText("Production Settings (user choice)")
         self.update_live2d_settings()
 
-    def update_live2d_settings(self):
+    def update_live2d_settings(self) -> None:
         if self.camera:
             if self.capture_with_hand_eye_settings.isChecked():
                 self.live2d_widget.update_settings_2d(
@@ -319,17 +319,17 @@ class TestHandEyeCaptureSettings(QMainWindow):
                     self.settings.production.settings_2d3d.color, self.camera.info.model
                 )
 
-    def on_select_settings_action_triggered(self):
+    def on_select_settings_action_triggered(self) -> None:
         self.configure_settings(show_anyway=True)
 
-    def on_save_settings_action_triggered(self):
+    def on_save_settings_action_triggered(self) -> None:
         file_name = Path(QFileDialog.getSaveFileName(self, "Save Settings", "", "Zivid Settings (*.yml)")[0])
         self.settings.production.settings_2d3d.save(file_name.with_suffix(".yml"))
         self.settings.hand_eye.settings_2d3d.save(
             file_name.with_stem(f"{file_name.stem}_for_hand_eye").with_suffix(".yml")
         )
 
-    def on_visualize_last_frame_action_triggered(self):
+    def on_visualize_last_frame_action_triggered(self) -> None:
         point_cloud = self.last_frame.point_cloud()
         rgba = point_cloud.copy_data("srgb")
         qimage = QImage(
@@ -354,7 +354,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
         ImageViewerDialog(qimage_depthmap, title="Sample Capture - DepthMap").exec_()
         display_pointcloud(self.last_frame)
 
-    def on_save_last_frame_action_triggered(self):
+    def on_save_last_frame_action_triggered(self) -> None:
         if self.last_frame is not None:
             file_name = QFileDialog.getSaveFileName(self, "Save Capture", "", "Zivid Frame (*.zdf)")[0]
             self.last_frame.save(file_name)
@@ -362,7 +362,7 @@ class TestHandEyeCaptureSettings(QMainWindow):
     def log_detection_result(
         self,
         detection_result: Union[DetectionResult, DetectionResultFiducialMarkers],
-    ):
+    ) -> None:
         log_message = ""
         if detection_result.valid():
             if self.hand_eye_configuration.calibration_object == CalibrationObject.Checkerboard:

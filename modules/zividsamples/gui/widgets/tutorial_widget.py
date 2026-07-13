@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from PyQt5.QtWidgets import QGroupBox, QTextBrowser, QVBoxLayout, QWidget
 
@@ -10,8 +10,8 @@ class TutorialWidget(QWidget):
 
     def __init__(
         self,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
 
         self.group_box = QGroupBox("Tutorial", self)
@@ -31,23 +31,23 @@ class TutorialWidget(QWidget):
 
         self.set_text_margins(25, 25, 25, 25)
 
-    def set_title(self, title: str):
+    def set_title(self, title: str) -> None:
         self.title = title
         self.update_text()
 
-    def set_description(self, description: List[str]):
+    def set_description(self, description: List[str]) -> None:
         self.description = description
         self.update_text()
 
-    def clear_steps(self):
+    def clear_steps(self) -> None:
         self.steps.clear()
         self.update_text()
 
-    def add_steps(self, steps: Dict[str, bool]):
+    def add_steps(self, steps: Dict[str, bool]) -> None:
         self.steps.update(steps)
         self.update_text()
 
-    def update_text(self):
+    def update_text(self) -> None:
         self.text_area.clear()
         text = f"<h2>{self.title}</h2>"
         text += "<table cellpadding='5' style='border-collapse: collapse; width: 100%;; margin-top: 10px;'>"
@@ -58,7 +58,7 @@ class TutorialWidget(QWidget):
         text += "<p>" + "</p><p>".join(paragraph for paragraph in self.description) + "</p>"
         self.text_area.setHtml(text)
 
-    def set_text_margins(self, left, top, right, bottom):
+    def set_text_margins(self, left: int, top: int, right: int, bottom: int) -> None:
         document = self.text_area.document()
         document.setDocumentMargin(10)
 

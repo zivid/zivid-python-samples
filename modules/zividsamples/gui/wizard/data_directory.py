@@ -3,10 +3,12 @@ import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from types import TracebackType
+from typing import Any, Dict, List, Optional, Type
 
 from PyQt5 import sip
 from PyQt5.QtCore import QSettings, Qt, pyqtSignal
+from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -19,6 +21,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QStyle,
     QVBoxLayout,
+    QWidget,
 )
 from zividsamples.gui.qt_application import ZividQtApplication, create_horizontal_line
 
@@ -54,15 +57,15 @@ class SessionInfo:
     name: str
     root_folder: Path
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._extra_data: Dict[str, Any] = {}
         self._ensure_structure()
 
-    def _ensure_structure(self):
+    def _ensure_structure(self) -> None:
         for sub in SESSION_FOLDER_STRUCTURE.values():
             (self.root_folder / self.name / sub).mkdir(parents=True, exist_ok=True)
 
-    def update_last_modified_date(self):
+    def update_last_modified_date(self) -> None:
         self.last_modified_date = datetime.now().strftime(DATE_FORMAT)
 
     def has_any_data(self) -> bool:
@@ -72,10 +75,10 @@ class SessionInfo:
                 return True
         return False
 
-    def get_section(self, key: str) -> Optional[Any]:
+    def get_section(self, key: str) -> Optional[Dict[str, Any]]:
         return self._extra_data.get(key)
 
-    def set_section(self, key: str, value: Any) -> None:
+    def set_section(self, key: str, value: Dict[str, Any]) -> None:
         self._extra_data[key] = value
 
     def to_dict(self) -> dict:
@@ -94,7 +97,7 @@ class SessionInfo:
             json.dump(self.to_dict(), session_file)
 
     @classmethod
-    def from_existing(cls, root_folder: Path, session_name: str) -> "SessionInfo":
+    def from_existing(cls: Type["SessionInfo"], root_folder: Path, session_name: str) -> "SessionInfo":
         with open(root_folder / session_name / "session_info.json", "r", encoding="utf-8") as session_file:
             session_data = json.load(session_file)
             core_keys = {"last_modified_date", "created_date", "name"}
@@ -108,7 +111,7 @@ class SessionInfo:
             return instance
 
     @classmethod
-    def new(cls, root_folder: Path) -> "SessionInfo":
+    def new(cls: Type["SessionInfo"], root_folder: Path) -> "SessionInfo":
         date_string = datetime.now().strftime(DATE_FORMAT)
         return cls(
             last_modified_date=date_string,
@@ -122,7 +125,7 @@ class DataDirectory:
     root_folder: Path
     session: Optional[SessionInfo]
 
-    def __init__(self):
+    def __init__(self) -> None:
         qsettings = QSettings("Zivid", "HandEyeGUI")
         qsettings.beginGroup("data_directory")
         self.root_folder = Path(qsettings.value("root_folder", str(Path.cwd()), type=str))
@@ -159,10 +162,10 @@ class DataDirectory:
                 widget_names.append(name)
         return widget_names
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"DataDirectory(root_folder={self.root_folder}, session={self.session}, show_on_startup={self.show_on_startup})"
 
-    def save_choice(self):
+    def save_choice(self) -> None:
         qsettings = QSettings("Zivid", "HandEyeGUI")
         qsettings.beginGroup("data_directory")
         qsettings.setValue("root_folder", str(self.root_folder))
@@ -178,11 +181,11 @@ class DataDirectory:
 class ClickableLineEdit(QLineEdit):
     clicked = pyqtSignal()
 
-    def __init__(self, text="", parent=None):
+    def __init__(self, text: str = "", parent: Optional[QWidget] = None) -> None:
         super().__init__(text, parent)
         self.setReadOnly(True)
 
-    def mousePressEvent(self, a0):
+    def mousePressEvent(self, a0: Optional[QMouseEvent]) -> None:
         # Handle click (e.g., open folder dialog)
         self.clicked.emit()
         super().mousePressEvent(a0)
@@ -191,7 +194,7 @@ class ClickableLineEdit(QLineEdit):
 class DirectoryAndSessionDialog(QDialog):
     SESSION_UNMODIFIED = 1
 
-    def __init__(self, current_data_directory: DataDirectory, parent=None):
+    def __init__(self, current_data_directory: DataDirectory, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Choose Data Directory and Session")
         self.selected_session = None
@@ -201,7 +204,7 @@ class DirectoryAndSessionDialog(QDialog):
         self.setup_layout()
         self.connect_signals()
 
-    def setup_widgets(self):
+    def setup_widgets(self) -> None:
         self.directory_edit = ClickableLineEdit(str(self.data_directory.root_folder), self)
         self.directory_edit.setMinimumWidth(400)
         self.directory_icon = QPushButton(self)
@@ -231,7 +234,7 @@ class DirectoryAndSessionDialog(QDialog):
         self.load_session_button.setEnabled(self.list_widget.count() > 0)
         self.new_session_button = QPushButton("New Session", self)
 
-    def setup_layout(self):
+    def setup_layout(self) -> None:
         layout = QVBoxLayout(self)
 
         path_layout = QHBoxLayout()
@@ -250,13 +253,13 @@ class DirectoryAndSessionDialog(QDialog):
         button_layout.addWidget(self.new_session_button)
         layout.addLayout(button_layout)
 
-    def connect_signals(self):
+    def connect_signals(self) -> None:
         self.directory_edit.clicked.connect(self._choose_folder)
         self.directory_icon.clicked.connect(self._choose_folder)
         self.load_session_button.clicked.connect(self._choose_session)
         self.new_session_button.clicked.connect(self.accept)
 
-    def adjust_dialog_width(self):
+    def adjust_dialog_width(self) -> None:
         if not self.list_widget or sip.isdeleted(self.list_widget):
             return
         max_width = self.list_widget.sizeHintForColumn(0) + 2 * self.list_widget.frameWidth()
@@ -267,7 +270,7 @@ class DirectoryAndSessionDialog(QDialog):
     def root_folder(self) -> Path:
         return Path(self.directory_edit.text())
 
-    def _choose_folder(self):
+    def _choose_folder(self) -> None:
         folder = QFileDialog.getExistingDirectory(self, "Select Data Directory", self.directory_edit.text())
         if folder:
             self.directory_edit.setText(folder)
@@ -277,7 +280,7 @@ class DirectoryAndSessionDialog(QDialog):
             self.set_session_list()
             self.load_session_button.setEnabled(self.list_widget.count() > 0)
 
-    def set_session_list(self):
+    def set_session_list(self) -> None:
         self.list_widget.clear()
         current_item = None
         for session in self.data_directory.existing_sessions().values():
@@ -299,13 +302,13 @@ class DirectoryAndSessionDialog(QDialog):
         else:
             self.list_widget.setCurrentRow(0)
 
-    def _choose_session(self):
+    def _choose_session(self) -> None:
         current_item = self.list_widget.currentItem()
         if current_item is not None:
             self.selected_session = current_item.data(self.SESSION_UNMODIFIED)
         self.accept()
 
-    def done(self, a0):
+    def done(self, a0: int) -> None:
         model = self.list_widget.model()
         try:
             model.rowsInserted.disconnect(self.adjust_dialog_width)
@@ -317,11 +320,11 @@ class DirectoryAndSessionDialog(QDialog):
 
 class DataDirectoryManager:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.data_directory = DataDirectory()
-        self.tab_widgets = {}
+        self.tab_widgets: Dict[str, QWidget] = {}
 
-    def register_tab_widget(self, widget, name: str):
+    def register_tab_widget(self, widget: QWidget, name: str) -> None:
         assert name not in self.tab_widgets, f"Widget with name {name} already registered."
         assert (
             name in SESSION_FOLDER_STRUCTURE
@@ -330,18 +333,18 @@ class DataDirectoryManager:
         if hasattr(widget, "session_info"):
             widget.session_info = self.data_directory.session
 
-    def start_new_session(self):
+    def start_new_session(self) -> None:
         self.close_session()
         self.data_directory.session = SessionInfo.new(self.data_directory.root_folder)
         self.data_directory.save_choice()
         self._notify_tab_widgets()
 
-    def _notify_tab_widgets(self):
+    def _notify_tab_widgets(self) -> None:
         for widget in self.tab_widgets.values():
             if hasattr(widget, "update_data_directory"):
                 widget.update_data_directory(self.folder(widget.objectName()), session_info=self.data_directory.session)
 
-    def select_folder(self):
+    def select_folder(self) -> None:
         dialog = DirectoryAndSessionDialog(self.data_directory)
         if dialog.exec_() == QDialog.Accepted:
             self.data_directory.root_folder = dialog.root_folder()
@@ -355,7 +358,7 @@ class DataDirectoryManager:
                 self.data_directory.save_choice()
                 self._notify_tab_widgets()
 
-    def folder(self, widget_name) -> Path:
+    def folder(self, widget_name: str) -> Path:
         if not self.data_directory.session:
             raise RuntimeError("No session selected. Did you forget to call start_new_session() or select_folder()?")
         path = (
@@ -370,17 +373,22 @@ class DataDirectoryManager:
     def show_on_startup(self) -> bool:
         return self.data_directory.show_on_startup
 
-    def close_session(self):
+    def close_session(self) -> None:
         if self.data_directory.session and not self.data_directory.session.has_any_data():
             shutil.rmtree(self.data_directory.root_folder / self.data_directory.session.name, ignore_errors=True)
             self.data_directory.session = None
 
         self.data_directory.save_choice()
 
-    def __enter__(self):
+    def __enter__(self) -> "DataDirectoryManager":
         return self
 
-    def __exit__(self, exception_type, exception_value, traceback):
+    def __exit__(
+        self,
+        exception_type: Optional[Type[BaseException]],
+        exception_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.close_session()
 
 

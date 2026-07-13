@@ -54,18 +54,21 @@ def _main() -> None:
     settings = zivid.Settings()
     settings.acquisitions.append(zivid.Settings.Acquisition())
     settings.processing.filters.smoothing.gaussian.enabled = True
-    settings.processing.filters.smoothing.gaussian.sigma = 1
+    settings.processing.filters.smoothing.gaussian.sigma = 1.5
     settings.processing.filters.reflection.removal.enabled = True
-    settings.processing.filters.reflection.removal.mode = "global"
-
+    settings.processing.filters.reflection.removal.mode = (
+        zivid.Settings.Processing.Filters.Reflection.Removal.Mode.global_
+    )
+    settings.region_of_interest.box = zivid.Settings.RegionOfInterest.Box(
+        enabled=True,
+        point_o=(-266, 190, 771),
+        point_a=(203, 207, 771),
+        point_b=(-255, -131, 771),
+        extents=(0, 298),
+    )
     settings_2d = zivid.Settings2D()
     settings_2d.acquisitions.append(zivid.Settings2D.Acquisition())
-    settings_2d.processing.color.balance.blue = 1.0
-    settings_2d.processing.color.balance.green = 1.0
-    settings_2d.processing.color.balance.red = 1.0
-
     settings.color = settings_2d
-
     print("Capturing frame")
     frame = camera.capture_2d_3d(settings)
     data_file = "Frame.zdf"

@@ -25,11 +25,11 @@ class RobotControlReadOnly(QObject):
         raise NotImplementedError
 
     @abstractmethod
-    def connect(self):
+    def connect(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def disconnect(self):
+    def disconnect(self) -> None:
         raise NotImplementedError
 
     def is_read_only(self) -> bool:

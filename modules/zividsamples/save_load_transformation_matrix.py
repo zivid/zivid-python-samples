@@ -10,9 +10,6 @@ def save_transformation_matrix(transformation_matrix: TransformationMatrix, yaml
     Args:
         transformation_matrix: TransformationMatrix to be saved.
         yaml_path: Path to the YAML file where the matrix will be saved.
-
-    Raises:
-        RuntimeError: If the matrix is not affine.
     """
     assert_affine_matrix_and_save(transformation_matrix.as_matrix(), yaml_path)
 

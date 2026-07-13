@@ -4,7 +4,8 @@ Automatically configure the IP addresses of connected cameras to match the netwo
 Usage:
 - By default, the program applies the new configuration directly to the cameras.
 - Use the [--display-only] argument to simulate the configuration and display the
-  proposed IP addresses without making actual changes.
+  proposed IP addresses without making actual changes. Note: camera-side Ethernet
+  link speed will also be skipped, as it requires connecting to the camera.
 
 For more information on network configuration, check out this tutorial:
 https://support.zivid.com/en/latest/camera/getting-started/software-installation/zivid-two-network-configuration.html
@@ -16,6 +17,39 @@ import ipaddress
 from typing import Dict, List, Tuple
 
 import zivid
+
+
+def get_users_local_interface(camera: zivid.Camera) -> zivid.CameraState.Network.LocalInterface:
+    local_interfaces = camera.state.network.local_interfaces
+
+    if len(local_interfaces) == 0:
+        raise RuntimeError(f"No user local interface detected from the camera {camera.info.serial_number}")
+
+    if len(local_interfaces) > 1:
+        raise RuntimeError(
+            f"More than one local interface detected from the camera {camera.info.serial_number}. "
+            "Please, reorganize your network."
+        )
+
+    return local_interfaces[0]
+
+
+def print_host_side_ethernet_link_speed(camera: zivid.Camera) -> None:
+    # Reading the host-side (local interface) Ethernet link speed does not require a connection to the camera.
+    local_interface_link_speed = get_users_local_interface(camera).ethernet.link_speed
+
+    print(f"Camera {camera.info.serial_number}: local interface Ethernet link speed={local_interface_link_speed}")
+
+
+def print_camera_side_ethernet_link_speed(camera: zivid.Camera) -> None:
+    # Reading the camera-side Ethernet link speed requires being connected to the camera.
+    camera.connect()
+    try:
+        camera_link_speed = camera.state.network.ethernet.link_speed
+    finally:
+        camera.disconnect()
+
+    print(f"Camera {camera.info.serial_number}: camera Ethernet link speed={camera_link_speed}")
 
 
 def get_users_local_interface_network_configuration(camera: zivid.Camera) -> Tuple[str, str]:
@@ -34,26 +68,17 @@ def get_users_local_interface_network_configuration(camera: zivid.Camera) -> Tup
         A tuple containing the IP address and subnet mask.
 
     """
-    local_interfaces = camera.state.network.local_interfaces
+    local_interface = get_users_local_interface(camera)
 
-    if len(local_interfaces) == 0:
-        raise RuntimeError(f"No user local interface detected from the camera {camera.info.serial_number}")
-
-    if len(local_interfaces) > 1:
-        raise RuntimeError(
-            f"More than one local interface detected from the camera {camera.info.serial_number}. "
-            "Please, reorganize your network."
-        )
-
-    if len(local_interfaces[0].ipv4.subnets) == 0:
+    if len(local_interface.ipv4.subnets) == 0:
         raise RuntimeError(f"No valid subnets found for camera {camera.info.serial_number}")
 
-    if len(local_interfaces[0].ipv4.subnets) > 1:
+    if len(local_interface.ipv4.subnets) > 1:
         raise RuntimeError(
             f"More than one ip address found for the local interface from the camera {camera.info.serial_number}"
         )
 
-    subnet = local_interfaces[0].ipv4.subnets[0]
+    subnet = local_interface.ipv4.subnets[0]
     return subnet.address, subnet.mask
 
 
@@ -79,6 +104,7 @@ def _main() -> None:
         for camera in cameras:
 
             try:
+
                 local_interface_ip_address, local_interface_subnet_mask = (
                     get_users_local_interface_network_configuration(camera)
                 )
@@ -124,6 +150,18 @@ def _main() -> None:
 
             except RuntimeError as ex:
                 print(f"Error when configuring camera: {camera.info.serial_number}. Exception: {ex}")
+
+        for camera in cameras:
+
+            try:
+                print_host_side_ethernet_link_speed(camera)
+                if not args.display_only:
+                    print_camera_side_ethernet_link_speed(camera)
+
+            except RuntimeError as ex:
+                print(
+                    f"Error when reading Ethernet link speed for camera: {camera.info.serial_number}. Exception: {ex}"
+                )
 
     except RuntimeError as ex:
         print(ex)
