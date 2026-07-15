@@ -137,7 +137,10 @@ class MarkerConfiguration:
             self.id_list = id_list
         else:
             id_list_str = settings.value("marker_configuration.id_list", "1, 2, 3, 4", type=str)
-            self.id_list = [int(x) for x in id_list_str.split(",")]
+            try:
+                self.id_list = [int(x) for x in id_list_str.split(",")]
+            except ValueError:
+                self.id_list = [1, 2, 3, 4]
         if dictionary is not None:
             self.dictionary = dictionary
         else:

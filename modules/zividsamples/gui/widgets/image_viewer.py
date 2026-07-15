@@ -1,7 +1,7 @@
 from typing import Optional
 
-from PyQt5.QtCore import QRectF, QSize, Qt, pyqtSlot
-from PyQt5.QtGui import QImage, QPainter, QPixmap, QWheelEvent
+from PyQt5.QtCore import QRectF, Qt, pyqtSlot
+from PyQt5.QtGui import QImage, QPainter, QPixmap, QResizeEvent, QWheelEvent
 from PyQt5.QtWidgets import QDialog, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget
 
 
@@ -42,11 +42,10 @@ class ImageViewer(QGraphicsView):
         else:
             self._zoom = 0
 
-    def resize(self, event: QSize) -> None:
-        super().resize(event)
-        print("Resizing image_viewer")
-        self._zoom = 0
-        self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        if self._zoom == 0:
+            self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
 
 
 class ImageViewerDialog(QDialog):

@@ -25,6 +25,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 from zivid.experimental import PixelMapping, calibration
+from zividsamples.gui.qt_application import ZIVID_BLUE_BUTTON_STYLE
 from zividsamples.gui.widgets.cv2_handler import CV2Handler
 from zividsamples.gui.wizard.data_directory import SessionInfo
 from zividsamples.gui.wizard.hand_eye_configuration import CalibrationObject
@@ -170,6 +171,9 @@ class PosePairWidget(QWidget):
             else self._translation_to_string(self.pose_pair.camera_pose.translation)
         )
         self.robot_pose_label.setText(self._translation_to_string(self.pose_pair.robot_pose.translation))
+
+    def release_frame(self) -> None:
+        self.pose_pair.camera_frame = None  # type: ignore[assignment]
 
     def camera_pose_yaml_text(self) -> str:
         if self.pose_pair.camera_pose is None:
@@ -330,6 +334,7 @@ class PosePairSelectionWidget(QWidget):
     pose_pair_clicked = pyqtSignal(PosePair)
     pose_pairs_updated = pyqtSignal(int)
     loading_finished = pyqtSignal()
+    load_from_disk_requested = pyqtSignal()
 
     def __init__(self, directory: Path, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -361,6 +366,9 @@ class PosePairSelectionWidget(QWidget):
         self.pose_pair_scrollable_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.pose_pair_scrollable_area.setWidget(self.pose_pair_container)
 
+        self.load_from_disk_button = QPushButton()
+        self.load_from_disk_button.setStyleSheet(ZIVID_BLUE_BUTTON_STYLE)
+        self.load_from_disk_button.setVisible(False)
         self.clear_pose_pairs_button = QPushButton("Clear")
 
     def setup_layout(self) -> None:
@@ -370,6 +378,7 @@ class PosePairSelectionWidget(QWidget):
 
         self.pose_pairs_layout = QVBoxLayout(self.pose_pair_container)
         self.pose_pairs_layout.setAlignment(Qt.AlignTop)
+        self.pose_pairs_layout.addWidget(self.load_from_disk_button)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.clear_pose_pairs_button)
@@ -384,9 +393,34 @@ class PosePairSelectionWidget(QWidget):
 
     def connect_signals(self) -> None:
         self.clear_pose_pairs_button.clicked.connect(self.on_clear_button_clicked)
+        self.load_from_disk_button.clicked.connect(self._on_load_from_disk_clicked)
+
+    def _on_load_from_disk_clicked(self):
+        self.load_from_disk_button.setVisible(False)
+        self.load_from_disk_requested.emit()
+
+    def _available_pose_ids(self) -> List[int]:
+        pose_ids = []
+        for path in self.directory.glob("robot_pose_*.yaml"):
+            pose_id_str = path.stem[len("robot_pose_") :]
+            if pose_id_str.isdigit() and (self.directory / f"calibration_object_pose_{pose_id_str}.zdf").exists():
+                pose_ids.append(int(pose_id_str))
+        return sorted(pose_ids)
+
+    def _update_load_button(self):
+        if self.pose_pair_widgets:
+            self.load_from_disk_button.setVisible(False)
+            return
+        available = len(self._available_pose_ids())
+        if available > 0:
+            self.load_from_disk_button.setText(f"Load {available} pose pair(s) from disk")
+            self.load_from_disk_button.setVisible(True)
+        else:
+            self.load_from_disk_button.setVisible(False)
 
     def set_directory(self, directory: Path) -> None:
         self.directory = directory
+        self._update_load_button()
 
     def load_pose_pairs(self, calibration_object: CalibrationObject, marker_configuration: MarkerConfiguration) -> None:
         if len(self.pose_pair_widgets) > 0:
@@ -407,15 +441,12 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self._last_operation_was_reprocess = False
         self._set_loaded_from_disk(False)
         self._clear_layout(self.pose_pairs_layout)
+        self.pose_pairs_layout.addWidget(self.load_from_disk_button)
+        self.load_from_disk_button.setVisible(False)
         self.pose_pair_widgets.clear()
         self.pose_pairs_updated.emit(0)
 
-        pose_ids = [
-            pid
-            for pid in range(20)
-            if (self.directory / f"robot_pose_{pid}.yaml").exists()
-            and (self.directory / f"calibration_object_pose_{pid}.zdf").exists()
-        ]
+        pose_ids = self._available_pose_ids()
         if not pose_ids:
             return
 
@@ -426,7 +457,6 @@ Note! This will not remove files from disk, but potentially reload them, and ana
 
         self.pose_pairs_group_box.setStyleSheet(r"QGroupBox {border: 2px solid yellow;}")
         self.pose_pairs_group_box.setTitle("Pose Pairs (loading...)")
-        self.pose_pairs_group_box.setVisible(True)
 
         thread = QThread()
         worker = _PosePairLoadWorker(
@@ -473,7 +503,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
             poseID=poseID, directory=self.directory, pose_pair=pose_pair, save_to_disk=False
         )
         pose_pair_widget.clickable_labels.clicked.connect(lambda: self.on_pose_pair_widget_clicked(pose_pair_widget))
-        self.pose_pairs_layout.insertWidget(pose_pair_widget.poseID, pose_pair_widget)
+        self.pose_pairs_layout.insertWidget(pose_pair_widget.poseID + 1, pose_pair_widget)
         self.pose_pair_widgets[poseID] = pose_pair_widget
         self.pose_pairs_updated.emit(len(self.pose_pair_widgets))
         self.pose_pair_clicked.emit(pose_pair_widget.pose_pair)
@@ -546,7 +576,23 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self.pose_pair_clicked.emit(pose_pair_widget.pose_pair)
 
     def on_clear_button_clicked(self) -> None:
-        self.clear()
+        reply = QMessageBox.question(
+            self,
+            "Delete All Pose Pairs",
+            "This will permanently delete all pose pair files from disk. This action cannot be undone.",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+        if reply == QMessageBox.Yes:
+            for widget in self.pose_pair_widgets.values():
+                for path in [
+                    widget.robot_pose_yaml_path,
+                    widget.camera_frame_path,
+                    widget.camera_image_path,
+                    widget.camera_pose_yaml_path,
+                ]:
+                    if path.exists():
+                        path.unlink()
+            self.clear()
 
     def create_title_row(self) -> QHBoxLayout:
         checkbox_and_poseID_spacer = QSpacerItem(75, 40, QSizePolicy.Fixed, QSizePolicy.Minimum)
@@ -573,7 +619,10 @@ Note! This will not remove files from disk, but potentially reload them, and ana
 
     def _set_loaded_from_disk(self, value: bool) -> None:
         self._loaded_from_disk = value
-        self.clear_pose_pairs_button.setVisible(not value)
+        self._update_clear_button_visibility()
+
+    def _update_clear_button_visibility(self) -> None:
+        self.clear_pose_pairs_button.setVisible(bool(self.pose_pair_widgets))
 
     def add_pose_pair(self, pose_pair: PosePair) -> Optional[PosePairWidget]:
         if self.is_loading():
@@ -594,9 +643,10 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         pose_pair_widget = PosePairWidget(poseID=poseID, directory=self.directory, pose_pair=pose_pair)
         pose_pair_widget.clickable_labels.clicked.connect(lambda: self.on_pose_pair_widget_clicked(pose_pair_widget))
 
-        self.pose_pairs_layout.insertWidget(pose_pair_widget.poseID, pose_pair_widget)
+        self.pose_pairs_layout.insertWidget(pose_pair_widget.poseID + 1, pose_pair_widget)
         self.pose_pair_widgets[poseID] = pose_pair_widget
         self.pose_pairs_updated.emit(len(self.pose_pair_widgets))
+        self._update_clear_button_visibility()
         return pose_pair_widget
 
     def get_current_poseID(self) -> int:
@@ -647,6 +697,10 @@ Note! This will not remove files from disk, but potentially reload them, and ana
             item = layout.takeAt(0)
             widget = item.widget()
             if widget:
+                if widget is self.load_from_disk_button:
+                    continue
+                if isinstance(widget, PosePairWidget):
+                    widget.release_frame()
                 widget.deleteLater()
             sublayout = item.layout()
             if sublayout:
@@ -656,5 +710,7 @@ Note! This will not remove files from disk, but potentially reload them, and ana
         self.cancel_loading()
         self._set_loaded_from_disk(False)
         self._clear_layout(self.pose_pairs_layout)
+        self.pose_pairs_layout.addWidget(self.load_from_disk_button)
         self.pose_pair_widgets.clear()
         self.pose_pairs_updated.emit(0)
+        self._update_load_button()

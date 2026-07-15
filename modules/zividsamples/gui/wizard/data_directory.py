@@ -131,7 +131,10 @@ class DataDirectory:
         self.root_folder = Path(qsettings.value("root_folder", str(Path.cwd()), type=str))
         session_name = qsettings.value("session_name", "", type=str)
         if session_name and (self.root_folder / session_name).exists():
-            self.session = SessionInfo.from_existing(self.root_folder, session_name)
+            try:
+                self.session = SessionInfo.from_existing(self.root_folder, session_name)
+            except (KeyError, json.JSONDecodeError, OSError):
+                self.session = SessionInfo.new(self.root_folder)
         else:
             self.session = SessionInfo.new(self.root_folder)
         self.show_on_startup = qsettings.value("show_on_startup", True, type=bool)

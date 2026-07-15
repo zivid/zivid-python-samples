@@ -84,11 +84,14 @@ class TouchGUI(TabWidgetWithRobotSupport):
             initial_rotation_information=initial_rotation_information,
         )
         self.markers_in_robot_base_frame_pose_widget.setMinimumHeight(180)
-        self.touch_configuration_widget = TouchConfigurationWidget()
+        self.touch_configuration_widget = TouchConfigurationWidget(
+            initial_rotation_information=initial_rotation_information,
+            eye_in_hand=self.hand_eye_configuration.eye_in_hand,
+        )
         self.calibration_object_image = ImageViewer()
         self.calibration_object_image.setMinimumHeight(300)
         self.calibration_object_image.setMinimumWidth(300)
-        self.confirm_marker_button = QPushButton("Confirm marker to touch")
+        self.confirm_marker_button = QPushButton("Apply Touch Settings")
         self.confirm_marker_button.setCheckable(True)
         self.confirm_marker_button.setObjectName("Touch-confirm_marker_button")
 
@@ -115,12 +118,19 @@ class TouchGUI(TabWidgetWithRobotSupport):
 
     def connect_signals(self) -> None:
         self.confirm_marker_button.clicked.connect(self.on_confirm_marker_button_clicked)
+        self.touch_configuration_widget.marker_id_selection.valueChanged.connect(self.on_touch_configuration_changed)
+        self.touch_configuration_widget.marker_dictionary_selection.currentIndexChanged.connect(
+            self.on_touch_configuration_changed
+        )
+        self.touch_configuration_widget.z_offset_spinbox.valueChanged.connect(self.on_touch_configuration_changed)
+        self.touch_configuration_widget.touch_tool_pose_widget.pose_updated.connect(self.on_touch_configuration_changed)
 
     def update_instructions(self, marker_confirmed: bool, marker_captured: bool) -> None:
         self.marker_confirmed = marker_confirmed
+        self.marker_captured = marker_captured
         self.instruction_steps = {}
-        self.instruction_steps["Confirm marker to touch"] = self.marker_confirmed
-        self.instruction_steps["Capture"] = marker_captured and self.marker_confirmed
+        self.instruction_steps["Apply Touch Settings"] = self.marker_confirmed
+        self.instruction_steps["Capture"] = self.marker_captured and self.marker_confirmed
         self.instruction_steps["Touch"] = False
         self.instructions_updated.emit()
         self.confirm_marker_button.setChecked(self.marker_confirmed)
@@ -135,6 +145,9 @@ class TouchGUI(TabWidgetWithRobotSupport):
     def on_confirm_marker_button_clicked(self) -> None:
         self.update_instructions(marker_confirmed=self.confirm_marker_button.isChecked(), marker_captured=False)
 
+    def on_touch_configuration_changed(self) -> None:
+        self.update_instructions(marker_confirmed=False, marker_captured=False)
+
     def hand_eye_configuration_update(self, hand_eye_configuration: HandEyeConfiguration) -> None:
         self.hand_eye_configuration = hand_eye_configuration
         self.hand_eye_pose_widget.on_eye_in_hand_toggled(self.hand_eye_configuration.eye_in_hand)
@@ -143,6 +156,10 @@ class TouchGUI(TabWidgetWithRobotSupport):
     def rotation_format_update(self, rotation_information: RotationInformation) -> None:
         self.hand_eye_pose_widget.set_rotation_format(rotation_information)
         self.robot_pose_widget.set_rotation_format(rotation_information)
+        self.touch_configuration_widget.set_rotation_format(rotation_information)
+
+    def toggle_advanced_view(self, checked: bool):
+        self.touch_configuration_widget.toggle_advanced_view(checked)
 
     def robot_configuration_update(self, _: RobotConfiguration) -> None:
         pass
@@ -184,8 +201,7 @@ class TouchGUI(TabWidgetWithRobotSupport):
         }
         self.markers_in_robot_base_frame_pose_widget.set_markers(detected_marker_poses_in_robot_frame)
         touch_pose = list(detected_marker_poses_in_robot_frame.values())[0]
-        touch_tool = TransformationMatrix()
-        touch_tool.translation[2] = -touch_configuration.z_offset
+        touch_tool = touch_configuration.touch_tool_transform
         self.touch_pose_updated.emit(touch_pose * touch_tool)
         self.update_instructions(marker_confirmed=self.marker_confirmed, marker_captured=True)
 
@@ -199,6 +215,7 @@ class TouchGUI(TabWidgetWithRobotSupport):
 
     def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix) -> None:
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
+        self.update_instructions(marker_confirmed=self.marker_confirmed, marker_captured=self.marker_captured)
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.touch_configuration_widget.closeEvent(a0)

@@ -95,7 +95,6 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
             hand_eye_configuration=self.hand_eye_configuration, hide_descriptive_image=True
         )
         self.infield_input_data_selection_widget = InfieldCorrectionDataSelectionWidget(directory=self.data_directory)
-        self.infield_input_data_selection_widget.setVisible(False)
         self.infield_correction_result_widget = InfieldCorrectionResultWidget()
 
     def setup_layout(self) -> None:
@@ -154,7 +153,7 @@ class InfieldCorrectionGUI(TabWidgetWithRobotSupport):
 
     def on_pending_changes(self) -> None:
         self.infield_input_data_selection_widget.clear_gui()
-        self.infield_input_data_selection_widget.update_data_directory(self.data_directory)
+        self.infield_input_data_selection_widget.set_directory(self.data_directory)
 
     def on_tab_visibility_changed(self, is_current: bool) -> None:
         pass

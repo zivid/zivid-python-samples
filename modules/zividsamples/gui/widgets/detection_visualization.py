@@ -57,12 +57,14 @@ class DetectionVisualizationWidget(QWidget):
         self.descriptive_image_label.setFixedWidth(self.descriptive_image_width)
         self.descriptive_image_label.setFixedHeight(
             int(self.descriptive_image_width * descriptive_image.height() / descriptive_image.width())
+            if not descriptive_image.isNull()
+            else self.descriptive_image_width
         )
         self.descriptive_image_label.setPixmap(descriptive_image)
 
         group_box_contents_layout = QHBoxLayout()
-        group_box_contents_layout.addWidget(self.calibration_object_image_viewer)
-        group_box_contents_layout.addWidget(self.error_message_label)
+        group_box_contents_layout.addWidget(self.calibration_object_image_viewer, 1)
+        group_box_contents_layout.addWidget(self.error_message_label, 1)
         group_box_contents_layout.addWidget(self.descriptive_image_label)
 
         self.group_box.setLayout(group_box_contents_layout)
@@ -86,6 +88,8 @@ class DetectionVisualizationWidget(QWidget):
         self.descriptive_image_label.setPixmap(descriptive_image)
         self.descriptive_image_label.setFixedHeight(
             int(self.descriptive_image_width * descriptive_image.height() / descriptive_image.width())
+            if not descriptive_image.isNull()
+            else self.descriptive_image_width
         )
 
     def on_hand_eye_configuration_updated(self, hand_eye_configuration: HandEyeConfiguration) -> None:
@@ -127,7 +131,7 @@ class DetectionVisualizationWidget(QWidget):
         self.calibration_object_image_viewer.hide()
 
     def get_qimage(self, calibration_object: CalibrationObject) -> QImage:
-        calibration_object_pixmap = self.calibration_object_pixmap[self.hand_eye_configuration.calibration_object]
+        calibration_object_pixmap = self.calibration_object_pixmap[calibration_object]
         if calibration_object_pixmap is None:
             raise RuntimeError(f"No image available for {calibration_object.name}")
         return calibration_object_pixmap.toImage()

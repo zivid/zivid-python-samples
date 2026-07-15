@@ -1,7 +1,16 @@
 from typing import List, Optional
 
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QApplication, QCheckBox, QGroupBox, QHBoxLayout, QPushButton, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class HandEyeCalibrationButtonsWidget(QWidget):
@@ -11,37 +20,49 @@ class HandEyeCalibrationButtonsWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
-        # Define buttons
         self.calibrate_button = QPushButton("Calibrate")
         self.calibrate_button.setObjectName("HandEye-calibrate_button")
         self.use_fixed_objects_checkbox = QCheckBox("Fixed Objects - for low DOF systems")
         self.use_fixed_objects_checkbox.setObjectName("HandEye-fixed_objects_checkbox")
+        self._status_label = QLabel()
+        self._status_label.setWordWrap(True)
+        self._status_label.setVisible(False)
 
-        # Connect signals
         self.calibrate_button.clicked.connect(self.on_calibrate_button_clicked)
         self.use_fixed_objects_checkbox.toggled.connect(self.on_use_fixed_objects_toggled)
 
-        # Add buttons to layout
+        buttons_row = QHBoxLayout()
+        buttons_row.addWidget(self.calibrate_button)
+        buttons_row.addWidget(self.use_fixed_objects_checkbox)
+
         calibrate_group_box = QGroupBox("Calibrate")
-        calibrate_group_box_layout = QHBoxLayout()
+        calibrate_group_box_layout = QVBoxLayout()
         calibrate_group_box.setLayout(calibrate_group_box_layout)
+        calibrate_group_box_layout.addLayout(buttons_row)
+        calibrate_group_box_layout.addWidget(self._status_label)
 
-        calibrate_group_box_layout.addWidget(self.calibrate_button)
-        calibrate_group_box_layout.addWidget(self.use_fixed_objects_checkbox)
-
-        buttons_layout = QHBoxLayout()
-        buttons_layout.addWidget(calibrate_group_box)
-
-        self.setLayout(buttons_layout)
+        outer_layout = QHBoxLayout()
+        outer_layout.addWidget(calibrate_group_box)
+        self.setLayout(outer_layout)
 
     def on_calibrate_button_clicked(self) -> None:
-        self.calibrate_button.setStyleSheet("background-color: yellow;")
+        self.calibrate_button.setEnabled(False)
+        self.calibrate_button.setStyleSheet("background-color: #C07800; color: white;")
         QApplication.processEvents()
         self.calibrate_button_clicked.emit()
         self.calibrate_button.setStyleSheet("")
+        self.calibrate_button.setEnabled(True)
 
     def on_use_fixed_objects_toggled(self, checked: bool) -> None:
         self.use_fixed_objects_toggled.emit(checked)
+
+    def set_calibration_status(self, style: str, message: str) -> None:
+        self._status_label.setStyleSheet(style)
+        self._status_label.setText(message)
+        self._status_label.setVisible(True)
+
+    def hide_calibration_status(self) -> None:
+        self._status_label.setVisible(False)
 
     def disable_buttons(self) -> None:
         self.calibrate_button.setEnabled(False)

@@ -15,7 +15,9 @@ import zivid
 from nptyping import NDArray, Shape, UInt8
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QCloseEvent, QImage
-from PyQt5.QtWidgets import QCheckBox, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QCheckBox, QFileDialog, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout, QWidget
+from zivid.experimental.point_cloud_export import export_unorganized_point_cloud
+from zivid.experimental.point_cloud_export.file_format import PLY
 from zividsamples.gui.robot.robot_control import RobotTarget
 from zividsamples.gui.verification.capture_at_pose_selection_widget import CaptureAtPose, CaptureAtPoseSelectionWidget
 from zividsamples.gui.widgets.pointcloud_visualizer import VisualizerWidget
@@ -34,7 +36,9 @@ class StitchGUI(TabWidgetWithRobotSupport):
     hand_eye_configuration: HandEyeConfiguration
     has_detection_result: bool = False
     has_confirmed_robot_pose: bool = False
+    has_captured: bool = False
     point_cloud_widget: VisualizerWidget
+    stitched_point_cloud: Optional[zivid.UnorganizedPointCloud]
     loading_finished = pyqtSignal()
     instructions_updated: pyqtSignal = pyqtSignal()
     description: List[str]
@@ -88,6 +92,9 @@ class StitchGUI(TabWidgetWithRobotSupport):
         self.uniform_color_check_box.setText("Use uniform color for point clouds")
         self.uniform_color_check_box.setChecked(True)
         self.point_cloud_widget = VisualizerWidget()
+        self.save_point_cloud_button = QPushButton("Save Point Cloud")
+        self.save_point_cloud_button.setEnabled(False)
+        self.stitched_point_cloud: Optional[zivid.UnorganizedPointCloud] = None
 
     def setup_layout(self) -> None:
         layout = QVBoxLayout()
@@ -104,6 +111,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
         left_panel.addWidget(self.hand_eye_pose_widget)
         right_panel.addWidget(self.capture_at_pose_selection_widget)
         right_panel.addWidget(self.uniform_color_check_box)
+        right_panel.addWidget(self.save_point_cloud_button)
         center_layout.addLayout(left_panel)
         center_layout.addLayout(right_panel)
         layout.addLayout(center_layout)
@@ -117,9 +125,11 @@ class StitchGUI(TabWidgetWithRobotSupport):
         self.capture_at_pose_selection_widget.loading_finished.connect(self.update_stitched_view)
         self.capture_at_pose_selection_widget.loading_finished.connect(self.loading_finished)
         self.uniform_color_check_box.stateChanged.connect(self.update_stitched_view)
+        self.save_point_cloud_button.clicked.connect(self.on_save_point_cloud_clicked)
 
     def update_instructions(self, captured: bool, robot_pose_confirmed: bool) -> None:
         self.has_confirmed_robot_pose = robot_pose_confirmed
+        self.has_captured = captured
         self.instruction_steps = {}
         if self.robot_configuration.can_control():
             self.instruction_steps[
@@ -186,6 +196,22 @@ class StitchGUI(TabWidgetWithRobotSupport):
         if unorganized_point_cloud.size > 0:
             unorganized_point_cloud = unorganized_point_cloud.voxel_downsampled(voxel_size=1, min_points_per_voxel=1)
             self.point_cloud_widget.set_point_cloud(unorganized_point_cloud)
+        self.stitched_point_cloud = unorganized_point_cloud if unorganized_point_cloud.size > 0 else None
+        self.save_point_cloud_button.setEnabled(self.stitched_point_cloud is not None)
+
+    def on_save_point_cloud_clicked(self):
+        if self.stitched_point_cloud is None:
+            return
+        file_path = QFileDialog.getSaveFileName(
+            self, "Save Point Cloud", "stitched_pointcloud.ply", "PLY Files (*.ply)"
+        )[0]
+        if file_path:
+            if not file_path.endswith(".ply"):
+                file_path += ".ply"
+            try:
+                export_unorganized_point_cloud(self.stitched_point_cloud, PLY(file_path, layout=PLY.Layout.unordered))
+            except Exception as ex:
+                QMessageBox.critical(self, "Save failed", str(ex))
 
     def on_capture_at_pose_selected(self, capture_at_pose: CaptureAtPose) -> None:
         self.robot_pose_widget.set_transformation_matrix(capture_at_pose.robot_pose)
@@ -203,6 +229,7 @@ class StitchGUI(TabWidgetWithRobotSupport):
 
     def set_hand_eye_transformation_matrix(self, transformation_matrix: TransformationMatrix) -> None:
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
+        self.update_instructions(captured=self.has_captured, robot_pose_confirmed=self.has_confirmed_robot_pose)
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []
