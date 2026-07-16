@@ -50,26 +50,33 @@ class SettingsPixelMappingIntrinsics:
     def load_settings(
         cls: type["SettingsPixelMappingIntrinsics"], qsettings: QSettings
     ) -> "SettingsPixelMappingIntrinsics":
-        settings_2d3d = (
-            zivid.Settings()
-            if not qsettings.contains("settings_2d3d")
-            else zivid.Settings.from_serialized(qsettings.value("settings_2d3d"))
-        )
-        qsettings.beginGroup("pixel_mapping")
-        default_pixel_mapping = PixelMapping()
-        pixel_mapping = PixelMapping(
-            row_stride=qsettings.value("row_stride", default_pixel_mapping.row_stride, type=int),
-            col_stride=qsettings.value("col_stride", default_pixel_mapping.col_stride, type=int),
-            row_offset=qsettings.value("row_offset", default_pixel_mapping.row_offset, type=float),
-            col_offset=qsettings.value("col_offset", default_pixel_mapping.col_offset, type=float),
-        )
-        qsettings.endGroup()
-        intrinsics = (
-            zivid.CameraIntrinsics()
-            if not qsettings.contains("intrinsics")
-            else zivid.CameraIntrinsics.from_serialized(qsettings.value("intrinsics"))
-        )
-        return cls(settings_2d3d=settings_2d3d, pixel_mapping=pixel_mapping, intrinsics=intrinsics)
+        try:
+            settings_2d3d = (
+                zivid.Settings()
+                if not qsettings.contains("settings_2d3d")
+                else zivid.Settings.from_serialized(qsettings.value("settings_2d3d"))
+            )
+            qsettings.beginGroup("pixel_mapping")
+            default_pixel_mapping = PixelMapping()
+            pixel_mapping = PixelMapping(
+                row_stride=qsettings.value("row_stride", default_pixel_mapping.row_stride, type=int),
+                col_stride=qsettings.value("col_stride", default_pixel_mapping.col_stride, type=int),
+                row_offset=qsettings.value("row_offset", default_pixel_mapping.row_offset, type=float),
+                col_offset=qsettings.value("col_offset", default_pixel_mapping.col_offset, type=float),
+            )
+            qsettings.endGroup()
+            intrinsics = (
+                zivid.CameraIntrinsics()
+                if not qsettings.contains("intrinsics")
+                else zivid.CameraIntrinsics.from_serialized(qsettings.value("intrinsics"))
+            )
+            return cls(settings_2d3d=settings_2d3d, pixel_mapping=pixel_mapping, intrinsics=intrinsics)
+        except Exception:  # pylint: disable=broad-except
+            return cls(
+                settings_2d3d=zivid.Settings(),
+                pixel_mapping=PixelMapping(),
+                intrinsics=zivid.CameraIntrinsics(),
+            )
 
 
 class SettingsForHandEyeGUI:
@@ -463,8 +470,11 @@ class SettingsSelectionDialog(QDialog):
             )
         else:
             production_settings = hand_eye_settings = current_widget.get_settings()
-        infield_frame = zivid.calibration.capture_calibration_board(self.camera)
-        infield_correction_settings = infield_frame.settings
+        try:
+            infield_frame = zivid.calibration.capture_calibration_board(self.camera)
+            infield_correction_settings = infield_frame.settings
+        except Exception:  # pylint: disable=broad-except
+            infield_correction_settings = production_settings
         self.settings_for_hand_eye_gui = SettingsForHandEyeGUI(
             production=SettingsPixelMappingIntrinsics(
                 settings_2d3d=production_settings,

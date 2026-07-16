@@ -91,6 +91,26 @@ QWidget {{
 }}
 """
 
+ZIVID_BLUE_BUTTON_STYLE = f"""
+QPushButton {{
+    background-color: {_color_text(ZividColors.DARK_BLUE, 1)};
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+}}
+QPushButton:hover {{
+    background-color: {_color_text(ZividColors.LIGHT_BLUE, 1)};
+}}
+QPushButton:pressed {{
+    background-color: {_color_text(ZividColors.DARK_GRAY, 1)};
+}}
+QPushButton:disabled {{
+    background-color: {_color_text(ZividColors.DARK_BLUE, 0.5)};
+    color: {_color_text(ZividColors.DISABLED_TEXT, 1)};
+}}
+"""
+
 BUTTON_STYLE = f"""
 QPushButton {{
     background-color: {_color_text(ZividColors.ITEM_BACKGROUND, 1)};

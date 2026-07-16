@@ -170,7 +170,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.has_confirmed_robot_pose or not self.robot_configuration.has_no_robot()
         )
         self.instruction_steps = {}
-        if self.robot_configuration.can_control:
+        if self.robot_configuration.can_control():
             self.instruction_steps[
                 "Move Robot (click 'Move to next target', 'Home' or Disconnect→manually move robot→Connect)"
             ] = self.has_confirmed_robot_pose
@@ -180,7 +180,7 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.has_set_object_poses_in_robot_frame
         )
         if self.has_confirmed_robot_pose and self.has_set_object_poses_in_robot_frame:
-            if self.robot_configuration.can_control:
+            if self.robot_configuration.can_control():
                 self.instruction_steps[
                     "Move Robot (click 'Move to next target' or Disconnect→manually move robot→Connect)"
                 ] = False
@@ -322,8 +322,6 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
     def on_actual_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
         self.confirm_robot_pose()
-        self.calculate_calibration_object_in_camera_frame_pose()
-        self.update_projection.emit(True)
 
     def on_target_pose_updated(self, robot_target: RobotTarget) -> None:
         self.robot_pose_widget.set_transformation_matrix(robot_target.pose)
@@ -398,6 +396,8 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
             self.cv2_handler.draw_circles(projector_image, non_nan_projector_image_indices, color)
             # Add diagonal lines across white checkers
             rows, cols = (5, 6) if projector_pixels.shape[0] == 30 else (3, 4)
+            if non_nan_projector_image_indices.shape[0] != rows * cols:
+                return projector_image
             organized_projector_pixel_indices = non_nan_projector_image_indices.reshape(rows, cols, -1)
             diagonal_lines = np.array(
                 [
@@ -461,6 +461,10 @@ class HandEyeVerificationGUI(TabWidgetWithRobotSupport):
         self.hand_eye_pose_widget.set_transformation_matrix(transformation_matrix)
         self.calculate_calibration_object_in_camera_frame_pose()
         self.update_projection.emit(True)
+        self.update_instructions(
+            has_set_object_poses_in_robot_frame=self.has_set_object_poses_in_robot_frame,
+            robot_pose_confirmed=self.has_confirmed_robot_pose,
+        )
 
     def get_tab_widgets_in_order(self) -> List[QWidget]:
         widgets: List[QWidget] = []

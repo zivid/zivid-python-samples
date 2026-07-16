@@ -36,7 +36,7 @@ from zividsamples.gui.wizard.marker_configuration import MarkerConfiguration
 from zividsamples.gui.wizard.robot_configuration import RobotConfiguration
 from zividsamples.gui.wizard.rotation_format_configuration import RotationInformation
 from zividsamples.gui.wizard.settings_selector import SettingsPixelMappingIntrinsics
-from zividsamples.save_load_transformation_matrix import save_transformation_matrix
+from zividsamples.save_load_transformation_matrix import load_transformation_matrix, save_transformation_matrix
 from zividsamples.save_residuals import save_residuals
 from zividsamples.transformation_matrix import TransformationMatrix
 
@@ -111,7 +111,6 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
             hand_eye_configuration=self.hand_eye_configuration
         )
         self.pose_pair_selection_widget = PosePairSelectionWidget(directory=self.data_directory)
-        self.pose_pair_selection_widget.setVisible(False)
         self.hand_eye_calibration_buttons = HandEyeCalibrationButtonsWidget()
         self.hand_eye_calibration_buttons.calibrate_button.setEnabled(False)
         self.hand_eye_calibration_buttons.setObjectName("HE-Calibration-hand_eye_calibration_buttons")
@@ -147,6 +146,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         self.pose_pair_selection_widget.pose_pair_clicked.connect(self.on_pose_pair_clicked)
         self.pose_pair_selection_widget.pose_pairs_updated.connect(self.on_pose_pairs_update)
         self.pose_pair_selection_widget.loading_finished.connect(self._on_pose_pairs_loading_finished)
+        self.pose_pair_selection_widget.load_from_disk_requested.connect(self.on_load_calibration_data_button_clicked)
 
     def _on_pose_pairs_loading_finished(self) -> None:
         self.loading_finished.emit()
@@ -227,8 +227,13 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
     def on_pending_changes(self) -> None:
         self.pose_pair_selection_widget.clear()
         self.pose_pair_selection_widget.set_directory(self.data_directory)
-        if not self.data_directory_has_data():
-            return
+        hand_eye_transform_path = self.data_directory / "hand_eye_transform.yaml"
+        if hand_eye_transform_path.exists():
+            hand_eye_transform = load_transformation_matrix(hand_eye_transform_path)
+            if not hand_eye_transform.is_identity():
+                self.calibration_finished.emit(hand_eye_transform)
+
+    def on_load_calibration_data_button_clicked(self) -> None:
         calibration_object = self.hand_eye_configuration.calibration_object
         marker_configuration = self.marker_configuration
         if self.session_info is not None:
@@ -323,6 +328,7 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         )
         if reply == QMessageBox.Yes:
             self.pose_pair_selection_widget.clear()
+            self.hand_eye_calibration_buttons.hide_calibration_status()
             return True
         return False
 
@@ -335,7 +341,8 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         self.hand_eye_calibration_buttons.calibrate_button.setEnabled(
             number_of_pose_pairs >= self.minimum_pose_pairs_for_calibration
         )
-        self.pose_pair_selection_widget.setVisible(number_of_pose_pairs > 0)
+        if number_of_pose_pairs == 0:
+            self.hand_eye_calibration_buttons.hide_calibration_status()
 
     def process_capture(self, frame: zivid.Frame, rgba: NDArray[Shape["N, M, 4"], UInt8], settings: SettingsPixelMappingIntrinsics) -> None:  # type: ignore
         try:
@@ -411,6 +418,35 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
                 self.hand_eye_calibration_buttons.use_fixed_objects_checkbox.setChecked(self.fixed_objects.has_data())
                 self.fixed_objects = updated_fixed_objects
 
+    def _update_calibration_status(self, calibration_result) -> None:
+        try:
+            status = calibration_result.status()
+        except RuntimeError:
+            self.hand_eye_calibration_buttons.set_calibration_status(
+                "background-color: #555555; color: white; padding: 6px; border-radius: 4px;",
+                "Calibration status not available. Feature available from Zivid SDK version 2.18.",
+            )
+            return
+        status_config = {
+            zivid.calibration.HandEyeStatus.ok: (
+                "background-color: #2d7a2d; color: white; padding: 6px; border-radius: 4px;",
+                "Calibration OK — open the Verify section to validate the accuracy of the hand-eye transform before deployment.",
+            ),
+            zivid.calibration.HandEyeStatus.insufficient_motion: (
+                "background-color: #b86e00; color: white; padding: 6px; border-radius: 4px;",
+                "Insufficient motion: capture more poses with greater variation in position and rotation across all degrees of freedom.",
+            ),
+            zivid.calibration.HandEyeStatus.insufficient_data_quality: (
+                "background-color: #a02020; color: white; padding: 6px; border-radius: 4px;",
+                "Poor data quality: check lighting, exposure, focus, and that the robot and calibration object remain stationary during capture.",
+            ),
+        }
+        style, message = status_config.get(
+            status,
+            ("background-color: gray; color: white; padding: 6px;", f"Status: {status}"),
+        )
+        self.hand_eye_calibration_buttons.set_calibration_status(style, message)
+
     def on_calibrate_button_clicked(self) -> None:
         self._calibrate(save_to_disk=True)
 
@@ -442,9 +478,12 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
                     save_residuals(calibration_result.residuals(), hand_eye_residuals_path)
 
                 self.pose_pair_selection_widget.set_residuals(calibration_result.residuals())
+                self._update_calibration_status(calibration_result)
                 if save_to_disk:
                     hand_eye_transform_path = self.data_directory / "hand_eye_transform.yaml"
-                    show_yaml_dialog(hand_eye_transform_path, "Hand Eye Calibration Transform")
+                    show_yaml_dialog(
+                        hand_eye_transform_path, "Hand Eye Calibration Transform", close_button_label="Continue"
+                    )
                 self.update_instructions(
                     has_detection_result=False,
                     robot_pose_confirmed=False,
@@ -452,10 +491,11 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
                 )
                 self.calibration_finished.emit(hand_eye_transformation_matrix)
             else:
-                raise RuntimeError()
+                raise RuntimeError("Calibration returned an invalid result")
         except RuntimeError as ex:
             print(f"Failed to calibrate eye to hand: {ex}")
             QMessageBox.critical(self, "Hand-Eye Calibration Error", str(ex))
+            self.hand_eye_calibration_buttons.hide_calibration_status()
             self.calibration_finished.emit(TransformationMatrix())
 
     def confirm_robot_pose(self, confirmed: bool = True) -> None:
@@ -466,6 +506,14 @@ class HandEyeCalibrationGUI(TabWidgetWithRobotSupport):
         )
 
     def on_confirm_robot_pose_button_clicked(self, checked: bool) -> None:
+        rotation_warning = self.robot_pose_widget.check_rotation_warning() if checked else None
+        if rotation_warning:
+            QMessageBox.warning(
+                self, "Invalid Rotation", f"<b>Cannot uniquely determine rotation</b><br>{rotation_warning}"
+            )
+            self.confirm_robot_pose_button.setChecked(False)
+            self.confirm_robot_pose(False)
+            return
         self.confirm_robot_pose(checked)
 
     def on_robot_pose_manually_updated(self) -> None:

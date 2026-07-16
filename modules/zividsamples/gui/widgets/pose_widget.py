@@ -1,4 +1,5 @@
 import re
+import warnings
 from abc import abstractmethod
 from enum import Enum
 from pathlib import Path
@@ -7,8 +8,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import zivid
 from PyQt5.QtCore import QSignalBlocker, Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QGridLayout, QGroupBox, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtWidgets import QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
 from scipy.spatial.transform import Rotation
 from zividsamples.gui.qt_application import create_horizontal_line, create_vertical_line
 from zividsamples.gui.widgets.aspect_ratio_label import AspectRatioLabel
@@ -145,7 +146,7 @@ class BasePoseWidget(QWidget):
             rotation_matrix = np.asarray(rotation_parameters).reshape([3, 3])
             rotation = Rotation.from_matrix(rotation_matrix)
         else:
-            raise ValueError(f"Invalid variant: {self.variant}")
+            raise ValueError(f"Invalid variant: {self.rotation_information.rotation_format.name}")
         return rotation
 
     def parameters_from_rotation(self, rotation: Rotation) -> List[float]:
@@ -189,6 +190,51 @@ class BasePoseWidget(QWidget):
         )
         return f"Rotation as {self.rotation_information.rotation_format.name}{degrees}"
 
+    def _rotation_column_label_texts(self) -> List[str]:
+        fmt = self.rotation_information.rotation_format
+        if fmt == RotationFormats.euler:
+            return list(self.rotation_information.euler_variant)
+        if fmt == RotationFormats.rotation_vector:
+            return ["X", "Y", "Z"]
+        if fmt == RotationFormats.angle_axis:
+            return ["Angle", "X", "Y", "Z"]
+        if fmt == RotationFormats.quaternion:
+            return ["W", "X", "Y", "Z"]
+        return []
+
+    def _update_rotation_column_labels(self):
+        texts = self._rotation_column_label_texts()
+        for i, label in enumerate(self.rotation_column_labels):
+            if i < len(texts):
+                label.setText(f"{texts[i].upper()}:")
+                label.setVisible(bool(texts[i]))
+            else:
+                label.setText("")
+                label.setVisible(False)
+
+    def _add_rotation_labels_and_editors_to_layout(self):
+        for i in reversed(range(self.rotation_parameters_layout.count())):
+            item = self.rotation_parameters_layout.itemAt(i)
+            if item.widget() is not None:
+                item.widget().setParent(None)
+            elif item.layout() is not None:
+                sub = item.layout()
+                while sub.count():
+                    sub.itemAt(0).widget().setParent(None)
+                self.rotation_parameters_layout.removeItem(sub)
+        num_params = self.rotation_information.rotation_format.number_of_parameters
+        is_matrix = num_params == 9
+        for index, (label, editor) in enumerate(
+            zip(self.rotation_column_labels, self.rotation_parameter_editors, strict=False)
+        ):
+            if is_matrix:
+                self.rotation_parameters_layout.addWidget(editor, index // 3, index % 3)
+            else:
+                cell = QHBoxLayout()
+                cell.addWidget(label)
+                cell.addWidget(editor)
+                self.rotation_parameters_layout.addLayout(cell, 0, index)
+
 
 def parameter_text_to_float(text: str) -> float:
     sanitized_text = text.strip().replace(",", ".")
@@ -225,6 +271,7 @@ class PoseWidget(BasePoseWidget):
         )
 
         self.rotation_vector_user_parameters: List[float] = [0.0, 0.0, 0.0]
+        self.euler_user_parameters: List[float] = [0.0, 0.0, 0.0]
         self.rotation_parameters: List[float] = []
         self.setup_widgets()
         self.setup_layout()
@@ -236,17 +283,27 @@ class PoseWidget(BasePoseWidget):
         self.translation_parameters_label = QLabel()
         self.translation_parameters_label.setText("Translation")
         self.translation_parameter_editors: List[QLineEdit] = [QLineEdit() for _ in range(3)]
+        editor_font = QFont()
+        editor_font.setPointSize(12)
         for index, parameter_editor in enumerate(self.translation_parameter_editors):
             parameter_editor.setObjectName(f"translation_parameter_{index}")
             parameter_editor.setReadOnly(self.read_only)
+            parameter_editor.setFont(editor_font)
+
+        self.translation_column_labels: List[QLabel] = [QLabel(f"{axis}:") for axis in "XYZ"]
 
         self.rotation_parameters_layout = QGridLayout()
         self.rotation_parameters_label = QLabel()
         self.rotation_parameters_label.setText(self._rotation_label_text())
+        self.rotation_column_labels: List[QLabel] = [QLabel() for _ in range(9)]
+        for label in self.rotation_column_labels:
+            label.setAlignment(Qt.AlignCenter)
+        self._update_rotation_column_labels()
         self.rotation_parameter_editors: List[QLineEdit] = [QLineEdit() for _ in range(9)]
         for index, parameter_editor in enumerate(self.rotation_parameter_editors):
             parameter_editor.setObjectName(f"rotation_parameter_{index}")
             parameter_editor.setReadOnly(self.read_only)
+            parameter_editor.setFont(editor_font)
 
         self.advanced_divider = create_horizontal_line()
         self.pose_label = QLabel()
@@ -267,17 +324,19 @@ class PoseWidget(BasePoseWidget):
             row_offset = row_offset + 1
 
         self.grid_layout.addWidget(self.translation_parameters_label, row_offset, 0)
-        for index, parameter_editor in enumerate(self.translation_parameter_editors, start=1):
-            self.grid_layout.addWidget(parameter_editor, row_offset, index, 1, 1)
+        for index, (label, parameter_editor) in enumerate(
+            zip(self.translation_column_labels, self.translation_parameter_editors, strict=False), start=1
+        ):
+            cell = QHBoxLayout()
+            cell.addWidget(label)
+            cell.addWidget(parameter_editor)
+            self.grid_layout.addLayout(cell, row_offset, index, 1, 1)
         row_offset = row_offset + 1
 
         self.grid_layout.addWidget(create_horizontal_line(), row_offset, 0, 1, 4)
         row_offset = row_offset + 1
 
-        for index, parameter_editor in enumerate(self.rotation_parameter_editors):
-            row = index // 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else 0
-            col = index % 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else index
-            self.rotation_parameters_layout.addWidget(parameter_editor, row, col)
+        self._add_rotation_labels_and_editors_to_layout()
         self.grid_layout.addWidget(self.rotation_parameters_label, row_offset, 0)
         self.grid_layout.addLayout(self.rotation_parameters_layout, row_offset, 1, 1, 3)
         row_offset = row_offset + 1
@@ -326,6 +385,11 @@ class PoseWidget(BasePoseWidget):
             parameter_editor.editingFinished.connect(self.on_rotation_parameter_changed)
         self.pose_text.editingFinished.connect(self.on_pose_text_changed)
 
+    def on_rotation_format_update(self, rotation_information: RotationInformation) -> None:
+        self.euler_user_parameters = [0.0, 0.0, 0.0]
+        self.rotation_vector_user_parameters = [0.0, 0.0, 0.0]
+        super().on_rotation_format_update(rotation_information)
+
     def toggle_advanced_section(self, checked: bool) -> None:
         for widget in self.advanced_widgets:
             widget.setVisible(checked)
@@ -342,20 +406,18 @@ class PoseWidget(BasePoseWidget):
 
     def update_from_transformation_matrix(self) -> None:
         self.rotation_parameters = self.parameters_from_rotation(self.transformation_matrix.rotation)
-        if self.rotation_information.rotation_format == "Rotation Vector" and not np.all(
+        if self.rotation_information.rotation_format == RotationFormats.rotation_vector and not np.all(
             np.asarray(self.rotation_vector_user_parameters) == np.zeros(3)
         ):
             self.rotation_parameters = self.rotation_vector_user_parameters
+        if self.rotation_information.rotation_format == RotationFormats.euler and not np.all(
+            np.asarray(self.euler_user_parameters) == np.zeros(3)
+        ):
+            self.rotation_parameters = self.euler_user_parameters
         self.rotation_parameters_label.setText(self._rotation_label_text())
         self.pose_label.setText(f"Translation + {self._rotation_label_text()}")
-        for i in reversed(range(self.rotation_parameters_layout.count())):
-            widget = self.rotation_parameters_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.setParent(None)
-        for index, parameter_editor in enumerate(self.rotation_parameter_editors):
-            row = index // 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else 0
-            col = index % 3 if self.rotation_information.rotation_format.number_of_parameters == 9 else index
-            self.rotation_parameters_layout.addWidget(parameter_editor, row, col)
+        self._update_rotation_column_labels()
+        self._add_rotation_labels_and_editors_to_layout()
         with QSignalBlocker(self.pose_text):
             self.pose_text.setText(
                 " ".join([f"{value:.3f}" for value in list(self.transformation_matrix.translation)])
@@ -391,8 +453,10 @@ class PoseWidget(BasePoseWidget):
             for i, parameter_editor in enumerate(self.rotation_parameter_editors)
             if i < self.rotation_information.rotation_format.number_of_parameters
         ]
-        if self.rotation_information.rotation_format == "Rotation Vector":
+        if self.rotation_information.rotation_format == RotationFormats.rotation_vector:
             self.rotation_vector_user_parameters = updated_rotation_parameters
+        if self.rotation_information.rotation_format == RotationFormats.euler:
+            self.euler_user_parameters = updated_rotation_parameters
         updated_rotation = self.rotation_from_parameters(updated_rotation_parameters)
         parameters_from_updated_rotation = self.parameters_from_rotation(updated_rotation)
         has_valid_input = True
@@ -400,10 +464,15 @@ class PoseWidget(BasePoseWidget):
             if index != modified_index and not np.isclose(parameters_from_updated_rotation[index], rotation_parameters):
                 self.sender().setStyleSheet("background-color: yellow; color: black;")
                 has_valid_input = False
-        if self.rotation_information.rotation_format == "Rotation Vector":
+        if self.rotation_information.rotation_format == RotationFormats.rotation_vector:
             rotation_from_scipy_rotvec = self.rotation_from_parameters(parameters_from_updated_rotation)
             rotation_from_user_rotvec = self.rotation_from_parameters(self.rotation_vector_user_parameters)
             if np.allclose(rotation_from_scipy_rotvec.as_rotvec(), rotation_from_user_rotvec.as_rotvec()):
+                has_valid_input = True
+        if self.rotation_information.rotation_format == RotationFormats.euler:
+            rotation_from_scipy_euler = self.rotation_from_parameters(parameters_from_updated_rotation)
+            rotation_from_user_euler = self.rotation_from_parameters(self.euler_user_parameters)
+            if np.allclose(rotation_from_scipy_euler.as_matrix(), rotation_from_user_euler.as_matrix()):
                 has_valid_input = True
         if has_valid_input:
             self.rotation_parameters = updated_rotation_parameters
@@ -428,16 +497,36 @@ class PoseWidget(BasePoseWidget):
     def on_pose_text_changed(self) -> None:
         parameter_list = re.split(r"[,\s]+", self.pose_text.text().strip())
         if len(parameter_list) < (3 + len(self.rotation_parameters)):
-            # Wait for user to finish entering data
             return
-        self.transformation_matrix.translation = np.array([float(value) for value in parameter_list[:3]])
-        updated_rotation_parameters = [float(value) for value in parameter_list[3:]]
-        if self.rotation_information.rotation_format == "Rotation Vector":
+        try:
+            self.transformation_matrix.translation = np.array([float(value) for value in parameter_list[:3]])
+            updated_rotation_parameters = [float(value) for value in parameter_list[3:]]
+        except ValueError:
+            self.update_from_transformation_matrix()
+            return
+        if self.rotation_information.rotation_format == RotationFormats.rotation_vector:
             self.rotation_vector_user_parameters = updated_rotation_parameters
+        if self.rotation_information.rotation_format == RotationFormats.euler:
+            self.euler_user_parameters = updated_rotation_parameters
         updated_rotation = self.rotation_from_parameters(updated_rotation_parameters)
         self.rotation_parameters = updated_rotation_parameters
         self.transformation_matrix.rotation = updated_rotation
         self.update_from_transformation_matrix()
+
+    def check_rotation_warning(self) -> Optional[str]:
+        if self.rotation_information.rotation_format != RotationFormats.euler:
+            return None
+        rotation = self.rotation_from_parameters(self.rotation_parameters)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            rotation.as_euler(self.rotation_information.euler_variant, degrees=self.rotation_information.use_degrees)
+        for w in caught:
+            if "Gimbal lock" in str(w.message):
+                for i, editor in enumerate(self.rotation_parameter_editors):
+                    if i < self.rotation_information.rotation_format.number_of_parameters:
+                        editor.setStyleSheet("background-color: yellow; color: black;")
+                return str(w.message)
+        return None
 
     def reset_parameter_editor_styles(self) -> None:
         for parameter_editor in self.rotation_parameter_editors:

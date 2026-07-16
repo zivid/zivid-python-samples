@@ -8,10 +8,11 @@ methods (configuration_wizard, create_widgets, setup_layout) to build the GUI.
 import functools
 import time
 from enum import Enum
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import zivid
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import QSettings, Qt, QTimer
 from PyQt5.QtGui import QCloseEvent, QKeyEvent
 from PyQt5.QtWidgets import (
     QAction,
@@ -32,6 +33,7 @@ from zividsamples.gui.verification.stitch_gui import StitchGUI
 from zividsamples.gui.verification.touch_gui import TouchGUI
 from zividsamples.gui.widgets.camera_buttons_widget import CameraButtonsWidget
 from zividsamples.gui.widgets.live_2d_widget import Live2DWidget
+from zividsamples.gui.widgets.show_yaml_dialog import show_yaml_dialog
 from zividsamples.gui.widgets.tutorial_widget import TutorialWidget
 from zividsamples.gui.wizard.camera_selection import select_camera
 from zividsamples.gui.wizard.data_directory import DataDirectoryManager
@@ -43,6 +45,7 @@ from zividsamples.gui.wizard.marker_configuration import MarkerConfiguration, se
 from zividsamples.gui.wizard.robot_configuration import RobotConfiguration, select_robot_configuration
 from zividsamples.gui.wizard.rotation_format_configuration import RotationInformation, select_rotation_format
 from zividsamples.gui.wizard.settings_selector import SettingsForHandEyeGUI, select_settings_for_hand_eye
+from zividsamples.save_load_transformation_matrix import load_transformation_matrix
 from zividsamples.transformation_matrix import TransformationMatrix
 
 
@@ -92,6 +95,11 @@ class HandEyeAppBase(QMainWindow):
     select_robot_configuration_action: QAction
     select_rotation_format_action: QAction
     toggle_advanced_view_action: QAction
+    reset_to_defaults_action: QAction
+    load_he_transform_action: QAction
+    view_he_transform_action: QAction
+    current_he_transform: Optional[TransformationMatrix]
+    current_he_transform_path: Optional[Path]
 
     _SESSION_DATA_LOADED_TOOLTIP = "Start a new session to capture new Hand Eye Calibration data"
 
@@ -120,6 +128,7 @@ class HandEyeAppBase(QMainWindow):
         self.connect_signals()
         self.current_tab_widget = self.hand_eye_calibration_gui
         self.on_instructions_updated()
+        self._try_load_he_transform_from_session()
         for widget in self.tab_widgets:
             self.data_directory_manager.register_tab_widget(widget, widget.objectName())
 
@@ -136,6 +145,8 @@ class HandEyeAppBase(QMainWindow):
         self.projection_handle = None
         self.last_frame = None
         self.common_instructions = {}
+        self.current_he_transform = None
+        self.current_he_transform_path = None
 
     def update_tab_order(self) -> None:
         tab_widgets = (
@@ -158,6 +169,8 @@ class HandEyeAppBase(QMainWindow):
         self.save_frame_action.setToolTip("Save the last captured frame")
         self.save_frame_action.setShortcut("Ctrl+S")
         file_menu.addAction(self.save_frame_action)
+        self.load_he_transform_action = QAction("Load HE Transform", self)
+        file_menu.addAction(self.load_he_transform_action)
         close_action = QAction("Close", self)
         close_action.triggered.connect(self.close)
         file_menu.addAction(close_action)
@@ -181,10 +194,17 @@ class HandEyeAppBase(QMainWindow):
         self.select_rotation_format_action = QAction("Rotation Format", self)
         robot_submenu.addAction(self.select_rotation_format_action)
 
+        config_menu.addSeparator()
+        self.reset_to_defaults_action = QAction("Reset to Defaults", self)
+        config_menu.addAction(self.reset_to_defaults_action)
+
         view_menu = self.menuBar().addMenu("View")
         self.toggle_advanced_view_action = QAction("Advanced", self, checkable=True)
         self.toggle_advanced_view_action.setChecked(False)
         view_menu.addAction(self.toggle_advanced_view_action)
+        self.view_he_transform_action = QAction("HE Transform...", self)
+        self.view_he_transform_action.setEnabled(False)
+        view_menu.addAction(self.view_he_transform_action)
 
     def connect_signals(self) -> None:
         self.live2d_widget.camera_disconnected.connect(self.on_camera_disconnected)
@@ -194,12 +214,16 @@ class HandEyeAppBase(QMainWindow):
         self.directory_load_session_action.triggered.connect(self.on_data_directory_load_session_action_triggered)
         self.directory_new_session_action.triggered.connect(self.on_data_directory_new_session_action_triggered)
         self.save_frame_action.triggered.connect(self.on_save_last_frame_action_triggered)
+        self.load_he_transform_action.triggered.connect(self.on_load_he_transform_action_triggered)
         self.select_hand_eye_configuration_action.triggered.connect(self.hand_eye_configuration_action_triggered)
         self.select_marker_configuration_action.triggered.connect(self.on_select_marker_configuration)
         self.select_hand_eye_settings_action.triggered.connect(self.on_select_hand_eye_settings_action_triggered)
         self.select_rotation_format_action.triggered.connect(self.on_select_rotation_format)
         self.set_fixed_objects_action.triggered.connect(self.on_select_fixed_objects_action_triggered)
         self.toggle_advanced_view_action.triggered.connect(self.on_toggle_advanced_view_action_triggered)
+        self.view_he_transform_action.triggered.connect(self.on_view_he_transform_action_triggered)
+        self.tutorial_widget.view_he_transform_requested.connect(self.on_view_he_transform_action_triggered)
+        self.reset_to_defaults_action.triggered.connect(self.on_reset_to_defaults)
         self.select_robot_configuration_action.triggered.connect(self.on_select_robot_configuration_action_triggered)
         self.camera_buttons.capture_button_clicked.connect(self.on_capture_button_clicked)
         self.camera_buttons.connect_button_clicked.connect(self.on_connect_button_clicked)
@@ -346,9 +370,38 @@ class HandEyeAppBase(QMainWindow):
         if self.robot_configuration.can_control() and self.auto_run_state == AutoRunState.CALIBRATING:
             self.finish_auto_run()
         if not transformation_matrix.is_identity():
-            self.hand_eye_verification_gui.set_hand_eye_transformation_matrix(transformation_matrix)
-            self.touch_gui.set_hand_eye_transformation_matrix(transformation_matrix)
-            self.stitch_gui.set_hand_eye_transformation_matrix(transformation_matrix)
+            he_transform_path = self.hand_eye_calibration_gui.data_directory / "hand_eye_transform.yaml"
+            self._set_he_transform(transformation_matrix, he_transform_path)
+
+    def _set_he_transform(self, transformation_matrix: TransformationMatrix, path: Path) -> None:
+        self.current_he_transform = transformation_matrix
+        self.current_he_transform_path = path
+        self.hand_eye_verification_gui.set_hand_eye_transformation_matrix(transformation_matrix)
+        self.touch_gui.set_hand_eye_transformation_matrix(transformation_matrix)
+        self.stitch_gui.set_hand_eye_transformation_matrix(transformation_matrix)
+
+    def _try_load_he_transform_from_session(self) -> None:
+        he_transform_path = self.hand_eye_calibration_gui.data_directory / "hand_eye_transform.yaml"
+        if he_transform_path.exists():
+            transformation_matrix = load_transformation_matrix(he_transform_path)
+            if not transformation_matrix.is_identity():
+                self._set_he_transform(transformation_matrix, he_transform_path)
+
+    def on_load_he_transform_action_triggered(self) -> None:
+        file_name = QFileDialog.getOpenFileName(
+            self,
+            caption="Load HE Transform",
+            filter="YAML files (*.yaml *.yml)",
+        )[0]
+        if file_name:
+            path = Path(file_name)
+            transformation_matrix = load_transformation_matrix(path)
+            if not transformation_matrix.is_identity():
+                self._set_he_transform(transformation_matrix, path)
+            else:
+                QMessageBox.warning(
+                    self, "Load HE Transform", "The selected file contains an identity matrix or could not be loaded."
+                )
 
     def on_auto_run_toggled(self) -> None:
         if self.auto_run_state == AutoRunState.INACTIVE:
@@ -387,6 +440,24 @@ class HandEyeAppBase(QMainWindow):
         self.tutorial_widget.add_steps(self.current_tab_widget.instruction_steps)
         self.tutorial_widget.set_description(self.current_tab_widget.description)
         self.tutorial_widget.update_text()
+        self._update_he_transform_status_ui()
+
+    def _update_he_transform_status_ui(self) -> None:
+        is_calibrate = self.current_tab_widget == self.hand_eye_calibration_gui
+        is_verify = self.current_tab_widget in [
+            self.hand_eye_verification_gui,
+            self.touch_gui,
+            self.stitch_gui,
+        ]
+        show = is_calibrate or is_verify
+        loaded = self.current_he_transform is not None
+        self.tutorial_widget.set_he_transform_status(show=show, loaded=loaded, mandatory=is_verify)
+        self.view_he_transform_action.setEnabled(loaded and show)
+
+    def on_view_he_transform_action_triggered(self) -> None:
+        if self.current_he_transform_path is None:
+            return
+        show_yaml_dialog(self.current_he_transform_path, "HE Transform Matrix")
 
     def on_robot_connected(self) -> None:
         self.setup_instructions()
@@ -411,8 +482,7 @@ class HandEyeAppBase(QMainWindow):
             if self.current_tab_widget == self.hand_eye_calibration_gui:
                 self.on_capture_button_clicked()
             elif self.current_tab_widget == self.hand_eye_verification_gui:
-                time.sleep(2)
-                self.robot_control_widget.on_move_to_next_target(blocking=False)
+                QTimer.singleShot(2000, lambda: self.robot_control_widget.on_move_to_next_target(blocking=False))
         elif self.auto_run_state != AutoRunState.INACTIVE:
             error_message = (
                 f"Expected to be home now, but arrived at {robot_target.name} {robot_target.pose}"
@@ -442,8 +512,6 @@ class HandEyeAppBase(QMainWindow):
                 self.robot_control_widget.enable_disable_buttons(auto_run=True, touch=False)
                 error_msg = None
                 try:
-                    if self.camera is None:
-                        raise RuntimeError("No camera connected.")
                     try:
                         projector_image = self.current_tab_widget.generate_projector_image(self.camera)
                     except ValueError as ex:
@@ -541,6 +609,7 @@ class HandEyeAppBase(QMainWindow):
                 widget.notify_current_tab(self.current_tab_widget)
         if self.current_tab_widget.is_loading():
             self.camera_buttons.disable_buttons()
+        self._try_load_he_transform_from_session()
 
     def on_data_directory_new_session_action_triggered(self) -> None:
         self.data_directory_manager.start_new_session()
@@ -558,7 +627,8 @@ class HandEyeAppBase(QMainWindow):
                 directory=self.current_tab_widget.data_directory.joinpath("last_capture.zdf").resolve().as_posix(),
                 filter="Zivid Frame (*.zdf *.ply *.pcd *.xyz)",
             )[0]
-            self.last_frame.save(file_name)
+            if file_name:
+                self.last_frame.save(file_name)
         else:
             QMessageBox.warning(self, "Save Capture", "No capture to save.")
 
@@ -591,10 +661,23 @@ class HandEyeAppBase(QMainWindow):
     def on_toggle_advanced_view_action_triggered(self, checked: bool) -> None:
         self.hand_eye_calibration_gui.toggle_advanced_view(checked)
         self.hand_eye_verification_gui.toggle_advanced_view(checked)
+        self.touch_gui.toggle_advanced_view(checked)
+
+    def on_reset_to_defaults(self) -> None:
+        reply = QMessageBox.question(
+            self,
+            "Reset to Defaults",
+            "This will reset all configuration to defaults.\nThe application will close. Continue?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply == QMessageBox.Yes:
+            QSettings("Zivid", "HandEyeGUI").clear()
+            self.close()
 
     def on_select_robot_configuration_action_triggered(self) -> None:
         selected_robot = select_robot_configuration(self.robot_configuration, show_anyway=True)
-        if self.robot_configuration.robot_type == selected_robot:
+        if self.robot_configuration == selected_robot:
             return
         self.robot_configuration = selected_robot
         self.setup_instructions()

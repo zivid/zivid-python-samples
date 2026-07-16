@@ -38,7 +38,10 @@ class HandEyeConfiguration:
             calibration_object_name = settings.value(
                 "calibration_object", CalibrationObject.Checkerboard.name, type=str
             )
-            self.calibration_object = CalibrationObject[calibration_object_name]
+            try:
+                self.calibration_object = CalibrationObject[calibration_object_name]
+            except KeyError:
+                self.calibration_object = CalibrationObject.Checkerboard
         self.show_dialog = settings.value("show_dialog", True, type=bool)
         settings.endGroup()
 
@@ -82,6 +85,7 @@ class HandEyeButtonsWidget(QWidget):
             radio_button_group.addButton(self.eye_in_hand_radio_button)
             radio_button_group.addButton(self.eye_to_hand_radio_button)
             self.eye_in_hand_radio_button.setChecked(self.hand_eye_configuration.eye_in_hand)
+            self.eye_to_hand_radio_button.setChecked(not self.hand_eye_configuration.eye_in_hand)
 
         if self.calibration_object_selection_active:
             self.checkerboard_object_radio_button = QRadioButton("Checkerboard")

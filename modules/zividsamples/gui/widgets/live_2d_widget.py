@@ -84,7 +84,7 @@ class Live2DWidget(QWidget):
                 else relative_brightness / (exposure_increase / current_exposure_time)
             )
             acquisition.gain = max(1.0, min(acquisition.gain * remaining_relative_brightness, 16.0))
-            acquisition.brightness = 0.1
+            acquisition.brightness = 0.0
         return settings_2d
 
     def update_settings_2d(self, settings_2d: zivid.Settings2D, camera_model: str) -> None:

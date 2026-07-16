@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from zividsamples.gui.qt_application import ZIVID_BLUE_BUTTON_STYLE
 from zividsamples.gui.widgets.cv2_handler import CV2Handler
 from zividsamples.gui.widgets.fov import CameraFOV, FOVThresholds, PointsOfInterest, PointsOfInterest2D, PositionInFOV
 
@@ -498,11 +499,13 @@ class InfieldCorrectionInputData(InfieldCorrectionInputDataCore):
 class InfieldCorrectionInputWidget(QWidget):
     infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore]
 
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         poseID: int,
         directory: Path,
         infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore],
+        save_to_disk: bool = True,
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -534,18 +537,24 @@ class InfieldCorrectionInputWidget(QWidget):
         pose_pair_layout.addWidget(self.clickable_labels)
         self.setLayout(pose_pair_layout)
 
-        self.update_information(infield_correction_input_data)
+        self.update_information(infield_correction_input_data, save_to_disk=save_to_disk)
 
     def update_information(
-        self, infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore]
+        self,
+        infield_correction_input_data: Union[InfieldCorrectionInputData, InfieldCorrectionInputDataCore],
+        save_to_disk: bool = True,
     ) -> None:
         self.infield_correction_input_data = infield_correction_input_data
-        self.infield_correction_input_data.save_data(self.directory / f"infield_calibration_input_{self.poseID}")
+        if save_to_disk:
+            self.infield_correction_input_data.save_data(self.directory / f"infield_calibration_input_{self.poseID}")
         self.update_gui()
 
     def update_gui(self) -> None:
         self.position_in_fov_label.setText(str(self.infield_correction_input_data.position_in_fov))
         self.trueness_label.setText(self.infield_correction_input_data.local_trueness_as_string())
+
+    def release_frame(self) -> None:
+        self.infield_correction_input_data.camera_frame = None  # type: ignore[assignment]
 
 
 class _InfieldLoadWorker(QObject):
@@ -606,6 +615,9 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
         self.infield_input_scrollable_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.infield_input_scrollable_area.setWidget(self.infield_input_container)
 
+        self.load_from_disk_button = QPushButton()
+        self.load_from_disk_button.setStyleSheet(ZIVID_BLUE_BUTTON_STYLE)
+        self.load_from_disk_button.setVisible(False)
         self.remove_last_infield_input_button = QPushButton("Remove Last")
         self.remove_last_infield_input_button.setEnabled(False)
         self.clear_infield_input_button = QPushButton("Clear")
@@ -617,6 +629,7 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
 
         self.infield_input_layout = QVBoxLayout(self.infield_input_container)
         self.infield_input_layout.setAlignment(Qt.AlignTop)
+        self.infield_input_layout.addWidget(self.load_from_disk_button)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.remove_last_infield_input_button)
@@ -633,6 +646,28 @@ class InfieldCorrectionDataSelectionWidget(QWidget):
     def connect_signals(self) -> None:
         self.clear_infield_input_button.clicked.connect(self.on_clear_button_clicked)
         self.remove_last_infield_input_button.clicked.connect(self.on_remove_last_infield_input_button_clicked)
+        self.load_from_disk_button.clicked.connect(self._on_load_from_disk_clicked)
+
+    def _on_load_from_disk_clicked(self):
+        self.load_from_disk_button.setVisible(False)
+        existing_files = sorted(self.data_directory.glob("infield_calibration_input_*.json"))
+        if existing_files:
+            self.load_existing_data(existing_files)
+
+    def set_directory(self, directory: Path):
+        self.data_directory = directory
+        self._update_load_button()
+
+    def _update_load_button(self):
+        if self.infield_input_data_widgets:
+            self.load_from_disk_button.setVisible(False)
+            return
+        existing_files = list(self.data_directory.glob("infield_calibration_input_*.json"))
+        if existing_files:
+            self.load_from_disk_button.setText(f"Load {len(existing_files)} infield capture(s) from disk")
+            self.load_from_disk_button.setVisible(True)
+        else:
+            self.load_from_disk_button.setVisible(False)
 
     def update_data_directory(self, data_directory: Path) -> None:
         existing_files = list(data_directory.glob("infield_calibration_input_*.json"))
@@ -670,7 +705,6 @@ Your current data is kept in {self.data_directory}."""
 
         self.infield_input_group_box.setStyleSheet(r"QGroupBox {border: 2px solid yellow;}")
         self.infield_input_group_box.setTitle("Infield Correction Input Data (loading...)")
-        self.setVisible(True)
 
         self._loader_thread = QThread()
         self._loader_worker = _InfieldLoadWorker(
@@ -697,7 +731,20 @@ Your current data is kept in {self.data_directory}."""
     def _on_item_loaded(self, generation: int, data: InfieldCorrectionInputDataCore) -> None:
         if generation != self._load_generation:
             return
-        self.add_infield_input_data(data)
+        poseID = len(self.infield_input_data_widgets)
+        infield_correction_input_widget = InfieldCorrectionInputWidget(
+            poseID=poseID, directory=self.data_directory, infield_correction_input_data=data, save_to_disk=False
+        )
+        infield_correction_input_widget.clickable_labels.clicked.connect(
+            lambda: self.on_infield_input_data_widget_clicked(infield_correction_input_widget)
+        )
+        infield_correction_input_widget.selected_checkbox.stateChanged.connect(
+            self.on_infield_input_data_widget_selection_box_clicked
+        )
+        self.infield_input_layout.insertWidget(poseID, infield_correction_input_widget)
+        self.infield_input_data_widgets[poseID] = infield_correction_input_widget
+        self.infield_input_data_updated.emit(self.can_calculate_correction())
+        self.remove_last_infield_input_button.setEnabled(True)
 
     def _on_loading_finished(self, generation: int) -> None:
         if generation != self._load_generation:
@@ -740,7 +787,6 @@ Your current data is kept in {self.data_directory}."""
         return title_layout
 
     def show_as_busy(self, active: bool) -> None:
-        self.setVisible(active or len(self.infield_input_data_widgets) > 0)
         self.infield_input_group_box.setStyleSheet(r"QGroupBox {border: 2px solid yellow;}" if active else "")
         self.infield_input_group_box.setTitle(
             "Infield Correction Input Data (processing...)" if active else "Infield Correction Input Data"
@@ -824,6 +870,10 @@ Your current data is kept in {self.data_directory}."""
             item = layout.takeAt(0)
             widget = item.widget()
             if widget:
+                if widget is self.load_from_disk_button:
+                    continue
+                if isinstance(widget, InfieldCorrectionInputWidget):
+                    widget.release_frame()
                 widget.deleteLater()
             sublayout = item.layout()
             if sublayout:
@@ -832,19 +882,19 @@ Your current data is kept in {self.data_directory}."""
     def clear_gui(self) -> None:
         self.cancel_loading()
         self._clear_layout(self.infield_input_layout)
+        self.infield_input_layout.addWidget(self.load_from_disk_button)
         self.infield_input_data_widgets.clear()
         self.infield_input_data_updated.emit(self.can_calculate_correction())
         self.remove_last_infield_input_button.setEnabled(False)
-        self.setVisible(False)
+        self._update_load_button()
 
     def clear_all(self) -> None:
-        self.clear_gui()
         if self.infield_input_data_widgets:
             reply = QMessageBox.question(
                 self,
                 "Clear All Infield Input Data",
-                "This will remove all loaded Infield Correction Input Data. Do you want to proceed?"
-                "Note that while it is possible to review the infield session, it is not possible to"
+                "This will remove all loaded Infield Correction Input Data. Do you want to proceed? "
+                "Note that while it is possible to review the infield session, it is not possible to "
                 "recalculate and apply infield correction from a previous session.",
                 QMessageBox.Yes | QMessageBox.No,
             )

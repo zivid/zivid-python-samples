@@ -65,9 +65,12 @@ class RotationInformation:
         if rotation_format is not None:
             self.rotation_format = rotation_format
         else:
-            self.rotation_format = RotationFormats.from_name(
-                settings.value("rotation_format", RotationFormats.euler.name, type=str)
-            )
+            try:
+                self.rotation_format = RotationFormats.from_name(
+                    settings.value("rotation_format", RotationFormats.euler.name, type=str)
+                )
+            except ValueError:
+                self.rotation_format = RotationFormats.euler
 
         if euler_variant is not None:
             self.euler_variant = euler_variant

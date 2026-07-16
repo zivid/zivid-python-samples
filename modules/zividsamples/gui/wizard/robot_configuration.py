@@ -36,7 +36,10 @@ class RobotConfiguration:
         if robot_type is not None:
             self._robot_type = robot_type
         else:
-            self._robot_type = RobotEnum(qsettings.value("robot_type", RobotEnum.NO_ROBOT.value))
+            try:
+                self._robot_type = RobotEnum(qsettings.value("robot_type", RobotEnum.NO_ROBOT.value))
+            except ValueError:
+                self._robot_type = RobotEnum.NO_ROBOT
         if ip_addr is not None:
             self.ip_addr = ip_addr
         else:
