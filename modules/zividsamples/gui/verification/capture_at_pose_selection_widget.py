@@ -1,7 +1,7 @@
 import threading
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Optional
+from typing import List, NamedTuple, Optional
 
 import numpy as np
 import zivid
@@ -47,6 +47,46 @@ UNIQUE_COLORS = [
 ]
 
 
+class RoiConfig(NamedTuple):
+    min_x: float
+    max_x: float
+    min_y: float
+    max_y: float
+    min_z: float
+    max_z: float
+
+
+def _build_roi_box_in_camera_frame(roi_config, robot_pose, hand_eye_transform, eye_in_hand):
+    if eye_in_hand:
+        camera_to_reference = robot_pose * hand_eye_transform
+    else:
+        camera_to_reference = robot_pose.inv() * hand_eye_transform
+    reference_to_camera = camera_to_reference.inv()
+    transform = reference_to_camera.as_matrix()
+    rotation = transform[:3, :3]
+    translation = transform[:3, 3]
+
+    point_o = np.array([roi_config.min_x, roi_config.min_y, 0.0])
+    point_a = np.array([roi_config.max_x, roi_config.min_y, 0.0])
+    point_b = np.array([roi_config.min_x, roi_config.max_y, 0.0])
+
+    return zivid.Settings.RegionOfInterest.Box(
+        enabled=True,
+        point_o=rotation @ point_o + translation,
+        point_a=rotation @ point_a + translation,
+        point_b=rotation @ point_b + translation,
+        extents=(roi_config.min_z, roi_config.max_z),
+    )
+
+
+def _try_apply_roi_mask(point_cloud, roi_config, robot_pose, hand_eye_transform, eye_in_hand):
+    roi_box = _build_roi_box_in_camera_frame(roi_config, robot_pose, hand_eye_transform, eye_in_hand)
+    if point_cloud.masked_by_region_of_interest(roi_box).to_unorganized_point_cloud().size > 0:
+        point_cloud.mask_by_region_of_interest(roi_box)
+        return True
+    return False
+
+
 class CaptureAtPose:
 
     def _translation_to_string(self, translation: NDArray[Shape["3"], Float32]) -> str:  # type: ignore
@@ -63,6 +103,7 @@ class CaptureAtPose:
         eye_in_hand: bool,
         optimize_for_speed: bool = True,
         from_disk: bool = False,
+        roi_config: Optional[RoiConfig] = None,
     ):
 
         self.poseID = poseID
@@ -72,6 +113,7 @@ class CaptureAtPose:
         self.camera_frame_path: Path = self.directory / f"capture_{self.poseID}.zdf"
         self.robot_pose = robot_pose
         self.camera_frame = camera_frame
+        self.roi_all_points_masked = False
 
         if not from_disk:
             zivid.Matrix4x4(self.robot_pose.as_matrix()).save(self.robot_pose_yaml_path)
@@ -79,6 +121,12 @@ class CaptureAtPose:
 
             if optimize_for_speed:
                 self.camera_frame.point_cloud().downsample(zivid.PointCloud.Downsampling.by2x2)
+
+            if roi_config is not None:
+                if not _try_apply_roi_mask(
+                    self.camera_frame.point_cloud(), roi_config, robot_pose, hand_eye_transform, eye_in_hand
+                ):
+                    self.roi_all_points_masked = True
 
             if eye_in_hand:
                 transform_robot_base_to_camera = self.robot_pose * hand_eye_transform
@@ -119,7 +167,7 @@ class CaptureAtPose:
 class _CaptureAtPoseLoadWorker(QObject):
     """Loads capture-at-pose data from disk in a background thread."""
 
-    item_loaded = pyqtSignal(int, int, object, object)
+    item_loaded = pyqtSignal(int, int, object, object, bool)
     finished = pyqtSignal(int)
 
     # pylint: disable=too-many-positional-arguments
@@ -130,6 +178,7 @@ class _CaptureAtPoseLoadWorker(QObject):
         pose_ids: List[int],
         hand_eye_transform: TransformationMatrix,
         eye_in_hand: bool,
+        roi_config: Optional[RoiConfig] = None,
     ) -> None:
         super().__init__()
         self._generation = generation
@@ -137,6 +186,7 @@ class _CaptureAtPoseLoadWorker(QObject):
         self._pose_ids = pose_ids
         self._hand_eye_transform = hand_eye_transform
         self._eye_in_hand = eye_in_hand
+        self._roi_config = roi_config
         self._cancel_event = threading.Event()
 
     def cancel(self) -> None:
@@ -157,13 +207,24 @@ class _CaptureAtPoseLoadWorker(QObject):
 
                 camera_frame.point_cloud().downsample(zivid.PointCloud.Downsampling.by2x2)
 
+                roi_warning = False
+                if self._roi_config is not None:
+                    if not _try_apply_roi_mask(
+                        camera_frame.point_cloud(),
+                        self._roi_config,
+                        robot_pose,
+                        self._hand_eye_transform,
+                        self._eye_in_hand,
+                    ):
+                        roi_warning = True
+
                 if self._eye_in_hand:
                     transform = robot_pose * self._hand_eye_transform
                 else:
                     transform = robot_pose.inv() * self._hand_eye_transform
                 camera_frame.point_cloud().transform(zivid.Matrix4x4(transform.as_matrix()))
 
-                self.item_loaded.emit(self._generation, poseID, robot_pose, camera_frame)
+                self.item_loaded.emit(self._generation, poseID, robot_pose, camera_frame, roi_warning)
             except FileNotFoundError:
                 continue
         self.finished.emit(self._generation)
@@ -210,7 +271,12 @@ class CaptureAtPoseSelectionWidget(QWidget):
     def set_directory(self, directory: Path) -> None:
         self.directory = directory
 
-    def load_capture_at_poses(self, hand_eye_transform: TransformationMatrix, eye_in_hand: bool) -> None:
+    def load_capture_at_poses(
+        self,
+        hand_eye_transform: TransformationMatrix,
+        eye_in_hand: bool,
+        roi_config: Optional[RoiConfig] = None,
+    ) -> None:
         if self.number_of_active_captures() > 0:
             reply = QMessageBox.question(
                 self,
@@ -245,6 +311,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
             pose_ids=pose_ids,
             hand_eye_transform=hand_eye_transform,
             eye_in_hand=eye_in_hand,
+            roi_config=roi_config,
         )
         self._loader_worker.moveToThread(self._loader_thread)
         assert self._loader_thread is not None
@@ -263,8 +330,14 @@ class CaptureAtPoseSelectionWidget(QWidget):
         self._loader_worker = None
         self._loader_thread = None
 
+    # pylint: disable=too-many-positional-arguments
     def _on_capture_loaded(
-        self, generation: int, poseID: int, robot_pose: TransformationMatrix, camera_frame: zivid.Frame
+        self,
+        generation: int,
+        poseID: int,
+        robot_pose: TransformationMatrix,
+        camera_frame: zivid.Frame,
+        roi_warning: bool,
     ) -> None:
         if generation != self._load_generation:
             return
@@ -281,6 +354,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
             eye_in_hand=True,
             from_disk=True,
         )
+        capture_at_pose.roi_all_points_masked = roi_warning
         capture_at_pose_layout = QHBoxLayout()
         capture_at_pose.capture_pose_button.clicked.connect(lambda: self.on_capture_at_pose_clicked(capture_at_pose))
         capture_at_pose.remove_capture_at_pose_button.clicked.connect(
@@ -323,12 +397,14 @@ class CaptureAtPoseSelectionWidget(QWidget):
     def is_loading(self) -> bool:
         return self._loader_thread is not None and self._loader_thread.isRunning()
 
+    # pylint: disable=too-many-positional-arguments
     def add_capture_at_pose(
         self,
         robot_pose: TransformationMatrix,
         camera_frame: zivid.Frame,
         hand_eye_transform: TransformationMatrix,
         eye_in_hand: bool,
+        roi_config: Optional[RoiConfig] = None,
     ) -> None:
         if self.is_loading():
             return
@@ -352,6 +428,7 @@ class CaptureAtPoseSelectionWidget(QWidget):
             camera_frame=camera_frame,
             hand_eye_transform=hand_eye_transform,
             eye_in_hand=eye_in_hand,
+            roi_config=roi_config,
         )
         capture_at_pose_layout = QHBoxLayout()
         capture_at_pose.capture_pose_button.clicked.connect(lambda: self.on_capture_at_pose_clicked(capture_at_pose))

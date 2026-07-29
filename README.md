@@ -155,6 +155,9 @@ from the camera can be used.
         clouds, with color, from the Zivid camera, and visualize them in
         a loop. Press 'q' to exit.
     - **cuda**
+      - [capture_and_convert_to_dlpack_tensor_on_cuda] - Demonstrate
+        zero-copy GPU interop by handing a Zivid DeviceArray to PyTorch
+        on the GPU, showing two paths.
       - [capture_and_process_image_with_cupy_on_cuda] - Demonstrate GPU
         interop with CuPy: wrap a Zivid GPU image buffer as a CuPy array
         without copying it through CPU memory.
@@ -391,6 +394,7 @@ Zivid Samples are distributed under the [BSD license].
   [mask_point_cloud]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/mask_point_cloud.py
   [capture_vis_3d_in_loop]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/visualization/capture_vis_3d_in_loop.py
   [capture_vis_3d_in_loop_with_keypress_exit]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/visualization/capture_vis_3d_in_loop_with_keypress_exit.py
+  [capture_and_convert_to_dlpack_tensor_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_convert_to_dlpack_tensor_on_cuda.py
   [capture_and_process_image_with_cupy_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_process_image_with_cupy_on_cuda.py
   [capture_and_render_point_cloud_with_opengl_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_render_point_cloud_with_opengl_on_cuda.py
   [capture_and_segment_image_with_pytorch_on_cuda]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/cuda/capture_and_segment_image_with_pytorch_on_cuda.py
