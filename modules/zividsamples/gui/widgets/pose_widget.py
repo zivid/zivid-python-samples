@@ -180,15 +180,14 @@ class BasePoseWidget(QWidget):
         return zivid.Matrix4x4(self.transformation_matrix.as_matrix())
 
     def _rotation_label_text(self) -> str:
-        degrees = (
-            " (°)"
-            if self.rotation_information.use_degrees
-            and self.rotation_information.rotation_format not in ["Quaternion", "Rotation Matrix"]
-            else (
-                " (rad)" if self.rotation_information.rotation_format not in ["Quaternion", "Rotation Matrix"] else ""
-            )
-        )
-        return f"Rotation as {self.rotation_information.rotation_format.name}{degrees}"
+        rotation_format = self.rotation_information.rotation_format
+        if rotation_format in [RotationFormats.quaternion, RotationFormats.rotation_matrix]:
+            degrees = ""
+        elif self.rotation_information.use_degrees:
+            degrees = " (°)"
+        else:
+            degrees = " (rad)"
+        return f"Rotation as {rotation_format.name}{degrees}"
 
     def _rotation_column_label_texts(self) -> List[str]:
         fmt = self.rotation_information.rotation_format

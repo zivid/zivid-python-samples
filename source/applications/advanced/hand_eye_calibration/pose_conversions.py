@@ -59,7 +59,7 @@ class AxisAngle:
         if angle is None:
             self.angle = np.linalg.norm(axis)
             self.axis = axis / self.angle
-        elif np.linalg.norm(axis) != 0:
+        elif not np.isclose(np.linalg.norm(axis), 1.0):
             raise ValueError("Angle provided, but vector is not unit vector")
         else:
             self.angle: np.floating = np.floating(angle)
