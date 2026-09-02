@@ -1,6 +1,5 @@
 """
-Demonstrate GPU point cloud rendering with CUDA-OpenGL interop: capture a Zivid point cloud, copy it device-to-device
-into OpenGL vertex buffers, and render it interactively.
+Render a Zivid point cloud interactively by copying it device-to-device into OpenGL buffers with CUDA interop.
 
 The point cloud data never goes through CPU memory: Zivid produces it on the GPU as a DeviceArray, CUDA copies it
 directly into the OpenGL VBOs (the interop step), and OpenGL renders from those buffers. The CUDA-OpenGL interop happens

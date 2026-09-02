@@ -1,6 +1,5 @@
 """
-Read point cloud data of a Zivid calibration board from a ZDF file, estimate the
-checkerboard pose and save the transformation matrix to a YAML file.
+Estimate the checkerboard pose from a ZDF file of a Zivid calibration board and save it to YAML.
 
 The checkerboard point cloud is also visualized with a coordinate system.
 The ZDF file for this sample can be found under the main instructions for Zivid samples.

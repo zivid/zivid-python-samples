@@ -1,5 +1,5 @@
 """
-Convert point cloud data from a ZDF file to your preferred format
+Convert point cloud data from a ZDF file to your preferred format.
 (PLY, PCD, XYZ, CSV, TXT, PNG, JPG, BMP).
 
 Example: $ python convert_zdf.py Zivid3D.zdf --3d ply xyz csv --2d jpg png

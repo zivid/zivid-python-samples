@@ -231,7 +231,7 @@ class _PosePairLoadWorker(QObject):
                     break
 
                 detection_result = (
-                    zivid.calibration.detect_feature_points(camera_frame.point_cloud())
+                    zivid.calibration.detect_calibration_board(camera_frame)
                     if self._calibration_object == CalibrationObject.Checkerboard
                     else zivid.calibration.detect_markers(
                         camera_frame, self._marker_configuration.id_list, self._marker_configuration.dictionary
@@ -303,7 +303,7 @@ class _PosePairReprocessWorker(QObject):
                 break
 
             detection_result = (
-                zivid.calibration.detect_feature_points(camera_frame.point_cloud())
+                zivid.calibration.detect_calibration_board(camera_frame)
                 if self._calibration_object == CalibrationObject.Checkerboard
                 else zivid.calibration.detect_markers(
                     camera_frame, self._marker_configuration.id_list, self._marker_configuration.dictionary

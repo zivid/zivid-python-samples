@@ -1,5 +1,5 @@
 """
-Poll the camera health check from a separate thread while capturing in the main thread, printing the statuses and values every second.
+Poll the camera health check from a separate thread while capturing, printing statuses and values each second.
 
 """
 

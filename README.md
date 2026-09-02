@@ -34,6 +34,7 @@ tested compatibility with earlier SDK versions, please check out
     - [File Camera]
     - [Projector]
   - **Maintenance and Prevention**
+    - [Benchmarking Your System]
     - [Infield Correction]
     - [Warm-up]
     - [Firmware Update]
@@ -83,24 +84,21 @@ from the camera can be used.
   - **info_util_other**
     - [adapt_settings_for_flickering_ambient_light] - Adapt camera
       acquisition settings based on known ambient light conditions.
-    - [camera_info] - Print version information for Python, zivid-python
-      and Zivid SDK, then list cameras and print camera info and state
-      for each connected camera.
+    - [camera_info] - Print Python, zivid-python and Zivid SDK versions,
+      then list each connected camera with info and state.
     - [camera_user_data] - Store user data on the Zivid camera.
     - [capture_with_diagnostics] - Capture a 2D+3D frame and a 2D frame
       from the Zivid camera with diagnostics enabled.
     - [check_health] - Poll the camera health check from a separate
-      thread while capturing in the main thread, printing the statuses
-      and values every second.
+      thread while capturing, printing statuses and values each second.
     - [context_manager_with_zivid] - Sample showing how to use a context
       manager with Zivid Application and safely return processed data.
     - [firmware_updater] - Update firmware on the Zivid camera.
     - [frame_info] - Read frame info from the Zivid camera.
     - [get_camera_intrinsics] - Read intrinsic parameters from the Zivid
       camera (OpenCV model) or estimate them from the point cloud.
-    - [measure_scene_conditions] - Measure ambient light conditions in
-      the scene and output the measured flickering frequency of the
-      ambient light if flickering is detected.
+    - [measure_scene_conditions] - Measure ambient light in the scene
+      and report the flickering frequency when flickering is detected.
     - [warmup] - Short example of a basic way to warm up the camera with
       specified time and capture cycle.
     - **network**
@@ -117,6 +115,8 @@ from the camera can be used.
       camera.
     - [verify_camera_in_field_from_zdf] - Check the dimension trueness
       of a Zivid camera from a ZDF file.
+    - [visualize_benchmark_results] - Visualize the CSV results produced
+      by the ZividBenchmark sample.
 - **applications**
   - **basic**
     - **visualization**
@@ -132,7 +132,7 @@ from the camera can be used.
         visualize it.
     - **file_formats**
       - [convert_zdf] - Convert point cloud data from a ZDF file to your
-        preferred format
+        preferred format.
       - [read_iterate_zdf] - Read point cloud data from a ZDF file,
         iterate through it, and extract individual points.
   - **advanced**
@@ -161,23 +161,24 @@ from the camera can be used.
       - [capture_and_process_image_with_cupy_on_cuda] - Demonstrate GPU
         interop with CuPy: wrap a Zivid GPU image buffer as a CuPy array
         without copying it through CPU memory.
-      - [capture_and_render_point_cloud_with_opengl_on_cuda] -
-        Demonstrate GPU point cloud rendering with CUDA-OpenGL interop:
-        capture a Zivid point cloud, copy it device-to-device
-      - [capture_and_segment_image_with_pytorch_on_cuda] - Demonstrate
-        zero-copy GPU interop between Zivid and PyTorch/CuPy by feeding
-        a Zivid 2D image into a third-party
+      - [capture_and_render_point_cloud_with_opengl_on_cuda] - Render a
+        Zivid point cloud interactively by copying it device-to-device
+        into OpenGL buffers with CUDA interop.
+      - [capture_and_segment_image_with_pytorch_on_cuda] - Feed a Zivid
+        2D image into a third-party segmentation model on the GPU
+        without a CPU round-trip.
     - **transform**
-      - [get_checkerboard_pose_from_zdf] - Read point cloud data of a
-        Zivid calibration board from a ZDF file, estimate the
+      - [get_checkerboard_pose_from_zdf] - Estimate the checkerboard
+        pose from a ZDF file of a Zivid calibration board and save it to
+        YAML.
       - [transform_point_cloud_from_millimeters_to_meters] - Transform
         point cloud data from millimeters to meters.
       - [transform_point_cloud_via_aruco_marker] - Transform a point
-        cloud from camera to ArUco marker coordinate frame by estimating
-        the marker's pose from the point cloud.
+        cloud from camera to ArUco marker coordinate frame using the
+        marker's estimated pose.
       - [transform_point_cloud_via_checkerboard] - Transform a point
-        cloud from camera to checkerboard (Zivid Calibration Board)
-        coordinate frame by getting checkerboard pose from the API.
+        cloud from camera to checkerboard coordinate frame using the
+        pose from the API.
     - **roi**
       - [roi_box_via_aruco_marker] - Filter the point cloud based on a
         ROI box given relative to the ArUco marker on a Zivid
@@ -186,8 +187,8 @@ from the camera can be used.
         ROI box given relative to the Zivid Calibration Board.
     - **stitching**
       - [stitch_continuously_rotating_object] - Stitch point clouds from
-        a continuously rotating object without pre-alignment using Local
-        Point Cloud Registration and apply Voxel Downsample.
+        a continuously rotating object using Local Point Cloud
+        Registration, then downsample.
       - [stitch_using_robot_mounted_camera] - Stitch multiple point
         clouds captured with a robot mounted camera.
       - [stitch_via_local_point_cloud_registration] - Stitch two point
@@ -198,16 +199,17 @@ from the camera can be used.
         barcodes from a 2D capture.
     - **hand_eye_calibration**
       - [hand_eye_calibration] - Perform Hand-Eye calibration.
-      - [hand_eye_gui] - Hand-Eye Calibration GUI
+      - [hand_eye_gui] - Hand-Eye Calibration GUI.
       - [pose_conversion_gui] - Convert between different rotation
-        formats with a GUI:
+        formats with a GUI.
       - [pose_conversions] - Convert to/from Transformation Matrix
         (Rotation Matrix + Translation Vector).
-      - [utilize_hand_eye_calibration] - Transform single data point or
-        entire point cloud from camera to robot base reference frame
-        using Hand-Eye calibration
+      - [utilize_hand_eye_calibration] - Transform a data point or
+        entire point cloud from camera to robot base frame using the
+        Hand-Eye calibration matrix.
       - [verify_hand_eye_with_visualization] - Verify hand-eye
         calibration by transforming all dataset point clouds and
+        visualizing them overlapped.
       - **ur_hand_eye_calibration**
         - [universal_robots_perform_hand_eye_calibration] - Script to
           generate a dataset and perform hand-eye calibration using a
@@ -219,19 +221,18 @@ from the camera can be used.
           with a robot to verify Hand-Eye Calibration using the RoboDK
           interface.
     - **multi_camera**
-      - [multi_camera_calibration] - Use captures of a calibration
-        object to generate transformation matrices to a single
-        coordinate frame, from multiple connected cameras.
-      - [multi_camera_calibration_from_zdf] - Use captures of a
-        calibration object to generate transformation matrices to a
-        single coordinate frame, from ZDF files captured with multiple
+      - [multi_camera_calibration] - Generate transformation matrices to
+        a single coordinate frame from captures by multiple connected
         cameras.
-      - [stitch_by_transformation] - Use transformation matrices from
-        Multi-Camera calibration to transform point clouds into a single
-        coordinate frame, from connected cameras.
-      - [stitch_by_transformation_from_zdf] - Use transformation
-        matrices from Multi-Camera calibration to transform point clouds
-        into single coordinate frame, from a ZDF files.
+      - [multi_camera_calibration_from_zdf] - Generate transformation
+        matrices to a single coordinate frame from multi-camera ZDF
+        captures.
+      - [stitch_by_transformation] - Transform point clouds from
+        connected cameras into one coordinate frame using Multi-Camera
+        calibration.
+      - [stitch_by_transformation_from_zdf] - Transform point clouds
+        from ZDF files into one coordinate frame using Multi-Camera
+        calibration.
     - **projector**
       - [project_and_find_marker] - Show a marker using the projector,
         capture a set of 2D images to find the marker coordinates (2D
@@ -239,7 +240,7 @@ from the camera can be used.
       - [read_project_and_capture_image] - Read a 2D image from file and
         project it using the camera projector.
       - [reproject_points] - Illuminate checkerboard (Zivid Calibration
-        Board) centers by getting the checkerboard feature points
+        Board) centers by getting the checkerboard feature points.
     - **robot_guidance**
       - [robodk_robot_guidance] - Guide the robot to follow a path on
         the Zivid Calibration Board.
@@ -247,21 +248,22 @@ from the camera can be used.
   - **zividsamples**
     - [calibration_board_utils] - Utility functions for the Zivid
       calibration board.
-    - [camera_verification] - def capture_and_measure_from_frame(frame:
-      zivid.Frame) -\> VerificationAndState:
-    - [color_to_grayscale] - if rgba_image.ndim != 3 or
-      rgba_image.shape\[2\] != 4:
+    - [camera_verification] - Capture and measure the infield
+      verification state of a Zivid camera.
+    - [color_to_grayscale] - Convert Zivid RGBA color images to
+      grayscale.
     - [display] - Display relevant data for Zivid Samples.
     - [paths] - Get relevant paths for Zivid Samples.
-    - [robodk_tools] - Robot Control Module
+    - [robodk_tools] - Connect to a robot through RoboDK, list its
+      targets and set its speeds.
     - [save_load_matrix] - Save and load Zivid 4x4 transformation
       matrices from and to YAML files.
-    - [save_load_transformation_matrix] -
-      assert_affine_matrix_and_save(transformation_matrix.as_matrix(),
-      yaml_path)
-    - [save_residuals] - per_pose_residuals = \[
-    - [settings_utils] - categories =
-      zivid.presets.categories2d(camera.info.model)
+    - [save_load_transformation_matrix] - Save and load Zivid
+      transformation matrices to and from YAML files.
+    - [save_residuals] - Save per-pose hand-eye calibration residuals to
+      a YAML file.
+    - [settings_utils] - Pick and adjust Zivid capture settings for the
+      samples.
     - [transformation_matrix] - Convenience functions and a class for
       4x4 transformation matrices.
     - [white_balance_calibration] - Balance color for 2D capture using
@@ -340,6 +342,7 @@ Zivid Samples are distributed under the [BSD license].
   [2D + 3D Capture Strategy]: https://support.zivid.com/en/latest/camera/academy/camera/2d3d-capture-strategy.html
   [File Camera]: https://support.zivid.com/en/latest/camera/academy/camera/file-camera.html
   [Projector]: https://support.zivid.com/en/latest/camera/academy/camera/2d-image-projection.html
+  [Benchmarking Your System]: https://support.zivid.com/en/latest/camera/api-reference/benchmarks/benchmarking-your-system.html
   [Infield Correction]: https://support.zivid.com/en/latest/camera/academy/camera/infield-correction.html
   [Warm-up]: https://support.zivid.com/en/latest/camera/academy/camera/warmup.html
   [Firmware Update]: https://support.zivid.com/en/latest/camera/academy/camera/firmware-update.html
@@ -378,6 +381,7 @@ Zivid Samples are distributed under the [BSD license].
   [reset_camera_in_field]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/maintenance/reset_camera_in_field.py
   [verify_camera_in_field]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/maintenance/verify_camera_in_field.py
   [verify_camera_in_field_from_zdf]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/maintenance/verify_camera_in_field_from_zdf.py
+  [visualize_benchmark_results]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/maintenance/visualize_benchmark_results.py
   [capture_and_visualize_normals]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_and_visualize_normals.py
   [capture_from_file_camera_vis_3d]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_from_file_camera_vis_3d.py
   [capture_vis_3d]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/basic/visualization/capture_vis_3d.py

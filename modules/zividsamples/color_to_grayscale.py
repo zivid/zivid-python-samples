@@ -1,3 +1,8 @@
+"""
+Convert Zivid RGBA color images to grayscale.
+
+"""
+
 import numpy as np
 
 

@@ -1,6 +1,5 @@
 """
-Demonstrate zero-copy GPU interop between Zivid and PyTorch/CuPy by feeding a Zivid 2D image into a third-party
-segmentation model without a CPU round-trip.
+Feed a Zivid 2D image into a third-party segmentation model on the GPU without a CPU round-trip.
 
 DISCLAIMER: Zivid does not provide segmentation, and Zivid does not support the third-party libraries used in this
 sample. The segmentation model (DeepLabV3 from torchvision) and the GPU interop libraries (PyTorch, CuPy) are external

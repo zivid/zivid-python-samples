@@ -1,5 +1,5 @@
 """
-Use captures of a calibration object to generate transformation matrices to a single coordinate frame, from multiple connected cameras.
+Generate transformation matrices to a single coordinate frame from captures by multiple connected cameras.
 
 For more information on multi-camera calibration, check out this tutorial:
 https://support.zivid.com/en/latest/camera/academy/applications/multi-camera-calibration.html
