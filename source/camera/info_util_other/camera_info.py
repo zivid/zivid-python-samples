@@ -1,5 +1,5 @@
 """
-Print version information for Python, zivid-python and Zivid SDK, then list cameras and print camera info and state for each connected camera.
+Print Python, zivid-python and Zivid SDK versions, then list each connected camera with info and state.
 
 """
 

@@ -6,6 +6,12 @@ new GPU buffers as usual, and `cp.asnumpy(...)` at the end copies to CPU for dis
 results on the GPU and pass them straight to the next consumer (PyTorch, OpenGL, a CUDA kernel, etc.) -- see the related
 samples `capture_and_segment_image_with_pytorch_on_cuda.py` and `capture_and_render_point_cloud_with_opengl_on_cuda.py`.
 
+zivid-python implements `__cuda_array_interface__` on DeviceArray, so `cp.asarray(device_array)` is the whole handoff:
+CuPy picks up the device pointer, dtype, shape and strides, and holds the DeviceArray as the buffer's owner. Avoid
+building the array from `cp.cuda.UnownedMemory` with something else passed as `owner` -- the buffer belongs to the
+DeviceArray, not to the frame or point cloud it came from, and getting that wrong frees GPU memory that CuPy still
+points at.
+
 Requirements:
 - CUDA-capable GPU
 - CuPy installed: pip install cupy-cuda12x (adjust for your CUDA version)
@@ -49,45 +55,27 @@ def _main() -> None:
     cuda_stream = zivid.CUDAStreamPtr()  # Default stream
 
     print("Getting GPU device buffer in float format (RGBAf32)")
-    # The DeviceArray is synchronized into cuda_stream at acquisition, so the
-    # device pointer below is a plain accessor that needs no further synchronization.
+    # The DeviceArray is synchronized into cuda_stream at acquisition, so it can be handed
+    # to CuPy directly without any further synchronization.
     device_array = frame_2d.image_device_array(cuda_stream, zivid.PixelFormat.RGBAF)
 
-    print("Getting device pointer")
-    device_ptr = device_array.device_pointer()
-    height = device_array.shape[0]
-    width = device_array.shape[1]
-    row_stride_bytes = device_array.strides_in_bytes[0]
-    row_stride_elements = device_array.strides[0]
-    total_size_bytes = device_array.size_bytes
-
-    print(f"Device pointer: {hex(device_ptr)}")
+    print(f"Device pointer: {hex(device_array.device_pointer())}")
     print(
-        f"Buffer: {width}x{height}, stride={row_stride_bytes} bytes, {row_stride_elements} elements, total size={total_size_bytes} bytes"
+        f"Buffer: {device_array.shape[1]}x{device_array.shape[0]}, "
+        f"stride={device_array.strides_in_bytes[0]} bytes, total size={device_array.size_bytes} bytes"
     )
 
-    print(
-        "Wrapping Zivid's GPU buffer as a CuPy memory pointer (this is the zero-copy step; Zivid still owns the memory)"
-    )
-    # Note: RGBAf32 format = 4 channels of float32
-    unowned_memory = cp.cuda.UnownedMemory(device_ptr, total_size_bytes, owner=device_array)
-    unowned_memory_ptr = cp.cuda.MemoryPointer(unowned_memory, 0)
-
-    print("Creating array with correct shape accounting for stride")
-    row_elements = row_stride_elements
-    # pylint: disable-next=unexpected-keyword-arg
-    flat_array = cp.ndarray(shape=(height * row_elements,), dtype=cp.float32, memptr=unowned_memory_ptr)
-
-    print("Reshaping array to image size (height, width, 4 channels)")
-    # If stride equals width*16, direct reshape is possible
-    if row_stride_bytes == width * 16:
-        image_array = flat_array.reshape((height, width, 4))
-    else:
-        # Handling stride memory by slicing
-        image_array = flat_array.reshape((height, row_elements))[:, : width * 4].reshape((height, width, 4))
+    print("Wrapping Zivid's GPU buffer as a CuPy array (this is the zero-copy step; Zivid still owns the memory)")
+    print("cp.asarray reads __cuda_array_interface__, so shape, dtype and strides come across automatically,")
+    print("and CuPy holds the DeviceArray as the buffer's owner so the GPU memory cannot be freed too early")
+    image_array = cp.asarray(device_array)
 
     print(f"CuPy array shape: {image_array.shape}")
     print(f"CuPy array dtype: {image_array.dtype}")
+
+    if image_array.data.ptr != device_array.device_pointer():
+        raise RuntimeError("Zero-copy check failed: CuPy array does not share the Zivid device pointer")
+    print("Zero-copy verified: CuPy array shares the Zivid device pointer")
 
     print("Example: Computing mean color on GPU")
     mean_rgba = cp.mean(image_array, axis=(0, 1))

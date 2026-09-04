@@ -1,5 +1,5 @@
 """
-Convert between different rotation formats with a GUI:
+Convert between different rotation formats with a GUI.
 
 - AxisAngle
 - Rotation Vector

@@ -1,3 +1,8 @@
+"""
+Save and load Zivid transformation matrices to and from YAML files.
+
+"""
+
 from pathlib import Path
 
 from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix

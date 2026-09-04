@@ -46,9 +46,7 @@ def _main() -> None:
 
     print("Setting up visualization")
     visualizer_running = threading.Event()
-    accept_end = threading.Event()
-    accept_end.set()
-    quit_requested = threading.Event()
+    visualizer_running.set()
 
     use_raw_terminal = sys.platform != "win32" and sys.stdin.isatty()
     if use_raw_terminal:
@@ -62,36 +60,22 @@ def _main() -> None:
 
             def _capture_and_keypress_thread() -> None:
                 print("Press 'q' in the terminal to quit")
-                while not quit_requested.is_set():
-                    if not visualizer_running.wait(timeout=0.01):
-                        continue
-                    key = _get_key_non_blocking()
-                    if key == "q":
+                while visualizer_running.is_set():
+                    if _get_key_non_blocking() == "q":
                         print("Closing application because user pressed 'q'")
-                        quit_requested.set()
                         visualizer.close()
-                    else:
-                        accept_end.clear()
-                        new_frame = camera.capture_2d_3d(settings)
-                        if visualizer_running.is_set():
-                            visualizer.show(new_frame)
-                        accept_end.set()
+                        break
+                    new_frame = camera.capture_2d_3d(settings)
+                    if visualizer_running.is_set():
+                        visualizer.show(new_frame)
                     time.sleep(0.01)
 
             capture_thread = threading.Thread(target=_capture_and_keypress_thread)
             capture_thread.start()
 
-            print("Running visualizer. Blocking until window closes.")
-            while True:
-                visualizer_running.set()
-                visualizer.run()
-                visualizer_running.clear()
-
-                if quit_requested.is_set():
-                    break
-                print("Visualizer window closed by user. It will be reopened if we're currently capturing.")
-                if accept_end.is_set():
-                    break
+            print("Running visualizer. Blocking until the window closes or 'q' is pressed.")
+            visualizer.run()
+            visualizer_running.clear()
 
             capture_thread.join()
 

@@ -1,3 +1,8 @@
+"""
+Pick and adjust Zivid capture settings for the samples.
+
+"""
+
 from datetime import timedelta
 
 import numpy as np

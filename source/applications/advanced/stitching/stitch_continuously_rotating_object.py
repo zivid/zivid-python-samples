@@ -1,5 +1,5 @@
 """
-Stitch point clouds from a continuously rotating object without pre-alignment using Local Point Cloud Registration and apply Voxel Downsample.
+Stitch point clouds from a continuously rotating object using Local Point Cloud Registration, then downsample.
 
 It is assumed that the object is rotating around its own axis and the camera is stationary.
 The camera settings should have defined a region of interest box that removes unnecessary points, keeping only the object to be stitched.

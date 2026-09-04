@@ -1,5 +1,5 @@
 """
-Transform a point cloud from camera to ArUco marker coordinate frame by estimating the marker's pose from the point cloud.
+Transform a point cloud from camera to ArUco marker coordinate frame using the marker's estimated pose.
 
 The ZDF file for this sample can be found under the main instructions for Zivid samples.
 

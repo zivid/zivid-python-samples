@@ -1,5 +1,5 @@
 """
-Illuminate checkerboard (Zivid Calibration Board) centers by getting the checkerboard feature points
+Illuminate checkerboard (Zivid Calibration Board) centers by getting the checkerboard feature points.
 and illuminating them with the projector.
 
 The checkerboard feature points are first found through the API. These points are then used to get the

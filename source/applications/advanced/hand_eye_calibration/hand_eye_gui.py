@@ -1,5 +1,5 @@
 """
-Hand-Eye Calibration GUI
+Hand-Eye Calibration GUI.
 
 This script provides a graphical user interface for performing hand-eye calibration
 and verification through various methods.

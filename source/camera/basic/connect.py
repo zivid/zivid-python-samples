@@ -1,11 +1,26 @@
 """
 Connect to a Zivid camera using the different available methods.
 
-Replace the IP address and serial number in the code with the ones of your camera.
+Replace the IP address, serial number and hostname in the code with the ones of your camera,
+or provide them with --serial, --ip and --hostname.
 
 """
 
+import argparse
+
 import zivid
+
+
+def _options() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("--serial", required=False, type=str, default="2020C0DE", help="Serial number of the camera")
+    parser.add_argument("--ip", required=False, type=str, default="172.28.60.5", help="IP address of the camera")
+    parser.add_argument(
+        "--hostname", required=False, type=str, default="zivid-2020C0DE.local", help="Hostname of the camera"
+    )
+
+    return parser.parse_args()
 
 
 def _print_discovered_cameras(app: zivid.Application) -> None:
@@ -15,30 +30,28 @@ def _print_discovered_cameras(app: zivid.Application) -> None:
 
 
 def _main() -> None:
+    user_options = _options()
+
     app = zivid.Application()
 
     _print_discovered_cameras(app)
-
-    print(
-        "The serial number, IP address and hostname below are placeholders. Replace them with the ones of your camera."
-    )
 
     print("Connecting to the first available camera")
     camera = app.connect_camera()
     camera.disconnect()
 
-    print("Connecting to the camera with a specific serial number")
-    camera = app.connect_camera(serial_number="2020C0DE")
+    print(f"Connecting to the camera with serial number {user_options.serial}")
+    camera = app.connect_camera(serial_number=user_options.serial)
     camera.disconnect()
 
-    print("Connecting to the camera at a specific IP address")
-    camera = app.connect_camera(address=zivid.CameraAddress("172.28.60.5"))
+    print(f"Connecting to the camera at IP address {user_options.ip}")
+    camera = app.connect_camera(address=zivid.CameraAddress(user_options.ip))
     camera.disconnect()
 
-    print("Connecting to the camera at a specific hostname")
+    print(f"Connecting to the camera at hostname {user_options.hostname}")
     # The default hostname format is "zivid-<serial-number>.local".
     # The hostname cannot be read or set through the SDK.
-    camera = app.connect_camera(address=zivid.CameraAddress("zivid-2020C0DE.local"))
+    camera = app.connect_camera(address=zivid.CameraAddress(user_options.hostname))
     camera.disconnect()
 
     print("Connecting to all available cameras")

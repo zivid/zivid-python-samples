@@ -1,6 +1,5 @@
 """
-Transform single data point or entire point cloud from camera to robot base reference frame using Hand-Eye calibration
-matrix.
+Transform a data point or entire point cloud from camera to robot base frame using the Hand-Eye calibration matrix.
 
 This example shows how to utilize the result of Hand-Eye calibration to transform either (picking) point coordinates
 or the entire point cloud from the camera to the robot base reference frame.

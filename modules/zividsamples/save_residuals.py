@@ -1,3 +1,8 @@
+"""
+Save per-pose hand-eye calibration residuals to a YAML file.
+
+"""
+
 from pathlib import Path
 from typing import Iterable
 

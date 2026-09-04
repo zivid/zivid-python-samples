@@ -1,3 +1,8 @@
+"""
+Capture and measure the infield verification state of a Zivid camera.
+
+"""
+
 import random
 from dataclasses import dataclass
 from datetime import datetime, timedelta

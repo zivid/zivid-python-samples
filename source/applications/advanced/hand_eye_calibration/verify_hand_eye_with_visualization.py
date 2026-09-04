@@ -1,6 +1,5 @@
 """
-Verify hand-eye calibration by transforming all dataset point clouds and
-visualizing them overlapped.
+Verify hand-eye calibration by transforming all dataset point clouds and visualizing them overlapped.
 
 Running this sample requires the dataset (robot poses and point clouds)
 and the output transformation matrix of the Hand-Eye calibration.
