@@ -47,8 +47,8 @@ class CameraFOVConstants:
 
     def __init__(self, camera_info: zivid.CameraInfo):
         self.focus: float = self.camera_parameters.loc[camera_info.model_name]["key_a"]  # type: ignore
-        self.maximum_distance: float = self.camera_parameters.loc[camera_info.model_name]["key_b"]["distance"]["acceptable"]["max"]  # type: ignore
-        self.minimum_distance: float = self.camera_parameters.loc[camera_info.model_name]["key_b"]["distance"]["acceptable"]["min"]  # type: ignore
+        self.maximum_distance: float = self.camera_parameters.loc[camera_info.model_name]["key_b"]["distance"]["recommended"]["max"]  # type: ignore
+        self.minimum_distance: float = self.camera_parameters.loc[camera_info.model_name]["key_b"]["distance"]["recommended"]["min"]  # type: ignore
         self.width_at_distances: List[Dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["width_at_distances"]  # type: ignore
         self.height_at_distances: List[Dict[str, float]] = self.camera_parameters.loc[camera_info.model_name]["key_b"]["height_at_distances"]  # type: ignore
 
