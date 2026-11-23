@@ -7,7 +7,11 @@
                     "min": 500,
                     "max": 1100
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 300,
+                    "max": 1300
+                },
+                "extended": {
                     "min": 300,
                     "max": 1300
                 },
@@ -49,9 +53,13 @@
                     "min": 514.0018965335581,
                     "max": 1143.1907939914163
                 },
-                "acceptable": {
+                "recommended": {
                     "min": 262.0,
-                    "max": 1331.039506437768
+                    "max": 1331.0395064377683
+                },
+                "extended": {
+                    "min": 262.0,
+                    "max": 1331.0395064377683
                 },
                 "calculator": {
                     "min": 262.0,
@@ -63,9 +71,13 @@
                     "min": 319.7647058823529,
                     "max": 703.0588235294117
                 },
-                "acceptable": {
+                "recommended": {
                     "min": 192.0,
-                    "max": 830.8235294117646
+                    "max": 830.8235294117648
+                },
+                "extended": {
+                    "min": 192.0,
+                    "max": 830.8235294117648
                 },
                 "calculator": {
                     "min": 192.0,
@@ -88,7 +100,11 @@
                     "min": 800,
                     "max": 1400
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 600,
+                    "max": 1600
+                },
+                "extended": {
                     "min": 600,
                     "max": 1600
                 },
@@ -130,7 +146,11 @@
                     "min": 861.4177253218884,
                     "max": 1424.9638626609442
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 640.0028448003372,
+                    "max": 1612.8125751072962
+                },
+                "extended": {
                     "min": 640.0028448003372,
                     "max": 1612.8125751072962
                 },
@@ -141,10 +161,14 @@
             },
             "height": {
                 "optimal": {
-                    "min": 511.4117647058823,
-                    "max": 894.7058823529411
+                    "min": 511.4117647058824,
+                    "max": 894.7058823529412
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 383.6470588235294,
+                    "max": 1022.470588235294
+                },
+                "extended": {
                     "min": 383.6470588235294,
                     "max": 1022.470588235294
                 },
@@ -169,7 +193,11 @@
                     "min": 1000,
                     "max": 1600
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 800,
+                    "max": 2700
+                },
+                "extended": {
                     "min": 800,
                     "max": 2700
                 },
@@ -211,7 +239,11 @@
                     "min": 588.017,
                     "max": 975.64
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 451.55500000000006,
+                    "max": 1646.39
+                },
+                "extended": {
                     "min": 451.55500000000006,
                     "max": 1646.39
                 },
@@ -222,10 +254,14 @@
             },
             "height": {
                 "optimal": {
-                    "min": 506.76583333333326,
+                    "min": 506.7658333333334,
                     "max": 809.6508333333333
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 405.8041666666667,
+                    "max": 1364.94
+                },
+                "extended": {
                     "min": 405.8041666666667,
                     "max": 1364.94
                 },
@@ -250,7 +286,11 @@
                     "min": 350,
                     "max": 900
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 300,
+                    "max": 1100
+                },
+                "extended": {
                     "min": 300,
                     "max": 1100
                 },
@@ -300,7 +340,11 @@
                     "min": 291.5,
                     "max": 896.0
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 234.0,
+                    "max": 1096.0
+                },
+                "extended": {
                     "min": 234.0,
                     "max": 1096.0
                 },
@@ -314,7 +358,11 @@
                     "min": 274.875,
                     "max": 702.5
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 236.0,
+                    "max": 858.0
+                },
+                "extended": {
                     "min": 236.0,
                     "max": 858.0
                 },
@@ -339,7 +387,11 @@
                     "min": 800,
                     "max": 1400
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 700,
+                    "max": 1700
+                },
+                "extended": {
                     "min": 700,
                     "max": 1700
                 },
@@ -397,7 +449,11 @@
                     "min": 797.0,
                     "max": 1393.6666666666665
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 694.0,
+                    "max": 1692.0
+                },
+                "extended": {
                     "min": 694.0,
                     "max": 1692.0
                 },
@@ -411,7 +467,11 @@
                     "min": 624.7,
                     "max": 1090.9
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 547.0,
+                    "max": 1324.0
+                },
+                "extended": {
                     "min": 547.0,
                     "max": 1324.0
                 },
@@ -436,7 +496,11 @@
                     "min": 1000,
                     "max": 1600
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 800,
+                    "max": 2700
+                },
+                "extended": {
                     "min": 800,
                     "max": 2700
                 },
@@ -478,7 +542,11 @@
                     "min": 588.017,
                     "max": 975.64
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 451.55500000000006,
+                    "max": 1646.39
+                },
+                "extended": {
                     "min": 451.55500000000006,
                     "max": 1646.39
                 },
@@ -489,10 +557,14 @@
             },
             "height": {
                 "optimal": {
-                    "min": 506.76583333333326,
+                    "min": 506.7658333333334,
                     "max": 809.6508333333333
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 405.8041666666667,
+                    "max": 1364.94
+                },
+                "extended": {
                     "min": 405.8041666666667,
                     "max": 1364.94
                 },
@@ -517,7 +589,11 @@
                     "min": 350,
                     "max": 900
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 300,
+                    "max": 1100
+                },
+                "extended": {
                     "min": 300,
                     "max": 1100
                 },
@@ -567,7 +643,11 @@
                     "min": 291.5,
                     "max": 896.0
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 234.0,
+                    "max": 1096.0
+                },
+                "extended": {
                     "min": 234.0,
                     "max": 1096.0
                 },
@@ -581,7 +661,11 @@
                     "min": 274.875,
                     "max": 702.5
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 236.0,
+                    "max": 858.0
+                },
+                "extended": {
                     "min": 236.0,
                     "max": 858.0
                 },
@@ -606,7 +690,11 @@
                     "min": 800,
                     "max": 1400
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 700,
+                    "max": 1700
+                },
+                "extended": {
                     "min": 700,
                     "max": 1700
                 },
@@ -664,7 +752,11 @@
                     "min": 797.0,
                     "max": 1393.6666666666665
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 694.0,
+                    "max": 1692.0
+                },
+                "extended": {
                     "min": 694.0,
                     "max": 1692.0
                 },
@@ -678,7 +770,11 @@
                     "min": 624.7,
                     "max": 1090.9
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 547.0,
+                    "max": 1324.0
+                },
+                "extended": {
                     "min": 547.0,
                     "max": 1324.0
                 },
@@ -703,7 +799,11 @@
                     "min": 1500,
                     "max": 3500
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 1500,
+                    "max": 4000
+                },
+                "extended": {
                     "min": 1300,
                     "max": 5000
                 },
@@ -737,7 +837,11 @@
                     "min": 1060.75,
                     "max": 2475.75
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 1060.75,
+                    "max": 2829.5
+                },
+                "extended": {
                     "min": 919.25,
                     "max": 3537.0
                 },
@@ -751,7 +855,11 @@
                     "min": 1060.75,
                     "max": 2475.75
                 },
-                "acceptable": {
+                "recommended": {
+                    "min": 1060.75,
+                    "max": 2829.5
+                },
+                "extended": {
                     "min": 919.25,
                     "max": 3537.0
                 },

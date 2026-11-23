@@ -306,7 +306,7 @@ class WarmupData:
 
         one_minute_ago = now - timedelta(minutes=1)
         last_minute_of_data = self.df[self.df["timestamp"] >= one_minute_ago]
-        max_rate_of_change_in_the_last_minute = float(last_minute_of_data["average_rate_of_change"].max())
+        max_rate_of_change_in_the_last_minute = float(np.asarray(last_minute_of_data["average_rate_of_change"]).max())
 
         return (
             self.df["average_rate_of_change"].iloc[-1] is not None
