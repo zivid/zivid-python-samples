@@ -186,6 +186,7 @@ def _main() -> None:
     settings_2d.processing.color.gamma = 1.0
 
     settings_2d.processing.color.experimental.mode = zivid.Settings2D.Processing.Color.Experimental.Mode.automatic
+    settings_2d.processing.color.experimental.highlight_suppression.enabled = False
 
     settings = zivid.Settings()
     settings.engine = zivid.Settings.Engine.stripe

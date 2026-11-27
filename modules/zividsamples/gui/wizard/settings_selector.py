@@ -463,13 +463,10 @@ class SettingsSelectionDialog(QDialog):
     def accept(self) -> None:
         current_widget = self.stack.currentWidget()
         assert current_widget
-        if self.stack.currentIndex() < 2:
-            production_settings = current_widget.get_settings()
-            hand_eye_settings = _settings_for_hand_eye(
-                self.camera, production_settings.engine, production_settings.sampling.pixel
-            )
-        else:
-            production_settings = hand_eye_settings = current_widget.get_settings()
+        production_settings = current_widget.get_settings()
+        hand_eye_settings = _settings_for_hand_eye(
+            self.camera, production_settings.engine, production_settings.sampling.pixel
+        )
         try:
             infield_frame = zivid.calibration.capture_calibration_board(self.camera)
             infield_correction_settings = infield_frame.settings

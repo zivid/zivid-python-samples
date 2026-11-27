@@ -1,8 +1,15 @@
 """
-Uses Zivid API to change the IP address of the Zivid camera.
+Uses Zivid API to change the IP address and hostname of the Zivid camera.
 
-For more information on network configuration, check out this tutorial:
-https://support.zivid.com/en/latest/camera/getting-started/software-installation/zivid-two-network-configuration.html
+The new configuration keeps the camera's current hostname unless you enter a new one. A configuration without a
+hostname makes the camera use its default hostname, zivid-<serial number>. To connect to the camera by its hostname,
+add the .local suffix, for example zivid-2020C0DE.local.
+
+For how to configure a static IP address, check out this tutorial:
+https://support.zivid.com/en/latest/camera/getting-started/software-installation/network-configuration/static-ip-network-configuration.html
+
+For how to configure DHCP, check out this tutorial:
+https://support.zivid.com/en/latest/camera/getting-started/software-installation/network-configuration/dhcp-network-configuration.html
 
 """
 
@@ -31,7 +38,8 @@ def _main() -> None:
     original_config = camera.network_configuration
 
     print(f"Current network configuration of camera {camera.info.serial_number}:")
-    print(f"{original_config}\n")
+    print(original_config)
+    print(f"Current hostname: {camera.state.network.hostname}\n")
 
     mode = zivid.NetworkConfiguration.IPV4.Mode.manual
     address = original_config.ipv4.address
@@ -53,12 +61,20 @@ def _main() -> None:
         else:
             subnet_mask = original_config.ipv4.subnet_mask
 
+    hostname = original_config.hostname
+    input_hostname = input(
+        f"Enter new hostname, or leave empty to keep the current one [{camera.state.network.hostname}]: "
+    )
+    if input_hostname:
+        hostname = input_hostname
+
     new_config = zivid.NetworkConfiguration(
+        hostname=hostname,
         ipv4=zivid.NetworkConfiguration.IPV4(
             mode=mode,
             address=address,
             subnet_mask=subnet_mask,
-        )
+        ),
     )
 
     print("\nNew network configuration:")
@@ -70,7 +86,8 @@ def _main() -> None:
     camera.apply_network_configuration(new_config)
 
     print(f"Updated network configuration of camera {camera.info.serial_number}:")
-    print(f"{camera.network_configuration}\n")
+    print(camera.network_configuration)
+    print(f"Hostname: {camera.state.network.hostname}\n")
 
     print(f"Camera status is '{camera.state.status}'")
 
