@@ -42,6 +42,13 @@ def _main() -> None:
     print("Thermal throttling time:")
     print(f"{frame_info.metrics.throttling_time.total_seconds() * 1000:.0f} ms")
 
+    print("Transfer time:")
+    transfer_time = frame_info.metrics.transfer_time
+    if transfer_time is not None:
+        print(f"{transfer_time.total_seconds() * 1000:.0f} ms")
+    else:
+        print("Not available for this frame")
+
 
 if __name__ == "__main__":
     _main()

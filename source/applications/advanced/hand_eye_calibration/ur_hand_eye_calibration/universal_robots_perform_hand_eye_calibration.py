@@ -21,15 +21,14 @@ import argparse
 import datetime
 import time
 from pathlib import Path
-from typing import List, Tuple
+from typing import Optional, Tuple
 
-import cv2
 import numpy as np
 import zivid
 from rtde import rtde, rtde_config
 from scipy.spatial.transform import Rotation
+from zividsamples.hand_eye_session import CalibrationObjectType, HandEyeSession, MarkerConfiguration
 from zividsamples.paths import get_sample_data_path
-from zividsamples.save_load_matrix import assert_affine_matrix_and_save, load_and_assert_affine_matrix
 
 
 def _options() -> argparse.Namespace:
@@ -125,34 +124,30 @@ def _initialize_robot_sync(host: str) -> Tuple[rtde.RTDE, rtde.serialize.DataObj
     return con, robot_input_data
 
 
-def _save_zdf_and_pose(save_dir: Path, image_num: int, frame: zivid.Frame, transform: np.ndarray) -> None:
-    """Save data to folder.
+def _create_session(user_options: argparse.Namespace) -> HandEyeSession:
+    """Create a hand-eye session folder seeded with the configuration from the command line.
 
     Args:
-        save_dir: Directory to save data
-        image_num: Image number
-        frame: Point cloud stored as ZDF
-        transform: Transformation matrix (4x4)
-
-    """
-    frame.save(save_dir / f"img{image_num:02d}.zdf")
-
-    assert_affine_matrix_and_save(transform, save_dir / f"pos{image_num:02d}.yaml")
-
-
-def _generate_folder() -> Path:
-    """Generate folder where the dataset will be stored.
+        user_options: Input arguments
 
     Returns:
-        Path: Location_dir to where the data will be saved
+        The created hand-eye session
 
     """
-    location_dir = Path.cwd() / "datasets" / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    session_root = Path.cwd() / "datasets" / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    if not location_dir.is_dir():
-        location_dir.mkdir(parents=True)
+    marker_configuration: Optional[MarkerConfiguration] = None
+    calibration_object = CalibrationObjectType.CHECKERBOARD
+    if user_options.calibration_object == "marker":
+        calibration_object = CalibrationObjectType.MARKERS
+        marker_configuration = MarkerConfiguration(dictionary=user_options.dictionary, marker_ids=user_options.ids)
 
-    return location_dir
+    return HandEyeSession.create(
+        session_root,
+        eye_in_hand=user_options.eih,
+        calibration_object=calibration_object,
+        marker_configuration=marker_configuration,
+    )
 
 
 def _get_frame_and_transform_matrix(
@@ -240,30 +235,6 @@ def _read_robot_state(con: rtde.RTDE) -> rtde.serialize:
     return robot_state
 
 
-def _save_hand_eye_results(save_dir: Path, transform: np.ndarray, residuals: List) -> None:
-    """Save transformation and residuals to folder.
-
-    Args:
-        save_dir: Path to where data will be saved
-        transform: Transformation matrix (4x4)
-        residuals: List of residuals
-
-    """
-    assert_affine_matrix_and_save(transform, save_dir / "handEyeTransform.yaml")
-
-    file_storage_residuals = cv2.FileStorage(str(save_dir / "residuals.yaml"), cv2.FILE_STORAGE_WRITE)
-    residual_list = []
-    for res in residuals:
-        tmp = list([res.rotation(), res.translation()])
-        residual_list.append(tmp)
-
-    file_storage_residuals.write(
-        "Per pose residuals for rotation in deg and translation in mm",
-        np.array(residual_list),
-    )
-    file_storage_residuals.release()
-
-
 def _image_count(robot_state: rtde.serialize.DataObject) -> int:
     """Read robot output register 24.
 
@@ -316,7 +287,7 @@ def _capture_one_frame_and_robot_pose(
     rtde_data: Tuple[rtde.RTDE, rtde.serialize.DataObject],
     camera: zivid.Camera,
     settings: zivid.Settings,
-    save_dir: Path,
+    session: HandEyeSession,
     image_num: int,
     ready_to_capture: bool,
     user_options: argparse.Namespace,
@@ -328,7 +299,7 @@ def _capture_one_frame_and_robot_pose(
         rtde_data: Tuple containing computer-robot connection and input package with specific input data registers
         camera: Zivid camera
         settings: Zivid settings
-        save_dir: Path to where data will be saved
+        session: Hand-eye session the pose pair is saved into
         image_num: Image number
         ready_to_capture: Boolean value to robot_state that camera is ready to capture images
         user_options: Input arguments
@@ -341,14 +312,14 @@ def _capture_one_frame_and_robot_pose(
     _write_robot_state(rtde_data=rtde_data, finish_capture=True, camera_ready=ready_to_capture)
     time.sleep(0.1)
     _write_robot_state(rtde_data=rtde_data, finish_capture=False, camera_ready=ready_to_capture)
-    _save_zdf_and_pose(save_dir, image_num, frame, transform)
+    session.save_pose_pair(image_num, transform, frame)
     print("Image and pose saved")
 
 
 def _generate_dataset(
     app: zivid.Application, rtde_data: Tuple[rtde.RTDE, rtde.serialize.DataObject], user_options: argparse.Namespace
-) -> Path:
-    """Generate dataset based on predefined robot poses.
+) -> HandEyeSession:
+    """Generate a hand-eye session based on predefined robot poses.
 
     Args:
         app: Zivid application instance
@@ -356,11 +327,11 @@ def _generate_dataset(
         user_options: Input arguments
 
     Returns:
-        Path: Save_dir to where dataset is saved
+        The hand-eye session the dataset is saved into
 
     """
     camera = app.connect_camera()
-    save_dir = _generate_folder()
+    session = _create_session(user_options)
 
     if user_options.settings_path is None:
         user_options.settings_path = _preset_path(camera)
@@ -388,7 +359,7 @@ def _generate_dataset(
                 rtde_data=rtde_data,
                 camera=camera,
                 settings=settings,
-                save_dir=save_dir,
+                session=session,
                 image_num=images_captured,
                 ready_to_capture=ready_to_capture,
                 user_options=user_options,
@@ -400,81 +371,68 @@ def _generate_dataset(
     _write_robot_state(rtde_data, finish_capture=False, camera_ready=False)
     time.sleep(1.0)
     rtde_data[0].send_pause()
-    rtde_data[1].disconnect()
+    rtde_data[0].disconnect()
 
-    print(f"\n Data saved to: {save_dir}")
+    print(f"\n Data saved to: {session.root}")
 
-    return save_dir
+    return session
 
 
 def perform_hand_eye_calibration(
-    mode: str,
-    data_dir: Path,
-) -> Tuple[np.ndarray, List[zivid.calibration.HandEyeResidual]]:
-    """Perform had-eye calibration based on mode.
+    session: HandEyeSession,
+) -> zivid.calibration.HandEyeOutput:
+    """Perform hand-eye calibration on the pose pairs in a session.
 
     Args:
-        mode: Calibration mode, eye-in-hand or eye-to-hand
-        data_dir: Path to dataset
+        session: Hand-eye session holding the captured pose pairs
 
     Returns:
-        transform: Transformation matrix (4x4)
-        residuals: List of residuals
+        The hand-eye calibration result
 
     Raises:
         RuntimeError: If no feature points are detected
-        ValueError: If calibration mode is invalid
 
     """
     calibration_inputs = []
-    idata = 1
-    while True:
-        frame_file_path = data_dir / f"img{idata:02d}.zdf"
-        pose_file_path = data_dir / f"pos{idata:02d}.yaml"
-
-        if frame_file_path.is_file() and pose_file_path.is_file():
-            print(f"Detect feature points from img{idata:02d}.zdf")
-
-            frame = zivid.Frame(frame_file_path)
-            detection_result = zivid.calibration.detect_calibration_board(frame)
-
-            if not detection_result.valid():
-                raise RuntimeError(
-                    f"Failed to detect feature points from frame {frame_file_path}. {detection_result.status_description()}"
-                )
-
-            print(f"Read robot pose from pos{idata:02d}.yaml")
-            pose_matrix = load_and_assert_affine_matrix(pose_file_path)
-
-            calibration_inputs.append(
-                zivid.calibration.HandEyeInput(zivid.calibration.Pose(pose_matrix), detection_result)
+    for pose_pair in session.load_pose_pairs():
+        print(f"Detect feature points from {pose_pair.frame_path.name}")
+        frame = zivid.Frame(pose_pair.frame_path)
+        if session.calibration_object == CalibrationObjectType.MARKERS:
+            detection_result = zivid.calibration.detect_markers(
+                frame, session.marker_configuration.marker_ids, session.marker_configuration.dictionary
             )
         else:
-            break
+            detection_result = zivid.calibration.detect_calibration_board(frame)
 
-        idata += 1
+        if not detection_result.valid():
+            raise RuntimeError(
+                f"Failed to detect feature points from frame {pose_pair.frame_path}. {detection_result.status_description()}"
+            )
 
-    print(f"\nPerform {mode} calibration")
+        print(f"Read robot pose {pose_pair.pose_id}")
+        calibration_inputs.append(
+            zivid.calibration.HandEyeInput(zivid.calibration.Pose(pose_pair.robot_pose), detection_result)
+        )
 
-    if mode == "eye-in-hand":
+    calibration_type = "eye-in-hand" if session.eye_in_hand else "eye-to-hand"
+    print(f"\nPerform {calibration_type} calibration")
+    if session.eye_in_hand:
         calibration_result = zivid.calibration.calibrate_eye_in_hand(calibration_inputs)
-    elif mode == "eye-to-hand":
-        calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
     else:
-        raise ValueError(f"Invalid calibration mode: {mode}")
-
-    transform = calibration_result.transform()
-    residuals = calibration_result.residuals()
+        calibration_result = zivid.calibration.calibrate_eye_to_hand(calibration_inputs)
 
     print("\n\nTransform: \n")
     np.set_printoptions(precision=5, suppress=True)
-    print(transform)
+    print(np.array(calibration_result.transform()))
 
     print("\n\nResiduals: \n")
-    for res in residuals:
-        print(f"Rotation: {res.rotation():.6f}   Translation: {res.translation():.6f}")
+    for res in calibration_result.residuals():
+        print(
+            f"Rotation: {res.rotation():.6f}°   Translation: {res.translation():.6f} mm   "
+            f"Spatial extent: {res.spatial_extent():.6f} mm   Point RMSE: {res.point_rmse():.6f} mm"
+        )
 
-    return transform, residuals
+    return calibration_result
 
 
 def _main() -> None:
@@ -485,14 +443,11 @@ def _main() -> None:
     con, input_data = _initialize_robot_sync(robot_ip_address)
     con.send_start()
 
-    dataset_dir = _generate_dataset(app, (con, input_data), user_options)
+    session = _generate_dataset(app, (con, input_data), user_options)
 
-    if user_options.eih:
-        transform, residuals = perform_hand_eye_calibration("eye-in-hand", dataset_dir)
-    else:
-        transform, residuals = perform_hand_eye_calibration("eye-to-hand", dataset_dir)
+    calibration_result = perform_hand_eye_calibration(session)
 
-    _save_hand_eye_results(dataset_dir, transform, residuals)
+    session.save_calibration_result(calibration_result)
 
 
 if __name__ == "__main__":

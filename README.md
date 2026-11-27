@@ -1,6 +1,6 @@
 # Python samples
 
-This repository contains python code samples for Zivid SDK v2.18.0. For
+This repository contains python code samples for Zivid SDK v2.19.0. For
 tested compatibility with earlier SDK versions, please check out
 [accompanying releases].
 
@@ -48,7 +48,7 @@ tested compatibility with earlier SDK versions, please check out
     - [Visualization Tutorial]
     - [Stitching]
   - **2D Image**
-    - [Barcode Detection]
+    - [Barcode Reading Tutorial]
   - **System**
     - [Hand-Eye Calibration]
     - [Multi-Camera Calibration]
@@ -63,6 +63,7 @@ image or other data from the camera. These samples shows how the data
 from the camera can be used.
 
 - **camera**
+
   - **basic**
     - [capture] - Capture colored point cloud, save 2D image, save 3D
       ZDF, and export PLY, using the Zivid camera.
@@ -73,8 +74,7 @@ from the camera can be used.
     - [capture_with_settings_from_yml] - Capture images and point
       clouds, with and without color, from the Zivid camera with
       settings from YML file.
-    - [connect] - Connect to a Zivid camera using the different
-      available methods.
+    - [connect] - Connect to a Zivid camera.
     - [create_file_camera_from_zdf_with_diagnostics] - Capture a frame
       with diagnostics enabled and create a file camera from it.
   - **advanced**
@@ -106,7 +106,7 @@ from the camera can be used.
         configure the IP addresses of connected cameras to match the
         network of the user's PC.
       - [network_configuration] - Uses Zivid API to change the IP
-        address of the Zivid camera.
+        address and hostname of the Zivid camera.
   - **maintenance**
     - [correct_camera_in_field] - Correct the dimension trueness of a
       Zivid camera.
@@ -117,7 +117,9 @@ from the camera can be used.
       of a Zivid camera from a ZDF file.
     - [visualize_benchmark_results] - Visualize the CSV results produced
       by the ZividBenchmark sample.
+
 - **applications**
+
   - **basic**
     - **visualization**
       - [capture_and_visualize_normals] - Capture Zivid point clouds,
@@ -195,8 +197,9 @@ from the camera can be used.
         clouds using a transformation estimated by Local Point Cloud
         Registration and apply Voxel Downsample.
     - **barcode**
-      - [barcode_detector] - Detect and decode linear and matrix
-        barcodes from a 2D capture.
+      - [live_barcode_reader] - Continuously capture 2D frames, detect
+        and decode barcodes, and display a live view with the results
+        overlaid.
     - **hand_eye_calibration**
       - [hand_eye_calibration] - Perform Hand-Eye calibration.
       - [hand_eye_gui] - Hand-Eye Calibration GUI.
@@ -244,7 +247,15 @@ from the camera can be used.
     - **robot_guidance**
       - [robodk_robot_guidance] - Guide the robot to follow a path on
         the Zivid Calibration Board.
+
+- **camera**
+
+  > - **barcode**
+  >   - [barcode_detector_and_decoder] - Detect and decode linear and
+  >     matrix barcodes from a 2D capture.
+
 - **modules**
+
   - **zividsamples**
     - [calibration_board_utils] - Utility functions for the Zivid
       calibration board.
@@ -253,6 +264,8 @@ from the camera can be used.
     - [color_to_grayscale] - Convert Zivid RGBA color images to
       grayscale.
     - [display] - Display relevant data for Zivid Samples.
+    - [hand_eye_session] - Read and write hand-eye data in the Zivid
+      Studio Hand-Eye session format.
     - [paths] - Get relevant paths for Zivid Samples.
     - [robodk_tools] - Connect to a robot through RoboDK, list its
       targets and set its speeds.
@@ -353,7 +366,7 @@ Zivid Samples are distributed under the [BSD license].
   [Region of Interest Tutorial]: https://support.zivid.com/en/latest/camera/academy/applications/roi.html
   [Visualization Tutorial]: https://support.zivid.com/en/latest/camera/academy/applications/visualization-tutorial.html
   [Stitching]: https://support.zivid.com/en/latest/camera/academy/applications/stitching.html
-  [Barcode Detection]: https://support.zivid.com/en/latest/camera/academy/applications/barcode-detection.html
+  [Barcode Reading Tutorial]: https://support.zivid.com/en/latest/camera/academy/applications/barcode-detection.html
   [Hand-Eye Calibration]: https://support.zivid.com/en/latest/camera/academy/applications/hand-eye.html
   [Multi-Camera Calibration]: https://support.zivid.com/en/latest/camera/academy/applications/multi-camera-calibration.html
   [capture]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/basic/capture.py
@@ -411,7 +424,7 @@ Zivid Samples are distributed under the [BSD license].
   [stitch_continuously_rotating_object]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitching/stitch_continuously_rotating_object.py
   [stitch_using_robot_mounted_camera]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitching/stitch_using_robot_mounted_camera.py
   [stitch_via_local_point_cloud_registration]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/stitching/stitch_via_local_point_cloud_registration.py
-  [barcode_detector]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/barcode/barcode_detector.py
+  [live_barcode_reader]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/barcode/live_barcode_reader.py
   [hand_eye_calibration]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/hand_eye_calibration.py
   [hand_eye_gui]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/hand_eye_gui.py
   [pose_conversion_gui]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/hand_eye_calibration/pose_conversion_gui.py
@@ -429,10 +442,12 @@ Zivid Samples are distributed under the [BSD license].
   [read_project_and_capture_image]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/projector/read_project_and_capture_image.py
   [reproject_points]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/projector/reproject_points.py
   [robodk_robot_guidance]: https://github.com/zivid/zivid-python-samples/tree/master/source/applications/advanced/robot_guidance/robodk_robot_guidance.py
+  [barcode_detector_and_decoder]: https://github.com/zivid/zivid-python-samples/tree/master/source/camera/advanced/barcode/barcode_detector_and_decoder.py
   [calibration_board_utils]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/calibration_board_utils.py
   [camera_verification]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/camera_verification.py
   [color_to_grayscale]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/color_to_grayscale.py
   [display]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/display.py
+  [hand_eye_session]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/hand_eye_session.py
   [paths]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/paths.py
   [robodk_tools]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/robodk_tools.py
   [save_load_matrix]: https://github.com/zivid/zivid-python-samples/tree/master/modules/zividsamples/save_load_matrix.py
